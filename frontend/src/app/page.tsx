@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   TrendingUp, 
   BarChart3, 
@@ -67,6 +67,13 @@ const StatCard = ({ title, value, subValue, icon: Icon, color, trend }: any) => 
 );
 
 export default function Dashboard() {
+  const [chartsReady, setChartsReady] = useState(false);
+
+  useEffect(() => {
+    const frameId = requestAnimationFrame(() => setChartsReady(true));
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
@@ -100,7 +107,7 @@ export default function Dashboard() {
 
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="glass p-8 rounded-[32px]">
+            <div className="glass p-8 rounded-[32px] min-w-0">
               <div className="flex justify-between items-center mb-8">
                 <h3 className="text-lg font-semibold text-white">Pipeline Trendi</h3>
                 <select className="bg-slate-800 text-slate-300 text-xs px-3 py-1.5 rounded-lg border border-border-subtle outline-none">
@@ -108,9 +115,10 @@ export default function Dashboard() {
                   <option>Geçen Yıl</option>
                 </select>
               </div>
-              <div className="h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={mockPipelineData}>
+              <div className="h-[350px] min-w-0">
+                {chartsReady && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={mockPipelineData}>
                     <defs>
                       <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
@@ -125,17 +133,19 @@ export default function Dashboard() {
                       itemStyle={{ color: '#F8FAFC' }}
                     />
                     <Area type="monotone" dataKey="value" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
-                  </AreaChart>
-                </ResponsiveContainer>
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
 
-            <div className="glass p-8 rounded-[32px]">
+            <div className="glass p-8 rounded-[32px] min-w-0">
               <h3 className="text-lg font-semibold text-white mb-8">Aşama Dağılımı</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-[350px]">
-                <div className="h-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                <div className="h-full min-w-0">
+                  {chartsReady && (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
                       <Pie
                         data={mockStageData}
                         cx="50%"
@@ -152,8 +162,9 @@ export default function Dashboard() {
                       <Tooltip 
                         contentStyle={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '12px' }}
                       />
-                    </PieChart>
-                  </ResponsiveContainer>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
                 <div className="space-y-4">
                   {mockStageData.map((item) => (

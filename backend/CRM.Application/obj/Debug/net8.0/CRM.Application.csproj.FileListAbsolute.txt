@@ -13,3 +13,4 @@ C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Application\obj\Debug\net8.0\CRM
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Application\obj\Debug\net8.0\refint\CRM.Application.dll
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Application\obj\Debug\net8.0\CRM.Application.pdb
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Application\obj\Debug\net8.0\ref\CRM.Application.dll
+C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Application\obj\Debug\net8.0\CRM.Application.sourcelink.json

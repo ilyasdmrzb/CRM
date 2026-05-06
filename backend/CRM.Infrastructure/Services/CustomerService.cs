@@ -52,10 +52,10 @@ namespace CRM.Infrastructure.Services
             var customer = new Customer
             {
                 CompanyName = dto.CompanyName.Trim(),
-                CariCode = dto.CariCode,
-                TaxNumber = dto.TaxNumber,
-                City = dto.City,
-                Address = dto.Address,
+                CariCode = NormalizeOptional(dto.CariCode),
+                TaxNumber = NormalizeOptional(dto.TaxNumber),
+                City = NormalizeOptional(dto.City),
+                Address = NormalizeOptional(dto.Address),
                 CreatedBy = userId
             };
             _context.Customers.Add(customer);
@@ -76,10 +76,10 @@ namespace CRM.Infrastructure.Services
             if (exists) throw new InvalidOperationException($"'{dto.CompanyName}' şirketi zaten kayıtlı.");
 
             customer.CompanyName = dto.CompanyName.Trim();
-            customer.CariCode = dto.CariCode;
-            customer.TaxNumber = dto.TaxNumber;
-            customer.City = dto.City;
-            customer.Address = dto.Address;
+            customer.CariCode = NormalizeOptional(dto.CariCode);
+            customer.TaxNumber = NormalizeOptional(dto.TaxNumber);
+            customer.City = NormalizeOptional(dto.City);
+            customer.Address = NormalizeOptional(dto.Address);
             customer.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -93,6 +93,11 @@ namespace CRM.Infrastructure.Services
             _context.Customers.Remove(customer);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        private static string? NormalizeOptional(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
         private static CustomerDto MapToDto(Customer c) => new()

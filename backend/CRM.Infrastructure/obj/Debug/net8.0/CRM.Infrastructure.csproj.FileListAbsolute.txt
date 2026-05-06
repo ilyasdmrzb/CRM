@@ -17,3 +17,4 @@ C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Infrastructure\obj\Debug\net8.0\
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Infrastructure\obj\Debug\net8.0\CRM.Infrastructure.pdb
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Infrastructure\obj\Debug\net8.0\CRM.Infrastructure.genruntimeconfig.cache
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Infrastructure\obj\Debug\net8.0\ref\CRM.Infrastructure.dll
+C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Infrastructure\obj\Debug\net8.0\CRM.Infrastructure.sourcelink.json

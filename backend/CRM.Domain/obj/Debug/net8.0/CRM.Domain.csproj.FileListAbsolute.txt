@@ -9,3 +9,4 @@ C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Domain\obj\Debug\net8.0\CRM.Doma
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Domain\obj\Debug\net8.0\refint\CRM.Domain.dll
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Domain\obj\Debug\net8.0\CRM.Domain.pdb
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Domain\obj\Debug\net8.0\ref\CRM.Domain.dll
+C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.Domain\obj\Debug\net8.0\CRM.Domain.sourcelink.json

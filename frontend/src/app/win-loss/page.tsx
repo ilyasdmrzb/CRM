@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Trophy, 
   Frown, 
@@ -42,6 +42,12 @@ const lossReasonData = [
 ];
 
 export default function WinLossPage() {
+  const [chartsReady, setChartsReady] = useState(false);
+
+  useEffect(() => {
+    const frameId = requestAnimationFrame(() => setChartsReady(true));
+    return () => cancelAnimationFrame(frameId);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-main-bg">
@@ -115,11 +121,12 @@ export default function WinLossPage() {
 
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="glass p-8 rounded-[32px] border border-border-subtle">
+            <div className="glass p-8 rounded-[32px] border border-border-subtle min-w-0">
               <h3 className="text-lg font-semibold text-white mb-8">Rakip Analizi (Kaybedilen Deal'ler)</h3>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={competitorData} layout="vertical">
+              <div className="h-[300px] min-w-0">
+                {chartsReady && (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={competitorData} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
                     <XAxis type="number" stroke="#64748B" fontSize={12} axisLine={false} tickLine={false} />
                     <YAxis dataKey="name" type="category" stroke="#F8FAFC" fontSize={12} axisLine={false} tickLine={false} />
@@ -128,17 +135,19 @@ export default function WinLossPage() {
                       contentStyle={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '12px' }}
                     />
                     <Bar dataKey="lost" fill="#3B82F6" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
 
-            <div className="glass p-8 rounded-[32px] border border-border-subtle">
+            <div className="glass p-8 rounded-[32px] border border-border-subtle min-w-0">
               <h3 className="text-lg font-semibold text-white mb-8">Başlıca Kaybetme Nedenleri</h3>
               <div className="grid grid-cols-2 gap-8 items-center h-[300px]">
-                <div className="h-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                <div className="h-full min-w-0">
+                  {chartsReady && (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
                       <Pie
                         data={lossReasonData}
                         cx="50%"
@@ -155,8 +164,9 @@ export default function WinLossPage() {
                       <Tooltip 
                         contentStyle={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '12px' }}
                       />
-                    </PieChart>
-                  </ResponsiveContainer>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
                 <div className="space-y-4">
                   {lossReasonData.map((item) => (

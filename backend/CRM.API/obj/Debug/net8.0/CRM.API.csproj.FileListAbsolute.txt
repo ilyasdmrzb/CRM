@@ -146,3 +146,4 @@ C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.API\obj\Debug\net8.0\refint\CRM.
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.API\obj\Debug\net8.0\CRM.API.pdb
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.API\obj\Debug\net8.0\CRM.API.genruntimeconfig.cache
 C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.API\obj\Debug\net8.0\ref\CRM.API.dll
+C:\Users\gamze.kılınc\Desktop\CRM\backend\CRM.API\obj\Debug\net8.0\CRM.API.sourcelink.json
