@@ -8,7 +8,8 @@ import {
   Mail, 
   Globe, 
   Calendar, 
-  User, 
+  User,
+  Users,
   Plus,
   ArrowLeft,
   ChevronRight,
@@ -20,15 +21,16 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/layout/Sidebar';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 export default function CustomerDetailPage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState<'overview' | 'contacts' | 'deals' | 'activities'>('overview');
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: Building2 },
-    { id: 'contacts', label: 'Contacts', icon: User },
-    { id: 'deals', label: 'Deals', icon: GitBranch },
-    { id: 'activities', label: 'Activities', icon: Activity },
+    { id: 'overview', label: 'Genel Bakış', icon: Building2 },
+    { id: 'contacts', label: 'Kişiler', icon: User },
+    { id: 'deals', label: "Deal'ler", icon: GitBranch },
+    { id: 'activities', label: 'Aktiviteler', icon: Activity },
   ];
 
   return (
@@ -55,10 +57,10 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
           </div>
           <div className="flex items-center gap-3">
             <button className="px-4 py-2 border border-border-subtle text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-all text-sm font-medium">
-              Edit Company
+              Şirketi Düzenle
             </button>
             <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-lg shadow-blue-500/20">
-              New Deal
+              Yeni Deal
             </button>
           </div>
         </header>
@@ -72,12 +74,12 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                   <Building2 className="w-12 h-12" />
                 </div>
                 <h2 className="text-xl font-bold text-white mb-1">ABC Solar Energy</h2>
-                <p className="text-sm text-slate-500 mb-6">Industrial Solar Manufacturer</p>
+                <p className="text-sm text-slate-500 mb-6">Endüstriyel güneş enerjisi üreticisi</p>
                 
                 <div className="w-full space-y-4 text-left">
                   <div className="flex items-center gap-3 text-sm text-slate-400">
                     <MapPin className="w-4 h-4" />
-                    <span>Istanbul, Turkey</span>
+                    <span>İstanbul, Türkiye</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-slate-400">
                     <Phone className="w-4 h-4" />
@@ -95,27 +97,27 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
 
                 <div className="w-full mt-8 pt-8 border-t border-border-subtle space-y-4">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-500">Cari Code</span>
+                    <span className="text-slate-500">Cari Kodu</span>
                     <span className="text-white font-mono">CARI-001</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-500">Tax Number</span>
+                    <span className="text-slate-500">Vergi No</span>
                     <span className="text-white">1234567890</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-500">Registered</span>
-                    <span className="text-white">Jan 12, 2024</span>
+                    <span className="text-slate-500">Kayıt Tarihi</span>
+                    <span className="text-white">12 Ocak 2024</span>
                   </div>
                 </div>
               </div>
 
               <div className="glass p-6 rounded-[32px] border border-border-subtle">
-                <h4 className="text-white font-semibold mb-4 text-sm">Account Manager</h4>
+                <h4 className="text-white font-semibold mb-4 text-sm">Hesap Yöneticisi</h4>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold">GK</div>
                   <div>
                     <p className="text-sm text-white font-medium">Gamze Kılınç</p>
-                    <p className="text-xs text-slate-500">Senior Sales Rep</p>
+                    <p className="text-xs text-slate-500">Kıdemli Satış Temsilcisi</p>
                   </div>
                 </div>
               </div>
@@ -155,29 +157,29 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                     >
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="glass p-6 rounded-3xl border border-border-subtle">
-                          <span className="text-slate-500 text-xs block mb-1">Active Pipeline</span>
+                          <span className="text-slate-500 text-xs block mb-1">Aktif Pipeline</span>
                           <span className="text-2xl font-bold text-white">$450,000</span>
                           <div className="mt-4 flex items-center gap-1 text-emerald-500 text-xs font-medium">
                             <TrendingUp className="w-3 h-3" />
-                            <span>+12% from last month</span>
+                            <span>Geçen aya göre +12%</span>
                           </div>
                         </div>
                         <div className="glass p-6 rounded-3xl border border-border-subtle">
-                          <span className="text-slate-500 text-xs block mb-1">Total Won</span>
+                          <span className="text-slate-500 text-xs block mb-1">Toplam Kazanılan</span>
                           <span className="text-2xl font-bold text-emerald-500">$1.2M</span>
-                          <p className="text-xs text-slate-500 mt-4">3 deals closed won</p>
+                          <p className="text-xs text-slate-500 mt-4">3 deal kazanılarak kapandı</p>
                         </div>
                         <div className="glass p-6 rounded-3xl border border-border-subtle">
-                          <span className="text-slate-500 text-xs block mb-1">Pending Tasks</span>
+                          <span className="text-slate-500 text-xs block mb-1">Bekleyen Görevler</span>
                           <span className="text-2xl font-bold text-orange-400">4</span>
-                          <p className="text-xs text-slate-500 mt-4">Next action: tomorrow</p>
+                          <p className="text-xs text-slate-500 mt-4">Sonraki aksiyon: yarın</p>
                         </div>
                       </div>
 
                       <div className="glass p-8 rounded-[32px] border border-border-subtle">
-                        <h3 className="text-white font-semibold mb-6">Company Summary</h3>
+                        <h3 className="text-white font-semibold mb-6">Şirket Özeti</h3>
                         <p className="text-slate-400 leading-relaxed">
-                          ABC Solar Energy is a leading industrial partner in the Marmara region. They specialize in large-scale rooftop installations and have been a primary client since early 2024. Current focus is on Phase 2 expansion for their Izmir factory.
+                          ABC Solar Energy, Marmara bölgesinde önde gelen bir endüstriyel iş ortağıdır. Büyük ölçekli çatı GES kurulumlarında uzmanlaşmıştır ve 2024 başından beri ana müşterilerimizden biridir. Güncel odak, İzmir fabrikaları için Faz 2 genişlemesidir.
                         </p>
                       </div>
                     </motion.div>
@@ -192,9 +194,9 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                       className="space-y-6"
                     >
                       <div className="flex justify-between items-center">
-                        <h3 className="text-white font-semibold">Contacts (4)</h3>
+                        <h3 className="text-white font-semibold">Kişiler (4)</h3>
                         <button className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors font-medium">
-                          <Plus className="w-4 h-4" /> Add Contact
+                          <Plus className="w-4 h-4" /> Kişi Ekle
                         </button>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -204,8 +206,8 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-500 font-bold">JD</div>
                                 <div>
-                                  <p className="text-white font-medium">Contact Person {i}</p>
-                                  <p className="text-xs text-slate-500">Purchasing Manager</p>
+                                  <p className="text-white font-medium">İlgili Kişi {i}</p>
+                                  <p className="text-xs text-slate-500">Satın Alma Müdürü</p>
                                 </div>
                               </div>
                               <button className="p-1.5 text-slate-500 hover:text-white transition-colors"><MoreVertical className="w-4 h-4" /></button>
@@ -236,10 +238,10 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
                     >
                       <div className="relative pl-8 space-y-12 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-800">
                         {[
-                          { type: 'Call', title: 'Phase 2 Follow-up', desc: 'Discussed pricing and logistics for the new factory.', date: 'Today, 2:30 PM', icon: Phone, color: 'blue' },
-                          { type: 'Email', title: 'Proposal Sent', desc: 'Sent the revised proposal for Phase 2.', date: 'Yesterday, 10:15 AM', icon: Mail, color: 'indigo' },
-                          { type: 'Meeting', title: 'On-site Visit', desc: 'Visited Istanbul facility for site measurements.', date: 'May 10, 2024', icon: Users, color: 'orange' },
-                          { type: 'Task', title: 'Internal Review', desc: 'Reviewed tax benefits for the project.', date: 'May 08, 2024', icon: MessageSquare, color: 'slate' },
+                          { type: 'Arama', title: 'Faz 2 Takibi', desc: 'Yeni fabrika için fiyatlandırma ve lojistik konuşuldu.', date: 'Bugün, 14:30', icon: Phone, color: 'blue' },
+                          { type: 'E-posta', title: 'Teklif Gönderildi', desc: 'Faz 2 için revize teklif gönderildi.', date: 'Dün, 10:15', icon: Mail, color: 'indigo' },
+                          { type: 'Toplantı', title: 'Saha Ziyareti', desc: 'Saha ölçümleri için İstanbul tesisi ziyaret edildi.', date: '10 Mayıs 2024', icon: Users, color: 'orange' },
+                          { type: 'Görev', title: 'İç Değerlendirme', desc: 'Projenin vergi avantajları incelendi.', date: '08 Mayıs 2024', icon: MessageSquare, color: 'slate' },
                         ].map((act, i) => (
                           <div key={i} className="relative">
                             <div className={`absolute -left-[37px] top-1 w-6 h-6 rounded-full bg-sidebar border-2 border-${act.color}-500 flex items-center justify-center z-10 shadow-lg shadow-${act.color}-500/20`}>

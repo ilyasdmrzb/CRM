@@ -13,7 +13,7 @@ export default function DashboardLayout({
           <h1 className="text-xl font-semibold text-white">Dashboard</h1>
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-end">
-              <span className="text-sm font-medium text-white">System Admin</span>
+              <span className="text-sm font-medium text-white">Sistem Yöneticisi</span>
               <span className="text-xs text-slate-400">admin@company.com</span>
             </div>
             <div className="w-10 h-10 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 font-bold">

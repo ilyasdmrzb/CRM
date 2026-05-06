@@ -1,12 +1,12 @@
 "use client";
 
 import React from 'react';
-import { 
-  Calendar, 
-  Phone, 
-  Mail, 
-  MessageSquare, 
-  Users, 
+import {
+  Calendar,
+  Phone,
+  Mail,
+  MessageSquare,
+  Users,
   Clock,
   ChevronRight,
   Plus,
@@ -16,15 +16,13 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Sidebar from '@/components/layout/Sidebar';
-import { cn } from '@/lib/utils';
-
 
 const activities = [
-  { id: 1, type: 'Call', user: 'Gamze Kılınç', company: 'ABC Solar Energy', subject: 'Phase 2 Follow-up', time: '10:30 AM', date: 'Today', status: 'completed' },
-  { id: 2, type: 'Meeting', user: 'John Doe', company: 'Z-Tech Industrial', subject: 'On-site Inspection', time: '02:00 PM', date: 'Today', status: 'pending' },
-  { id: 3, type: 'Email', user: 'Sarah Connor', company: 'Green Power Systems', subject: 'Proposal Revision', time: 'Yesterday', date: 'May 14', status: 'completed' },
-  { id: 4, type: 'Visit', user: 'Michael Scott', company: 'Blue Sky Energy', subject: 'Contract Negotiation', time: 'Yesterday', date: 'May 14', status: 'completed' },
-  { id: 5, type: 'WhatsApp', user: 'Gamze Kılınç', company: 'Eco-Friendly Solutions', subject: 'Quick Update', time: 'May 12', date: 'May 12', status: 'completed' },
+  { id: 1, type: 'Arama', user: 'Gamze Kılınç', company: 'ABC Solar Energy', subject: 'Faz 2 Takibi', time: '10:30', date: 'Bugün', status: 'completed' },
+  { id: 2, type: 'Toplantı', user: 'John Doe', company: 'Z-Tech Industrial', subject: 'Saha İncelemesi', time: '14:00', date: 'Bugün', status: 'pending' },
+  { id: 3, type: 'E-posta', user: 'Sarah Connor', company: 'Green Power Systems', subject: 'Teklif Revizyonu', time: 'Dün', date: '14 Mayıs', status: 'completed' },
+  { id: 4, type: 'Ziyaret', user: 'Michael Scott', company: 'Blue Sky Energy', subject: 'Sözleşme Müzakeresi', time: 'Dün', date: '14 Mayıs', status: 'completed' },
+  { id: 5, type: 'WhatsApp', user: 'Gamze Kılınç', company: 'Eco-Friendly Solutions', subject: 'Hızlı Güncelleme', time: '12 Mayıs', date: '12 Mayıs', status: 'completed' },
 ];
 
 const MapPin = ({ className }: { className?: string }) => (
@@ -32,18 +30,18 @@ const MapPin = ({ className }: { className?: string }) => (
 );
 
 const typeIcons: any = {
-  Call: Phone,
-  Meeting: Users,
-  Email: Mail,
-  Visit: MapPin,
+  Arama: Phone,
+  Toplantı: Users,
+  'E-posta': Mail,
+  Ziyaret: MapPin,
   WhatsApp: MessageSquare,
 };
 
 const typeColors: any = {
-  Call: 'blue',
-  Meeting: 'purple',
-  Email: 'indigo',
-  Visit: 'orange',
+  Arama: 'blue',
+  Toplantı: 'purple',
+  'E-posta': 'indigo',
+  Ziyaret: 'orange',
   WhatsApp: 'emerald',
 };
 
@@ -55,21 +53,20 @@ export default function ActivitiesPage() {
         <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
           <div>
             <h1 className="text-2xl font-bold text-white">Activity Tracking</h1>
-            <p className="text-sm text-slate-400">Monitor all interactions and planned tasks.</p>
+            <p className="text-sm text-slate-400">Tüm etkileşimleri ve planlanan görevleri takip edin.</p>
           </div>
           <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
             <Plus className="w-5 h-5" />
-            Add Activity
+            Aktivite Ekle
           </button>
         </header>
 
         <div className="p-8 grid grid-cols-1 xl:grid-cols-4 gap-8">
-          {/* Main Feed */}
           <div className="xl:col-span-3 space-y-6">
             <div className="flex items-center gap-4 mb-8">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                <input type="text" placeholder="Search activities..." className="w-full bg-slate-800/40 border border-border-subtle rounded-xl py-2.5 pl-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
+                <input type="text" placeholder="Aktivitelerde ara..." className="w-full bg-slate-800/40 border border-border-subtle rounded-xl py-2.5 pl-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
               </div>
               <button className="p-2.5 rounded-xl border border-border-subtle text-slate-400 hover:text-white transition-all"><Filter className="w-5 h-5" /></button>
             </div>
@@ -88,24 +85,24 @@ export default function ActivitiesPage() {
                     <div className={`p-4 rounded-2xl bg-${color}-500/10 border border-${color}-500/20 text-${color}-500 group-hover:scale-110 transition-transform`}>
                       <Icon className="w-6 h-6" />
                     </div>
-                    
+
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className={`text-[10px] font-bold uppercase tracking-wider text-${color}-500`}>{act.type}</span>
-                        <span className="text-xs text-slate-500">• {act.date} at {act.time}</span>
+                        <span className="text-xs text-slate-500">• {act.date}, {act.time}</span>
                       </div>
                       <h4 className="text-white font-semibold text-lg">{act.subject}</h4>
-                      <p className="text-sm text-slate-400">with <span className="text-white">{act.company}</span> • Logged by <span className="text-blue-400">{act.user}</span></p>
+                      <p className="text-sm text-slate-400"><span className="text-white">{act.company}</span> ile • Kaydeden <span className="text-blue-400">{act.user}</span></p>
                     </div>
 
                     <div className="flex items-center gap-6">
                       {act.status === 'completed' ? (
                         <div className="flex items-center gap-1.5 text-emerald-500 text-xs font-medium">
-                          <CheckCircle2 className="w-4 h-4" /> Completed
+                          <CheckCircle2 className="w-4 h-4" /> Tamamlandı
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5 text-orange-400 text-xs font-medium bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">
-                          <Clock className="w-3 h-3" /> Upcoming
+                          <Clock className="w-3 h-3" /> Yaklaşan
                         </div>
                       )}
                       <button className="p-2 text-slate-500 hover:text-white transition-colors">
@@ -118,18 +115,17 @@ export default function ActivitiesPage() {
             </div>
           </div>
 
-          {/* Right Sidebar: Upcoming & Summary */}
           <div className="space-y-6">
             <div className="glass p-6 rounded-[32px] border border-border-subtle">
               <h3 className="text-white font-semibold mb-6 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-500" />
-                Upcoming Tasks
+                Yaklaşan Görevler
               </h3>
               <div className="space-y-4">
                 {[
-                  { title: 'Project Kickoff', date: 'Tomorrow, 09:00', type: 'Meeting' },
-                  { title: 'Send Contract', date: 'Friday, 14:00', type: 'Email' },
-                  { title: 'Site Inspection', date: 'Monday, 10:00', type: 'Visit' },
+                  { title: 'Proje Başlangıcı', date: 'Yarın, 09:00', type: 'Toplantı' },
+                  { title: 'Sözleşme Gönder', date: 'Cuma, 14:00', type: 'E-posta' },
+                  { title: 'Saha İncelemesi', date: 'Pazartesi, 10:00', type: 'Ziyaret' },
                 ].map((task, i) => (
                   <div key={i} className="p-4 rounded-2xl bg-slate-900/50 border border-border-subtle group hover:bg-slate-800/80 transition-all cursor-pointer">
                     <p className="text-sm text-white font-medium mb-1 group-hover:text-blue-400 transition-colors">{task.title}</p>
@@ -140,19 +136,19 @@ export default function ActivitiesPage() {
                   </div>
                 ))}
               </div>
-              <button className="w-full mt-6 py-2.5 text-sm font-medium text-blue-500 hover:text-blue-400 transition-all">View Full Calendar</button>
+              <button className="w-full mt-6 py-2.5 text-sm font-medium text-blue-500 hover:text-blue-400 transition-all">Tüm Takvimi Gör</button>
             </div>
 
             <div className="glass p-6 rounded-[32px] border border-border-subtle">
-              <h3 className="text-white font-semibold mb-6">Activity Stats</h3>
+              <h3 className="text-white font-semibold mb-6">Aktivite İstatistikleri</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 bg-slate-900/50 rounded-2xl border border-border-subtle">
                   <span className="text-2xl font-bold text-white">42</span>
-                  <p className="text-[10px] text-slate-500 uppercase font-bold mt-1">This Week</p>
+                  <p className="text-[10px] text-slate-500 uppercase font-bold mt-1">Bu Hafta</p>
                 </div>
                 <div className="text-center p-4 bg-slate-900/50 rounded-2xl border border-border-subtle">
                   <span className="text-2xl font-bold text-emerald-500">+15%</span>
-                  <p className="text-[10px] text-slate-500 uppercase font-bold mt-1">Growth</p>
+                  <p className="text-[10px] text-slate-500 uppercase font-bold mt-1">Büyüme</p>
                 </div>
               </div>
             </div>
@@ -162,5 +158,3 @@ export default function ActivitiesPage() {
     </div>
   );
 }
-
-

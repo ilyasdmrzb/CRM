@@ -16,9 +16,9 @@ import Sidebar from '@/components/layout/Sidebar';
 import Link from 'next/link';
 
 const mockCustomers = [
-  { id: '1', name: 'ABC Solar Energy', code: 'CARI-001', tax: '1234567890', city: 'Istanbul', contacts: 4, deals: 2, owner: 'Gamze K.' },
+  { id: '1', name: 'ABC Solar Energy', code: 'CARI-001', tax: '1234567890', city: 'İstanbul', contacts: 4, deals: 2, owner: 'Gamze K.' },
   { id: '2', name: 'Z-Tech Industrial', code: 'CARI-002', tax: '9876543210', city: 'Ankara', contacts: 2, deals: 5, owner: 'John Doe' },
-  { id: '3', name: 'Green Power Systems', code: 'CARI-003', tax: '5554443332', city: 'Izmir', contacts: 8, deals: 1, owner: 'Sarah C.' },
+  { id: '3', name: 'Green Power Systems', code: 'CARI-003', tax: '5554443332', city: 'İzmir', contacts: 8, deals: 1, owner: 'Sarah C.' },
   { id: '4', name: 'Blue Sky Energy', code: 'CARI-004', tax: '1112223334', city: 'Bursa', contacts: 1, deals: 0, owner: 'Michael S.' },
   { id: '5', name: 'Eco-Friendly Solutions', code: 'CARI-005', tax: '9998887776', city: 'Antalya', contacts: 3, deals: 3, owner: 'Gamze K.' },
 ];
@@ -33,11 +33,11 @@ export default function CustomersPage() {
         <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
           <div>
             <h1 className="text-2xl font-bold text-white">Customers</h1>
-            <p className="text-sm text-slate-400">Total {mockCustomers.length} companies registered.</p>
+            <p className="text-sm text-slate-400">Toplam {mockCustomers.length} şirket kayıtlı.</p>
           </div>
           <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
             <Plus className="w-5 h-5" />
-            Add Customer
+            Müşteri Ekle
           </button>
         </header>
 
@@ -48,7 +48,7 @@ export default function CustomersPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input 
                 type="text" 
-                placeholder="Search customers by name, city or code..."
+                placeholder="Müşterileri ad, şehir veya koda göre ara..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full bg-slate-800/50 border border-border-subtle rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
@@ -56,7 +56,7 @@ export default function CustomersPage() {
             </div>
             <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border-subtle text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
               <Filter className="w-4 h-4" />
-              Advanced Filters
+              Gelişmiş Filtreler
             </button>
           </div>
 
@@ -65,12 +65,12 @@ export default function CustomersPage() {
             <table className="crm-table">
               <thead>
                 <tr>
-                  <th>Company Name</th>
-                  <th>Cari Code</th>
-                  <th>City</th>
-                  <th>Contacts</th>
-                  <th>Deals</th>
-                  <th>Account Owner</th>
+                  <th>Şirket Adı</th>
+                  <th>Cari Kodu</th>
+                  <th>Şehir</th>
+                  <th>Kişiler</th>
+                  <th>Deal</th>
+                  <th>Hesap Sorumlusu</th>
                   <th></th>
                 </tr>
               </thead>
@@ -85,7 +85,7 @@ export default function CustomersPage() {
                           </div>
                           <div className="flex flex-col">
                             <span className="font-semibold text-white group-hover:text-blue-400 transition-colors">{customer.name}</span>
-                            <span className="text-xs text-slate-500">Tax: {customer.tax}</span>
+                            <span className="text-xs text-slate-500">Vergi No: {customer.tax}</span>
                           </div>
                         </div>
                       </Link>
@@ -105,7 +105,7 @@ export default function CustomersPage() {
                     </td>
                     <td>
                       <span className={customer.deals > 0 ? "text-blue-400 font-medium" : "text-slate-500"}>
-                        {customer.deals} deals
+                        {customer.deals} deal
                       </span>
                     </td>
                     <td>
@@ -129,12 +129,12 @@ export default function CustomersPage() {
             </table>
             
             <div className="p-6 border-t border-border-subtle flex items-center justify-between">
-              <span className="text-sm text-slate-500">Showing 1-5 of 120 customers</span>
+              <span className="text-sm text-slate-500">120 müşteriden 1-5 arası gösteriliyor</span>
               <div className="flex gap-2">
-                <button className="px-4 py-2 text-sm border border-border-subtle rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-50" disabled>Previous</button>
+                <button className="px-4 py-2 text-sm border border-border-subtle rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-50" disabled>Önceki</button>
                 <button className="px-4 py-2 text-sm bg-slate-800 rounded-xl text-white border border-border-subtle">1</button>
                 <button className="px-4 py-2 text-sm border border-border-subtle rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all">2</button>
-                <button className="px-4 py-2 text-sm border border-border-subtle rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all">Next</button>
+                <button className="px-4 py-2 text-sm border border-border-subtle rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all">Sonraki</button>
               </div>
             </div>
           </div>

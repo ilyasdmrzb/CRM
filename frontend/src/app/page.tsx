@@ -36,10 +36,10 @@ const mockPipelineData = [
 ];
 
 const mockStageData = [
-  { name: 'Prospecting', value: 400, color: '#94A3B8' },
-  { name: 'Proposal', value: 300, color: '#3B82F6' },
-  { name: 'Negotiation', value: 300, color: '#F59E0B' },
-  { name: 'Won', value: 200, color: '#10B981' },
+  { name: 'Potansiyel', value: 400, color: '#94A3B8' },
+  { name: 'Teklif', value: 300, color: '#3B82F6' },
+  { name: 'Müzakere', value: 300, color: '#F59E0B' },
+  { name: 'Kazanıldı', value: 200, color: '#10B981' },
 ];
 
 const StatCard = ({ title, value, subValue, icon: Icon, color, trend }: any) => (
@@ -74,11 +74,11 @@ export default function Dashboard() {
         <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
           <div>
             <h1 className="text-2xl font-bold text-white">Sales Dashboard</h1>
-            <p className="text-sm text-slate-400">Welcome back, here's your pipeline overview.</p>
+            <p className="text-sm text-slate-400">Tekrar hoş geldiniz, pipeline özetiniz burada.</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-end">
-              <span className="text-sm font-medium text-white">System Admin</span>
+              <span className="text-sm font-medium text-white">Sistem Yöneticisi</span>
               <span className="text-xs text-slate-400">admin@company.com</span>
             </div>
             <div className="w-10 h-10 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 font-bold">
@@ -90,22 +90,22 @@ export default function Dashboard() {
         <div className="p-8 space-y-8">
           {/* KPI Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-            <StatCard title="Total Pipeline" value="$12.4M" icon={Layers} color="blue" trend={12} />
-            <StatCard title="Weighted" value="$4.8M" icon={Target} color="purple" trend={8} />
-            <StatCard title="Won Deals" value="$2.1M" icon={Award} color="emerald" trend={24} />
-            <StatCard title="Lost Deals" value="$840K" icon={TrendingUp} color="rose" trend={-5} />
-            <StatCard title="Total Capacity" value="45.5 MW" icon={Activity} color="orange" trend={15} />
-            <StatCard title="Open Deals" value="28" icon={BarChart3} color="slate" />
+            <StatCard title="Toplam Pipeline" value="$12.4M" icon={Layers} color="blue" trend={12} />
+            <StatCard title="Ağırlıklı" value="$4.8M" icon={Target} color="purple" trend={8} />
+            <StatCard title="Kazanılan Deal" value="$2.1M" icon={Award} color="emerald" trend={24} />
+            <StatCard title="Kaybedilen Deal" value="$840K" icon={TrendingUp} color="rose" trend={-5} />
+            <StatCard title="Toplam Kapasite" value="45.5 MW" icon={Activity} color="orange" trend={15} />
+            <StatCard title="Açık Deal" value="28" icon={BarChart3} color="slate" />
           </div>
 
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="glass p-8 rounded-[32px]">
               <div className="flex justify-between items-center mb-8">
-                <h3 className="text-lg font-semibold text-white">Pipeline Trend</h3>
+                <h3 className="text-lg font-semibold text-white">Pipeline Trendi</h3>
                 <select className="bg-slate-800 text-slate-300 text-xs px-3 py-1.5 rounded-lg border border-border-subtle outline-none">
-                  <option>Last 6 Months</option>
-                  <option>Last Year</option>
+                  <option>Son 6 Ay</option>
+                  <option>Geçen Yıl</option>
                 </select>
               </div>
               <div className="h-[350px]">
@@ -131,7 +131,7 @@ export default function Dashboard() {
             </div>
 
             <div className="glass p-8 rounded-[32px]">
-              <h3 className="text-lg font-semibold text-white mb-8">Stage Distribution</h3>
+              <h3 className="text-lg font-semibold text-white mb-8">Aşama Dağılımı</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-[350px]">
                 <div className="h-full">
                   <ResponsiveContainer width="100%" height="100%">
@@ -173,14 +173,14 @@ export default function Dashboard() {
           {/* Top Sales Users & Recent Activity */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
             <div className="xl:col-span-2 glass p-8 rounded-[32px]">
-              <h3 className="text-lg font-semibold text-white mb-6">Top Sales Users</h3>
+              <h3 className="text-lg font-semibold text-white mb-6">En İyi Satış Kullanıcıları</h3>
               <table className="crm-table">
                 <thead>
                   <tr>
-                    <th>User</th>
-                    <th>Won Deals</th>
-                    <th>Pipeline Value</th>
-                    <th>Win Rate</th>
+                    <th>Kullanıcı</th>
+                    <th>Kazanılan Deal</th>
+                    <th>Pipeline Değeri</th>
+                    <th>Kazanma Oranı</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -214,19 +214,19 @@ export default function Dashboard() {
             </div>
 
             <div className="glass p-8 rounded-[32px]">
-              <h3 className="text-lg font-semibold text-white mb-6">Recent Activity</h3>
+              <h3 className="text-lg font-semibold text-white mb-6">Son Aktiviteler</h3>
               <div className="space-y-6">
                 {[
-                  { type: 'Call', user: 'Gamze', company: 'ABC Solar', time: '10m ago' },
-                  { type: 'Meeting', user: 'John', company: 'XYZ Energy', time: '1h ago' },
-                  { type: 'Proposal', user: 'Sarah', company: 'SunPower', time: '3h ago' },
-                  { type: 'Deal Won', user: 'Gamze', company: 'GreenTech', time: '5h ago' },
+                  { type: 'Arama', user: 'Gamze', company: 'ABC Solar', time: '10 dk önce' },
+                  { type: 'Toplantı', user: 'John', company: 'XYZ Energy', time: '1 sa önce' },
+                  { type: 'Teklif', user: 'Sarah', company: 'SunPower', time: '3 sa önce' },
+                  { type: 'Deal Kazanıldı', user: 'Gamze', company: 'GreenTech', time: '5 sa önce' },
                 ].map((act, i) => (
                   <div key={i} className="flex gap-4">
                     <div className="mt-1 w-2 h-2 rounded-full bg-blue-500 ring-4 ring-blue-500/10" />
                     <div>
                       <p className="text-sm text-slate-200">
-                        <span className="font-semibold text-blue-400">{act.user}</span> completed a <span className="text-white font-medium">{act.type}</span> with <span className="text-white font-medium">{act.company}</span>
+                        <span className="font-semibold text-blue-400">{act.user}</span>, <span className="text-white font-medium">{act.company}</span> ile <span className="text-white font-medium">{act.type}</span> aktivitesini tamamladı
                       </p>
                       <span className="text-xs text-slate-500">{act.time}</span>
                     </div>
@@ -234,7 +234,7 @@ export default function Dashboard() {
                 ))}
               </div>
               <button className="w-full mt-8 py-3 text-sm font-medium text-slate-400 hover:text-white transition-colors border border-border-subtle rounded-xl hover:bg-slate-800">
-                View All Activity
+                Tüm Aktiviteleri Gör
               </button>
             </div>
           </div>

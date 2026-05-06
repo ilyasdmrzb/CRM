@@ -31,7 +31,7 @@ export default function SettingsPage() {
         <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
           <div>
             <h1 className="text-2xl font-bold text-white">Settings</h1>
-            <p className="text-sm text-slate-400">Configure your workspace and manage user permissions.</p>
+            <p className="text-sm text-slate-400">Çalışma alanınızı yapılandırın ve kullanıcı yetkilerini yönetin.</p>
           </div>
         </header>
 
@@ -40,9 +40,9 @@ export default function SettingsPage() {
             {/* Sidebar for Settings Sections */}
             <div className="w-full lg:w-64 flex flex-col gap-2">
               {[
-                { id: 'users', label: 'User Management', icon: Users },
-                { id: 'roles', label: 'Roles & Permissions', icon: ShieldCheck },
-                { id: 'stages', label: 'Pipeline Stages', icon: GitBranch },
+                { id: 'users', label: 'Kullanıcı Yönetimi', icon: Users },
+                { id: 'roles', label: 'Roller ve Yetkiler', icon: ShieldCheck },
+                { id: 'stages', label: 'Pipeline Aşamaları', icon: GitBranch },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -69,9 +69,9 @@ export default function SettingsPage() {
                   className="space-y-6"
                 >
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-bold text-white">Platform Users</h3>
+                    <h3 className="text-lg font-bold text-white">Platform Kullanıcıları</h3>
                     <button className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium border border-border-subtle flex items-center gap-2 transition-all">
-                      <Plus className="w-4 h-4" /> Add New User
+                      <Plus className="w-4 h-4" /> Yeni Kullanıcı Ekle
                     </button>
                   </div>
 
@@ -79,19 +79,19 @@ export default function SettingsPage() {
                     <table className="crm-table">
                       <thead>
                         <tr>
-                          <th>Full Name</th>
-                          <th>Email Address</th>
-                          <th>Role</th>
-                          <th>Status</th>
-                          <th>Actions</th>
+                          <th>Ad Soyad</th>
+                          <th>E-posta Adresi</th>
+                          <th>Rol</th>
+                          <th>Durum</th>
+                          <th>İşlemler</th>
                         </tr>
                       </thead>
                       <tbody>
                         {[
-                          { name: 'System Admin', email: 'admin@company.com', role: 'Admin', status: 'Active' },
-                          { name: 'Gamze Kılınç', email: 'gamze@company.com', role: 'Sales', status: 'Active' },
-                          { name: 'John Doe', email: 'john@company.com', role: 'Manager', status: 'Active' },
-                          { name: 'Sarah Connor', email: 'sarah@company.com', role: 'Sales', status: 'Inactive' },
+                          { name: 'Sistem Yöneticisi', email: 'admin@company.com', role: 'Admin', status: 'Aktif' },
+                          { name: 'Gamze Kılınç', email: 'gamze@company.com', role: 'Sales', status: 'Aktif' },
+                          { name: 'John Doe', email: 'john@company.com', role: 'Manager', status: 'Aktif' },
+                          { name: 'Sarah Connor', email: 'sarah@company.com', role: 'Sales', status: 'Pasif' },
                         ].map((user, i) => (
                           <tr key={i}>
                             <td>
@@ -110,7 +110,7 @@ export default function SettingsPage() {
                             </td>
                             <td>
                               <div className="flex items-center gap-1.5">
-                                <div className={cn("w-1.5 h-1.5 rounded-full", user.status === 'Active' ? "bg-emerald-500" : "bg-slate-500")} />
+                                <div className={cn("w-1.5 h-1.5 rounded-full", user.status === 'Aktif' ? "bg-emerald-500" : "bg-slate-500")} />
                                 <span className="text-xs text-slate-300">{user.status}</span>
                               </div>
                             </td>
@@ -135,21 +135,21 @@ export default function SettingsPage() {
                   className="space-y-6"
                 >
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-bold text-white">Sales Pipeline Stages</h3>
+                    <h3 className="text-lg font-bold text-white">Satış Pipeline Aşamaları</h3>
                     <button className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
-                      <Save className="w-4 h-4" /> Save Changes
+                      <Save className="w-4 h-4" /> Değişiklikleri Kaydet
                     </button>
                   </div>
 
                   <div className="space-y-3">
                     {[
-                      { name: 'Prospecting', prob: 10, color: '#94A3B8' },
-                      { name: 'Qualification', prob: 25, color: '#6366F1' },
-                      { name: 'Proposal', prob: 40, color: '#3B82F6' },
-                      { name: 'Negotiation', prob: 65, color: '#F59E0B' },
-                      { name: 'Commit', prob: 85, color: '#A855F7' },
-                      { name: 'Closed Won', prob: 100, color: '#10B981' },
-                      { name: 'Closed Lost', prob: 0, color: '#EF4444' },
+                      { name: 'Potansiyel', prob: 10, color: '#94A3B8' },
+                      { name: 'Yeterlilik', prob: 25, color: '#6366F1' },
+                      { name: 'Teklif', prob: 40, color: '#3B82F6' },
+                      { name: 'Müzakere', prob: 65, color: '#F59E0B' },
+                      { name: 'Taahhüt', prob: 85, color: '#A855F7' },
+                      { name: 'Kazanıldı', prob: 100, color: '#10B981' },
+                      { name: 'Kaybedildi', prob: 0, color: '#EF4444' },
                     ].map((stage, i) => (
                       <div key={i} className="glass p-4 rounded-2xl border border-border-subtle flex items-center gap-6 group">
                         <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-500 font-bold text-sm">
@@ -180,7 +180,7 @@ export default function SettingsPage() {
                       </div>
                     ))}
                     <button className="w-full py-4 border border-dashed border-border-subtle rounded-2xl text-slate-500 hover:text-white hover:border-slate-400 transition-all text-sm font-medium flex items-center justify-center gap-2">
-                      <Plus className="w-4 h-4" /> Add New Stage
+                      <Plus className="w-4 h-4" /> Yeni Aşama Ekle
                     </button>
                   </div>
                 </motion.div>

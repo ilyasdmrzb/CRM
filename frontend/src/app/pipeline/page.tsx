@@ -20,21 +20,21 @@ import Sidebar from '@/components/layout/Sidebar';
 import { cn } from '@/lib/utils';
 
 const mockDeals = [
-  { id: 'DEAL-0001', project: 'Roof Solar Phase 1', company: 'Ankara Sanayi', owner: 'Gamze K.', capacity: '1.2 MW', stage: 'Negotiation', probability: 65, value: '$120,000', weighted: '$78,000', color: 'orange', city: 'Ankara' },
-  { id: 'DEAL-0002', project: 'Solar Farm Alpha', company: 'Izmir Enerji', owner: 'John Doe', capacity: '5.0 MW', stage: 'Proposal', probability: 40, value: '$500,000', weighted: '$200,000', color: 'blue', city: 'Izmir' },
-  { id: 'DEAL-0003', project: 'Hotel Sun Upgrade', company: 'Antalya Resort', owner: 'Sarah C.', capacity: '0.8 MW', stage: 'Qualification', probability: 25, value: '$85,000', weighted: '$21,250', color: 'indigo', city: 'Antalya' },
-  { id: 'DEAL-0004', project: 'Industrial Complex', company: 'Bursa Fabrika', owner: 'Gamze K.', capacity: '2.5 MW', stage: 'Commit', probability: 85, value: '$320,000', weighted: '$272,000', color: 'purple', city: 'Bursa' },
-  { id: 'DEAL-0005', project: 'Storage System', company: 'Istanbul Tech', owner: 'Michael S.', capacity: '1.0 MW', stage: 'Closed Won', probability: 100, value: '$150,000', weighted: '$150,000', color: 'emerald', city: 'Istanbul' },
+  { id: 'DEAL-0001', project: 'Çatı GES Faz 1', company: 'Ankara Sanayi', owner: 'Gamze K.', capacity: '1.2 MW', stage: 'Müzakere', probability: 65, value: '$120,000', weighted: '$78,000', color: 'orange', city: 'Ankara' },
+  { id: 'DEAL-0002', project: 'Solar Farm Alpha', company: 'İzmir Enerji', owner: 'John Doe', capacity: '5.0 MW', stage: 'Teklif', probability: 40, value: '$500,000', weighted: '$200,000', color: 'blue', city: 'İzmir' },
+  { id: 'DEAL-0003', project: 'Otel GES Yenileme', company: 'Antalya Resort', owner: 'Sarah C.', capacity: '0.8 MW', stage: 'Yeterlilik', probability: 25, value: '$85,000', weighted: '$21,250', color: 'indigo', city: 'Antalya' },
+  { id: 'DEAL-0004', project: 'Endüstriyel Kompleks', company: 'Bursa Fabrika', owner: 'Gamze K.', capacity: '2.5 MW', stage: 'Taahhüt', probability: 85, value: '$320,000', weighted: '$272,000', color: 'purple', city: 'Bursa' },
+  { id: 'DEAL-0005', project: 'Depolama Sistemi', company: 'İstanbul Tech', owner: 'Michael S.', capacity: '1.0 MW', stage: 'Kazanıldı', probability: 100, value: '$150,000', weighted: '$150,000', color: 'emerald', city: 'İstanbul' },
 ];
 
 const stages = [
-  { name: 'Prospecting', color: 'slate' },
-  { name: 'Qualification', color: 'indigo' },
-  { name: 'Proposal', color: 'blue' },
-  { name: 'Negotiation', color: 'orange' },
-  { name: 'Commit', color: 'purple' },
-  { name: 'Won', color: 'emerald' },
-  { name: 'Lost', color: 'rose' },
+  { name: 'Potansiyel', color: 'slate' },
+  { name: 'Yeterlilik', color: 'indigo' },
+  { name: 'Teklif', color: 'blue' },
+  { name: 'Müzakere', color: 'orange' },
+  { name: 'Taahhüt', color: 'purple' },
+  { name: 'Kazanıldı', color: 'emerald' },
+  { name: 'Kaybedildi', color: 'rose' },
 ];
 
 export default function PipelinePage() {
@@ -50,7 +50,7 @@ export default function PipelinePage() {
         <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
           <div>
             <h1 className="text-2xl font-bold text-white">Pipeline</h1>
-            <p className="text-sm text-slate-400">Manage your deals and track your progress.</p>
+            <p className="text-sm text-slate-400">Deal'lerinizi yönetin ve ilerlemeyi takip edin.</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex bg-slate-800 p-1 rounded-xl border border-border-subtle">
@@ -69,7 +69,7 @@ export default function PipelinePage() {
             </div>
             <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
               <Plus className="w-5 h-5" />
-              New Deal
+              Yeni Deal
             </button>
           </div>
         </header>
@@ -82,7 +82,7 @@ export default function PipelinePage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input 
                   type="text" 
-                  placeholder="Search project, company or ID..."
+                  placeholder="Proje, şirket veya ID ara..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full bg-slate-900 border border-border-subtle rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
@@ -90,17 +90,17 @@ export default function PipelinePage() {
               </div>
               <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border-subtle text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
                 <Filter className="w-4 h-4" />
-                Filters
+                Filtreler
               </button>
             </div>
             <div className="flex items-center gap-6 text-sm">
               <div className="flex flex-col">
-                <span className="text-slate-500 text-xs">Total Pipeline</span>
+                <span className="text-slate-500 text-xs">Toplam Pipeline</span>
                 <span className="text-white font-bold">$12,450,000</span>
               </div>
               <div className="h-8 w-px bg-border-subtle" />
               <div className="flex flex-col">
-                <span className="text-slate-500 text-xs">Weighted</span>
+                <span className="text-slate-500 text-xs">Ağırlıklı</span>
                 <span className="text-blue-400 font-bold">$4,820,000</span>
               </div>
             </div>
@@ -116,13 +116,13 @@ export default function PipelinePage() {
                   <thead>
                     <tr>
                       <th>Deal ID</th>
-                      <th>Project Name</th>
-                      <th>Company</th>
-                      <th>Sales Owner</th>
-                      <th>Capacity</th>
-                      <th>Stage</th>
-                      <th>Value</th>
-                      <th>Weighted</th>
+                      <th>Proje Adı</th>
+                      <th>Şirket</th>
+                      <th>Satış Sorumlusu</th>
+                      <th>Kapasite</th>
+                      <th>Aşama</th>
+                      <th>Değer</th>
+                      <th>Ağırlıklı</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -216,7 +216,7 @@ export default function PipelinePage() {
                     ))}
                     <button className="flex items-center justify-center gap-2 py-3 border border-dashed border-border-subtle rounded-2xl text-slate-500 hover:text-white hover:border-slate-400 transition-all text-sm group">
                       <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                      Add Deal
+                      Deal Ekle
                     </button>
                   </div>
                 </div>
@@ -266,18 +266,18 @@ export default function PipelinePage() {
                   {/* Quick Stats */}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="bg-slate-900/50 p-4 rounded-2xl border border-border-subtle">
-                      <span className="text-xs text-slate-500 block mb-1">Deal Value</span>
+                      <span className="text-xs text-slate-500 block mb-1">Deal Değeri</span>
                       <span className="text-lg font-bold text-white">{selectedDeal.value}</span>
                     </div>
                     <div className="bg-slate-900/50 p-4 rounded-2xl border border-border-subtle">
-                      <span className="text-xs text-slate-500 block mb-1">Probability</span>
+                      <span className="text-xs text-slate-500 block mb-1">Olasılık</span>
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-bold text-blue-400">{selectedDeal.probability}%</span>
                         <TrendingUp className="w-4 h-4 text-emerald-500" />
                       </div>
                     </div>
                     <div className="bg-slate-900/50 p-4 rounded-2xl border border-border-subtle">
-                      <span className="text-xs text-slate-500 block mb-1">Capacity</span>
+                      <span className="text-xs text-slate-500 block mb-1">Kapasite</span>
                       <span className="text-lg font-bold text-orange-400">{selectedDeal.capacity}</span>
                     </div>
                   </div>
@@ -287,23 +287,23 @@ export default function PipelinePage() {
                     <div>
                       <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-blue-500" />
-                        Pricing Details
+                        Fiyat Detayları
                       </h4>
                       <div className="grid grid-cols-2 gap-6 bg-slate-900/30 p-6 rounded-3xl border border-border-subtle">
                         <div className="space-y-1">
-                          <span className="text-xs text-slate-500">Jinko Price</span>
+                          <span className="text-xs text-slate-500">Jinko Fiyatı</span>
                           <p className="text-white font-medium">$0.125 /Wp</p>
                         </div>
                         <div className="space-y-1">
-                          <span className="text-xs text-slate-500">HSA Price</span>
+                          <span className="text-xs text-slate-500">HSA Fiyatı</span>
                           <p className="text-white font-medium">$0.132 /Wp</p>
                         </div>
                         <div className="space-y-1">
-                          <span className="text-xs text-slate-500">Target Price</span>
+                          <span className="text-xs text-slate-500">Hedef Fiyat</span>
                           <p className="text-white font-medium">$0.128 /Wp</p>
                         </div>
                         <div className="space-y-1">
-                          <span className="text-xs text-slate-500">EPC Partner</span>
+                          <span className="text-xs text-slate-500">EPC Partneri</span>
                           <p className="text-white font-medium">SolarMasters Ltd.</p>
                         </div>
                       </div>
@@ -312,16 +312,16 @@ export default function PipelinePage() {
                     <div>
                       <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-blue-500" />
-                        Key Dates
+                        Önemli Tarihler
                       </h4>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-2xl border border-border-subtle">
-                          <span className="text-sm text-slate-400">Creation Date</span>
-                          <span className="text-sm text-white">May 12, 2024</span>
+                          <span className="text-sm text-slate-400">Oluşturma Tarihi</span>
+                          <span className="text-sm text-white">12 Mayıs 2024</span>
                         </div>
                         <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-2xl border border-border-subtle">
-                          <span className="text-sm text-slate-400">Estimated Delivery</span>
-                          <span className="text-sm text-white">Sept 20, 2024</span>
+                          <span className="text-sm text-slate-400">Tahmini Teslimat</span>
+                          <span className="text-sm text-white">20 Eylül 2024</span>
                         </div>
                       </div>
                     </div>
@@ -330,10 +330,10 @@ export default function PipelinePage() {
 
                 <div className="p-8 border-t border-border-subtle flex gap-4 bg-slate-900/20 backdrop-blur-md">
                   <button className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20">
-                    Edit Deal
+                    Deal'i Düzenle
                   </button>
                   <button className="flex-1 border border-border-subtle text-white hover:bg-slate-800 py-3 rounded-xl font-bold transition-all">
-                    Mark as Won
+                    Kazanıldı Olarak İşaretle
                   </button>
                 </div>
               </motion.div>

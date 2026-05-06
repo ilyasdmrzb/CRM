@@ -18,7 +18,7 @@ export default function LoginPage() {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      toast.success('Successfully logged in!');
+      toast.success('Başarıyla giriş yapıldı!');
       router.push('/');
     }, 1500);
   };
@@ -43,14 +43,14 @@ export default function LoginPage() {
           >
             <Zap className="text-white w-10 h-10 fill-white" />
           </motion.div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Welcome to SolarCRM</h1>
-          <p className="text-slate-400 mt-2 text-center">Enterprise sales management system for a sustainable future.</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">SolarCRM'e Hoş Geldiniz</h1>
+          <p className="text-slate-400 mt-2 text-center">Sürdürülebilir bir gelecek için kurumsal satış yönetim sistemi.</p>
         </div>
 
         <div className="glass p-8 md:p-10 rounded-[40px] border border-white/5 relative z-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300 ml-1">Email Address</label>
+              <label className="text-sm font-medium text-slate-300 ml-1">E-posta Adresi</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
                 <input 
@@ -64,8 +64,8 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
-                <label className="text-sm font-medium text-slate-300">Password</label>
-                <button type="button" className="text-xs text-blue-500 hover:text-blue-400 transition-colors">Forgot password?</button>
+                <label className="text-sm font-medium text-slate-300">Şifre</label>
+                <button type="button" className="text-xs text-blue-500 hover:text-blue-400 transition-colors">Şifrenizi mi unuttunuz?</button>
               </div>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
@@ -87,7 +87,7 @@ export default function LoginPage() {
 
             <div className="flex items-center gap-2 px-1">
               <input type="checkbox" id="remember" className="w-4 h-4 rounded border-white/10 bg-slate-900 text-blue-600 focus:ring-offset-0 focus:ring-blue-500/50" />
-              <label htmlFor="remember" className="text-sm text-slate-400 cursor-pointer">Remember for 30 days</label>
+              <label htmlFor="remember" className="text-sm text-slate-400 cursor-pointer">30 gün boyunca hatırla</label>
             </div>
 
             <button 
@@ -99,7 +99,7 @@ export default function LoginPage() {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  Sign In
+                  Giriş Yap
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
@@ -108,13 +108,13 @@ export default function LoginPage() {
 
           <div className="mt-8 pt-8 border-t border-white/5 text-center">
             <p className="text-sm text-slate-500">
-              Don't have an account? <button className="text-blue-500 font-semibold hover:text-blue-400 transition-colors">Contact Administrator</button>
+              Hesabınız yok mu? <button className="text-blue-500 font-semibold hover:text-blue-400 transition-colors">Yöneticiyle İletişime Geçin</button>
             </p>
           </div>
         </div>
 
         <p className="text-center text-slate-600 text-xs mt-8">
-          © 2024 SolarCRM. All rights reserved. Built for enterprise scale.
+          © 2024 SolarCRM. Tüm hakları saklıdır. Kurumsal ölçek için geliştirildi.
         </p>
       </motion.div>
     </div>

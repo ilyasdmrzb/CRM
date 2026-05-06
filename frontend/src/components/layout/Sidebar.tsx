@@ -101,12 +101,12 @@ export default function Sidebar() {
           className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all group"
         >
           {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-          {!isCollapsed && <span className="font-medium text-sm">Collapse Sidebar</span>}
+          {!isCollapsed && <span className="font-medium text-sm">Menüyü Daralt</span>}
         </button>
 
         <button className="w-full flex items-center gap-3 px-3 py-3 mt-2 rounded-xl text-red-400 hover:bg-red-500/10 transition-all">
           <LogOut className="w-5 h-5" />
-          {!isCollapsed && <span className="font-medium text-sm">Logout</span>}
+          {!isCollapsed && <span className="font-medium text-sm">Çıkış Yap</span>}
         </button>
       </div>
     </motion.aside>
