@@ -13,13 +13,14 @@ import {
   Search,
   Filter,
   CheckCircle2,
+  AlertCircle,
   X,
   Save
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Sidebar from '@/components/layout/Sidebar';
-import { addActivity, getActivities, type ActivityItem } from '@/lib/activities';
+import { addActivity, getActivities, markActivityCompleted, type ActivityItem } from '@/lib/activities';
 
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
 const labelClass = "text-sm font-medium text-slate-300";
@@ -60,6 +61,18 @@ const textColorClasses: Record<string, string> = {
   emerald: 'text-emerald-500',
 };
 
+const getActivityDateTime = (activity: ActivityItem) => {
+  if (!activity.date) return null;
+  const time = activity.time || '23:59';
+  const date = new Date(`${activity.date}T${time}`);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const isActivityOverdue = (activity: ActivityItem) => {
+  const date = getActivityDateTime(activity);
+  return activity.status === 'pending' && Boolean(date && date.getTime() < Date.now());
+};
+
 export default function ActivitiesPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -88,9 +101,11 @@ export default function ActivitiesPage() {
       .filter((activity) => activity.status === 'pending')
       .slice(0, 5)
       .map((activity) => ({
+        id: activity.id,
         title: activity.subject,
         date: `${activity.date}${activity.time ? `, ${activity.time}` : ''}`,
         type: activity.type,
+        isOverdue: isActivityOverdue(activity),
       }));
   }, [activities]);
 
@@ -107,6 +122,17 @@ export default function ActivitiesPage() {
     setIsSaving(false);
     setIsFormOpen(false);
     toast.success(`${activity.type} aktivitesi eklendi.`);
+  };
+
+  const handleCompleteActivity = (id: string) => {
+    const updatedActivity = markActivityCompleted(id);
+    if (!updatedActivity) {
+      toast.error('Aktivite bulunamadı.');
+      return;
+    }
+
+    setActivities(getActivities());
+    toast.success('Aktivite tamamlandı olarak işaretlendi.');
   };
 
   return (
@@ -147,6 +173,7 @@ export default function ActivitiesPage() {
               {filteredActivities.map((act) => {
                 const Icon = typeIcons[act.type] ?? MessageSquare;
                 const color = typeColors[act.type] ?? 'blue';
+                const isOverdue = isActivityOverdue(act);
                 return (
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -171,6 +198,18 @@ export default function ActivitiesPage() {
                       {act.status === 'completed' ? (
                         <div className="flex items-center gap-1.5 text-emerald-500 text-xs font-medium">
                           <CheckCircle2 className="w-4 h-4" /> Tamamlandı
+                        </div>
+                      ) : isOverdue ? (
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 text-rose-400 text-xs font-medium bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20">
+                            <AlertCircle className="w-3 h-3" /> Süresi Geçti
+                          </div>
+                          <button
+                            onClick={() => handleCompleteActivity(act.id)}
+                            className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-500 hover:bg-emerald-500/20 transition-all"
+                          >
+                            Tamamlandı olarak işaretle
+                          </button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5 text-orange-400 text-xs font-medium bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">
@@ -201,12 +240,27 @@ export default function ActivitiesPage() {
                 Yaklaşan Görevler
               </h3>
               <div className="space-y-4">
-                {upcomingTasks.map((task, i) => (
-                  <div key={`${task.title}-${i}`} className="p-4 rounded-2xl bg-slate-900/50 border border-border-subtle group hover:bg-slate-800/80 transition-all cursor-pointer">
-                    <p className="text-sm text-white font-medium mb-1 group-hover:text-blue-400 transition-colors">{task.title}</p>
-                    <div className="flex justify-between items-center text-[10px]">
-                      <span className="text-slate-500 uppercase font-bold">{task.type}</span>
-                      <span className="text-blue-500">{task.date}</span>
+                {upcomingTasks.map((task) => (
+                  <div key={task.id} className="p-4 rounded-2xl bg-slate-900/50 border border-border-subtle group hover:bg-slate-800/80 transition-all">
+                    <div className="mb-2 flex items-start justify-between gap-3">
+                      <p className="text-sm text-white font-medium group-hover:text-blue-400 transition-colors">{task.title}</p>
+                      {task.isOverdue && (
+                        <span className="shrink-0 rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-400">
+                          Süresi geçti
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex justify-between items-center gap-3 text-[10px]">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-slate-500 uppercase font-bold">{task.type}</span>
+                        <span className={task.isOverdue ? "text-rose-400" : "text-blue-500"}>{task.date}</span>
+                      </div>
+                      <button
+                        onClick={() => handleCompleteActivity(task.id)}
+                        className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1.5 text-[10px] font-bold text-emerald-500 hover:bg-emerald-500/20 transition-all"
+                      >
+                        Tamamlandı olarak işaretle
+                      </button>
                     </div>
                   </div>
                 ))}

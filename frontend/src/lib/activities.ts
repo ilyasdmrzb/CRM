@@ -7,6 +7,7 @@ export type ActivityItem = {
   time: string;
   date: string;
   status: 'completed' | 'pending';
+  completedAt: string | null;
   createdAt: string;
 };
 
@@ -38,6 +39,7 @@ const normalizeActivity = (activity: Partial<ActivityItem>): ActivityItem => {
     time: activity.time ?? '',
     date: activity.date ?? '',
     status: activity.status ?? 'completed',
+    completedAt: activity.completedAt ?? null,
     createdAt: activity.createdAt ?? now,
   };
 };
@@ -74,10 +76,27 @@ export function addActivity(formData: FormData) {
     time: String(formData.get('time') ?? '').trim(),
     date: String(formData.get('date') ?? '').trim(),
     status: normalizeStatus(formData.get('status')),
+    completedAt: normalizeStatus(formData.get('status')) === 'completed' ? new Date().toISOString() : null,
     createdAt: new Date().toISOString(),
   };
 
   const activities = [activity, ...getActivities()];
   saveActivities(activities);
   return activity;
+}
+
+export function markActivityCompleted(id: string) {
+  const activities = getActivities();
+  const currentActivity = activities.find((activity) => activity.id === id);
+  if (!currentActivity) return null;
+
+  const updatedActivity: ActivityItem = {
+    ...currentActivity,
+    status: 'completed',
+    completedAt: new Date().toISOString(),
+  };
+
+  const updatedActivities = activities.map((activity) => activity.id === id ? updatedActivity : activity);
+  saveActivities(updatedActivities);
+  return updatedActivity;
 }
