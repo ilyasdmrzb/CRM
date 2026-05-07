@@ -67,7 +67,7 @@ export default function NewCustomerPage() {
               <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2 md:col-span-2">
                   <label className={labelClass}>Şirket Adı</label>
-                  <input className={inputClass} name="companyName" placeholder="ABC Solar Energy" required />
+                  <input className={inputClass} name="companyName" placeholder="Sirket adi" required />
                 </div>
 
                 <div className="space-y-2">

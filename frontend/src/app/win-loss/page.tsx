@@ -27,19 +27,19 @@ import {
 import Sidebar from '@/components/layout/Sidebar';
 import { cn } from '@/lib/utils';
 
-const competitorData = [
-  { name: 'PowerSun', lost: 12, value: 450000 },
-  { name: 'SolarEdge', lost: 8, value: 320000 },
-  { name: 'EnergyCo', lost: 5, value: 150000 },
-  { name: 'GreenCell', lost: 3, value: 90000 },
-];
+const competitorData: { name: string; lost: number; value: number }[] = [];
 
-const lossReasonData = [
-  { name: 'Fiyat', value: 45, color: '#EF4444' },
-  { name: 'Ürün Özellikleri', value: 25, color: '#F59E0B' },
-  { name: 'Teslim Süresi', value: 20, color: '#3B82F6' },
-  { name: 'İlişki', value: 10, color: '#94A3B8' },
-];
+const lossReasonData: { name: string; value: number; color: string }[] = [];
+
+const closedDeals: {
+  id: string;
+  project: string;
+  company: string;
+  result: string;
+  value: string;
+  detail: string;
+  date: string;
+}[] = [];
 
 export default function WinLossPage() {
   const [chartsReady, setChartsReady] = useState(false);
@@ -78,11 +78,11 @@ export default function WinLossPage() {
                   <Trophy className="w-6 h-6" />
                 </div>
                 <span className="flex items-center gap-1 text-xs text-emerald-500 font-medium bg-emerald-500/10 px-2 py-1 rounded-full">
-                  <ArrowUpRight className="w-3 h-3" /> +15%
+                  <ArrowUpRight className="w-3 h-3" /> 0%
                 </span>
               </div>
               <span className="text-slate-500 text-xs block mb-1">Toplam Kazanılan Değer</span>
-              <span className="text-2xl font-bold text-white">$4.2M</span>
+              <span className="text-2xl font-bold text-white">$0</span>
             </div>
 
             <div className="glass p-6 rounded-3xl border border-border-subtle">
@@ -91,11 +91,11 @@ export default function WinLossPage() {
                   <Frown className="w-6 h-6" />
                 </div>
                 <span className="flex items-center gap-1 text-xs text-rose-500 font-medium bg-rose-500/10 px-2 py-1 rounded-full">
-                  <ArrowDownRight className="w-3 h-3" /> -8%
+                  <ArrowDownRight className="w-3 h-3" /> 0%
                 </span>
               </div>
               <span className="text-slate-500 text-xs block mb-1">Toplam Kaybedilen Değer</span>
-              <span className="text-2xl font-bold text-white">$1.8M</span>
+              <span className="text-2xl font-bold text-white">$0</span>
             </div>
 
             <div className="glass p-6 rounded-3xl border border-border-subtle">
@@ -105,7 +105,7 @@ export default function WinLossPage() {
                 </div>
               </div>
               <span className="text-slate-500 text-xs block mb-1">Genel Kazanma Oranı</span>
-              <span className="text-2xl font-bold text-white">68.4%</span>
+              <span className="text-2xl font-bold text-white">0%</span>
             </div>
 
             <div className="glass p-6 rounded-3xl border border-border-subtle">
@@ -115,7 +115,7 @@ export default function WinLossPage() {
                 </div>
               </div>
               <span className="text-slate-500 text-xs block mb-1">Ort. Döngü Süresi</span>
-              <span className="text-2xl font-bold text-white">42 Gün</span>
+              <span className="text-2xl font-bold text-white">0 Gün</span>
             </div>
           </div>
 
@@ -207,12 +207,7 @@ export default function WinLossPage() {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  { id: 'DEAL-0005', project: 'Depolama Sistemi', company: 'İstanbul Tech', result: 'kazanıldı', value: '$150,000', detail: '-', date: '12 Mayıs 2024' },
-                  { id: 'DEAL-0008', project: 'Mega Farm X', company: 'Ankara Sanayi', result: 'kaybedildi', value: '$850,000', detail: 'Fiyat / PowerSun', date: '10 Mayıs 2024' },
-                  { id: 'DEAL-0012', project: 'Solar Village', company: 'İzmir Enerji', result: 'kazanıldı', value: '$420,000', detail: '-', date: '08 Mayıs 2024' },
-                  { id: 'DEAL-0015', project: 'Rooftop Faz 3', company: 'Bursa Fabrika', result: 'kaybedildi', value: '$210,000', detail: 'Teslimat / SolarEdge', date: '05 Mayıs 2024' },
-                ].map((deal) => (
+                {closedDeals.map((deal) => (
                   <tr key={deal.id}>
                     <td className="font-mono text-xs text-blue-400">{deal.id}</td>
                     <td className="text-white font-medium">{deal.project}</td>

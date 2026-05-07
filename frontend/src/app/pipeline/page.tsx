@@ -19,13 +19,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/layout/Sidebar';
 import { cn } from '@/lib/utils';
 
-const mockDeals = [
-  { id: 'DEAL-0001', project: 'Çatı GES Faz 1', company: 'Ankara Sanayi', owner: 'Gamze K.', capacity: '1.2 MW', stage: 'Müzakere', probability: 65, value: '$120,000', weighted: '$78,000', color: 'orange', city: 'Ankara' },
-  { id: 'DEAL-0002', project: 'Solar Farm Alpha', company: 'İzmir Enerji', owner: 'John Doe', capacity: '5.0 MW', stage: 'Teklif', probability: 40, value: '$500,000', weighted: '$200,000', color: 'blue', city: 'İzmir' },
-  { id: 'DEAL-0003', project: 'Otel GES Yenileme', company: 'Antalya Resort', owner: 'Sarah C.', capacity: '0.8 MW', stage: 'Yeterlilik', probability: 25, value: '$85,000', weighted: '$21,250', color: 'indigo', city: 'Antalya' },
-  { id: 'DEAL-0004', project: 'Endüstriyel Kompleks', company: 'Bursa Fabrika', owner: 'Gamze K.', capacity: '2.5 MW', stage: 'Taahhüt', probability: 85, value: '$320,000', weighted: '$272,000', color: 'purple', city: 'Bursa' },
-  { id: 'DEAL-0005', project: 'Depolama Sistemi', company: 'İstanbul Tech', owner: 'Michael S.', capacity: '1.0 MW', stage: 'Kazanıldı', probability: 100, value: '$150,000', weighted: '$150,000', color: 'emerald', city: 'İstanbul' },
-];
+const mockDeals: {
+  id: string;
+  project: string;
+  company: string;
+  owner: string;
+  capacity: string;
+  stage: string;
+  probability: number;
+  value: string;
+  weighted: string;
+  color: string;
+  city: string;
+}[] = [];
 
 const stages = [
   { name: 'Potansiyel', color: 'slate' },
@@ -96,12 +102,12 @@ export default function PipelinePage() {
             <div className="flex items-center gap-6 text-sm">
               <div className="flex flex-col">
                 <span className="text-slate-500 text-xs">Toplam Pipeline</span>
-                <span className="text-white font-bold">$12,450,000</span>
+                <span className="text-white font-bold">$0</span>
               </div>
               <div className="h-8 w-px bg-border-subtle" />
               <div className="flex flex-col">
                 <span className="text-slate-500 text-xs">Ağırlıklı</span>
-                <span className="text-blue-400 font-bold">$4,820,000</span>
+                <span className="text-blue-400 font-bold">$0</span>
               </div>
             </div>
           </div>

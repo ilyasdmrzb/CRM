@@ -10,6 +10,7 @@ import {
   Trophy, 
   CalendarCheck, 
   Settings, 
+  ShieldCheck,
   ChevronLeft, 
   ChevronRight,
   LogOut,
@@ -29,6 +30,7 @@ const sidebarItems = [
   { name: 'Pipeline', icon: GitBranch, path: '/pipeline' },
   { name: 'Win / Loss', icon: Trophy, path: '/win-loss' },
   { name: 'Activities', icon: CalendarCheck, path: '/activities' },
+  { name: 'Admin Panel', icon: ShieldCheck, path: '/admin' },
   { name: 'Settings', icon: Settings, path: '/settings' },
 ];
 

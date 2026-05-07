@@ -26,21 +26,12 @@ import {
 } from 'recharts';
 import Sidebar from '@/components/layout/Sidebar';
 
-const mockPipelineData = [
-  { name: 'Jan', value: 4000, weighted: 2400 },
-  { name: 'Feb', value: 3000, weighted: 1398 },
-  { name: 'Mar', value: 2000, weighted: 9800 },
-  { name: 'Apr', value: 2780, weighted: 3908 },
-  { name: 'May', value: 1890, weighted: 4800 },
-  { name: 'Jun', value: 2390, weighted: 3800 },
-];
+const mockPipelineData: { name: string; value: number; weighted: number }[] = [];
 
-const mockStageData = [
-  { name: 'Potansiyel', value: 400, color: '#94A3B8' },
-  { name: 'Teklif', value: 300, color: '#3B82F6' },
-  { name: 'Müzakere', value: 300, color: '#F59E0B' },
-  { name: 'Kazanıldı', value: 200, color: '#10B981' },
-];
+const mockStageData: { name: string; value: number; color: string }[] = [];
+
+const topSalesUsers: { name: string; won: number; value: string; rate: string }[] = [];
+const recentActivities: { type: string; user: string; company: string; time: string }[] = [];
 
 const StatCard = ({ title, value, subValue, icon: Icon, color, trend }: any) => (
   <motion.div 
@@ -97,12 +88,12 @@ export default function Dashboard() {
         <div className="p-8 space-y-8">
           {/* KPI Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-            <StatCard title="Toplam Pipeline" value="$12.4M" icon={Layers} color="blue" trend={12} />
-            <StatCard title="Ağırlıklı" value="$4.8M" icon={Target} color="purple" trend={8} />
-            <StatCard title="Kazanılan Deal" value="$2.1M" icon={Award} color="emerald" trend={24} />
-            <StatCard title="Kaybedilen Deal" value="$840K" icon={TrendingUp} color="rose" trend={-5} />
-            <StatCard title="Toplam Kapasite" value="45.5 MW" icon={Activity} color="orange" trend={15} />
-            <StatCard title="Açık Deal" value="28" icon={BarChart3} color="slate" />
+            <StatCard title="Toplam Pipeline" value="$0" icon={Layers} color="blue" />
+            <StatCard title="Ağırlıklı" value="$0" icon={Target} color="purple" />
+            <StatCard title="Kazanılan Deal" value="$0" icon={Award} color="emerald" />
+            <StatCard title="Kaybedilen Deal" value="$0" icon={TrendingUp} color="rose" />
+            <StatCard title="Toplam Kapasite" value="0 MW" icon={Activity} color="orange" />
+            <StatCard title="Açık Deal" value="0" icon={BarChart3} color="slate" />
           </div>
 
           {/* Charts Row */}
@@ -195,12 +186,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { name: 'Gamze Kılınç', won: 12, value: '$2.4M', rate: '68%' },
-                    { name: 'John Doe', won: 8, value: '$1.8M', rate: '45%' },
-                    { name: 'Sarah Connor', won: 15, value: '$3.1M', rate: '72%' },
-                    { name: 'Michael Scott', won: 5, value: '$950K', rate: '32%' },
-                  ].map((user) => (
+                  {topSalesUsers.map((user) => (
                     <tr key={user.name}>
                       <td className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white">
@@ -227,12 +213,7 @@ export default function Dashboard() {
             <div className="glass p-8 rounded-[32px]">
               <h3 className="text-lg font-semibold text-white mb-6">Son Aktiviteler</h3>
               <div className="space-y-6">
-                {[
-                  { type: 'Arama', user: 'Gamze', company: 'ABC Solar', time: '10 dk önce' },
-                  { type: 'Toplantı', user: 'John', company: 'XYZ Energy', time: '1 sa önce' },
-                  { type: 'Teklif', user: 'Sarah', company: 'SunPower', time: '3 sa önce' },
-                  { type: 'Deal Kazanıldı', user: 'Gamze', company: 'GreenTech', time: '5 sa önce' },
-                ].map((act, i) => (
+                {recentActivities.map((act, i) => (
                   <div key={i} className="flex gap-4">
                     <div className="mt-1 w-2 h-2 rounded-full bg-blue-500 ring-4 ring-blue-500/10" />
                     <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Calendar,
   Phone,
@@ -12,24 +12,23 @@ import {
   Plus,
   Search,
   Filter,
-  CheckCircle2
+  CheckCircle2,
+  X,
+  Save
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 import Sidebar from '@/components/layout/Sidebar';
+import { addActivity, getActivities, type ActivityItem } from '@/lib/activities';
 
-const activities = [
-  { id: 1, type: 'Arama', user: 'Gamze Kılınç', company: 'ABC Solar Energy', subject: 'Faz 2 Takibi', time: '10:30', date: 'Bugün', status: 'completed' },
-  { id: 2, type: 'Toplantı', user: 'John Doe', company: 'Z-Tech Industrial', subject: 'Saha İncelemesi', time: '14:00', date: 'Bugün', status: 'pending' },
-  { id: 3, type: 'E-posta', user: 'Sarah Connor', company: 'Green Power Systems', subject: 'Teklif Revizyonu', time: 'Dün', date: '14 Mayıs', status: 'completed' },
-  { id: 4, type: 'Ziyaret', user: 'Michael Scott', company: 'Blue Sky Energy', subject: 'Sözleşme Müzakeresi', time: 'Dün', date: '14 Mayıs', status: 'completed' },
-  { id: 5, type: 'WhatsApp', user: 'Gamze Kılınç', company: 'Eco-Friendly Solutions', subject: 'Hızlı Güncelleme', time: '12 Mayıs', date: '12 Mayıs', status: 'completed' },
-];
+const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
+const labelClass = "text-sm font-medium text-slate-300";
 
 const MapPin = ({ className }: { className?: string }) => (
   <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
 );
 
-const typeIcons: any = {
+const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   Arama: Phone,
   Toplantı: Users,
   'E-posta': Mail,
@@ -37,7 +36,7 @@ const typeIcons: any = {
   WhatsApp: MessageSquare,
 };
 
-const typeColors: any = {
+const typeColors: Record<string, string> = {
   Arama: 'blue',
   Toplantı: 'purple',
   'E-posta': 'indigo',
@@ -45,7 +44,71 @@ const typeColors: any = {
   WhatsApp: 'emerald',
 };
 
+const colorClasses: Record<string, string> = {
+  blue: 'bg-blue-500/10 border-blue-500/20 text-blue-500',
+  purple: 'bg-purple-500/10 border-purple-500/20 text-purple-500',
+  indigo: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-500',
+  orange: 'bg-orange-500/10 border-orange-500/20 text-orange-500',
+  emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500',
+};
+
+const textColorClasses: Record<string, string> = {
+  blue: 'text-blue-500',
+  purple: 'text-purple-500',
+  indigo: 'text-indigo-500',
+  orange: 'text-orange-500',
+  emerald: 'text-emerald-500',
+};
+
 export default function ActivitiesPage() {
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    setActivities(getActivities());
+  }, []);
+
+  const filteredActivities = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase('tr-TR');
+    if (!query) return activities;
+
+    return activities.filter((activity) => [
+      activity.type,
+      activity.user,
+      activity.company,
+      activity.subject,
+      activity.date,
+    ].some((value) => value.toLocaleLowerCase('tr-TR').includes(query)));
+  }, [activities, search]);
+
+  const upcomingTasks = useMemo(() => {
+    return activities
+      .filter((activity) => activity.status === 'pending')
+      .slice(0, 5)
+      .map((activity) => ({
+        title: activity.subject,
+        date: `${activity.date}${activity.time ? `, ${activity.time}` : ''}`,
+        type: activity.type,
+      }));
+  }, [activities]);
+
+  const completedThisWeek = activities.filter((activity) => activity.status === 'completed').length;
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSaving(true);
+
+    const formData = new FormData(event.currentTarget);
+    const activity = addActivity(formData);
+
+    setActivities(getActivities());
+    setIsSaving(false);
+    setIsFormOpen(false);
+    toast.success(`${activity.type} aktivitesi eklendi.`);
+  };
+
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
@@ -55,7 +118,10 @@ export default function ActivitiesPage() {
             <h1 className="text-2xl font-bold text-white">Activity Tracking</h1>
             <p className="text-sm text-slate-400">Tüm etkileşimleri ve planlanan görevleri takip edin.</p>
           </div>
-          <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+          >
             <Plus className="w-5 h-5" />
             Aktivite Ekle
           </button>
@@ -66,15 +132,21 @@ export default function ActivitiesPage() {
             <div className="flex items-center gap-4 mb-8">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                <input type="text" placeholder="Aktivitelerde ara..." className="w-full bg-slate-800/40 border border-border-subtle rounded-xl py-2.5 pl-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
+                <input
+                  type="text"
+                  placeholder="Aktivitelerde ara..."
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  className="w-full bg-slate-800/40 border border-border-subtle rounded-xl py-2.5 pl-10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                />
               </div>
               <button className="p-2.5 rounded-xl border border-border-subtle text-slate-400 hover:text-white transition-all"><Filter className="w-5 h-5" /></button>
             </div>
 
             <div className="space-y-4">
-              {activities.map((act) => {
-                const Icon = typeIcons[act.type];
-                const color = typeColors[act.type];
+              {filteredActivities.map((act) => {
+                const Icon = typeIcons[act.type] ?? MessageSquare;
+                const color = typeColors[act.type] ?? 'blue';
                 return (
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -82,14 +154,14 @@ export default function ActivitiesPage() {
                     key={act.id}
                     className="glass p-6 rounded-3xl border border-border-subtle group hover:border-blue-500/30 transition-all flex items-center gap-6"
                   >
-                    <div className={`p-4 rounded-2xl bg-${color}-500/10 border border-${color}-500/20 text-${color}-500 group-hover:scale-110 transition-transform`}>
+                    <div className={`p-4 rounded-2xl border group-hover:scale-110 transition-transform ${colorClasses[color]}`}>
                       <Icon className="w-6 h-6" />
                     </div>
 
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider text-${color}-500`}>{act.type}</span>
-                        <span className="text-xs text-slate-500">• {act.date}, {act.time}</span>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${textColorClasses[color]}`}>{act.type}</span>
+                        <span className="text-xs text-slate-500">• {act.date}, {act.time || '-'}</span>
                       </div>
                       <h4 className="text-white font-semibold text-lg">{act.subject}</h4>
                       <p className="text-sm text-slate-400"><span className="text-white">{act.company}</span> ile • Kaydeden <span className="text-blue-400">{act.user}</span></p>
@@ -112,6 +184,13 @@ export default function ActivitiesPage() {
                   </motion.div>
                 );
               })}
+
+              {filteredActivities.length === 0 && (
+                <div className="glass rounded-[32px] border border-border-subtle p-10 text-center">
+                  <p className="text-white font-semibold">Henüz aktivite yok</p>
+                  <p className="text-sm text-slate-400 mt-2">İlk görüşme, toplantı veya takip kaydını Aktivite Ekle ile oluşturabilirsiniz.</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -122,12 +201,8 @@ export default function ActivitiesPage() {
                 Yaklaşan Görevler
               </h3>
               <div className="space-y-4">
-                {[
-                  { title: 'Proje Başlangıcı', date: 'Yarın, 09:00', type: 'Toplantı' },
-                  { title: 'Sözleşme Gönder', date: 'Cuma, 14:00', type: 'E-posta' },
-                  { title: 'Saha İncelemesi', date: 'Pazartesi, 10:00', type: 'Ziyaret' },
-                ].map((task, i) => (
-                  <div key={i} className="p-4 rounded-2xl bg-slate-900/50 border border-border-subtle group hover:bg-slate-800/80 transition-all cursor-pointer">
+                {upcomingTasks.map((task, i) => (
+                  <div key={`${task.title}-${i}`} className="p-4 rounded-2xl bg-slate-900/50 border border-border-subtle group hover:bg-slate-800/80 transition-all cursor-pointer">
                     <p className="text-sm text-white font-medium mb-1 group-hover:text-blue-400 transition-colors">{task.title}</p>
                     <div className="flex justify-between items-center text-[10px]">
                       <span className="text-slate-500 uppercase font-bold">{task.type}</span>
@@ -135,6 +210,9 @@ export default function ActivitiesPage() {
                     </div>
                   </div>
                 ))}
+                {upcomingTasks.length === 0 && (
+                  <p className="text-sm text-slate-500">Yaklaşan görev bulunmuyor.</p>
+                )}
               </div>
               <button className="w-full mt-6 py-2.5 text-sm font-medium text-blue-500 hover:text-blue-400 transition-all">Tüm Takvimi Gör</button>
             </div>
@@ -143,17 +221,101 @@ export default function ActivitiesPage() {
               <h3 className="text-white font-semibold mb-6">Aktivite İstatistikleri</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 bg-slate-900/50 rounded-2xl border border-border-subtle">
-                  <span className="text-2xl font-bold text-white">42</span>
-                  <p className="text-[10px] text-slate-500 uppercase font-bold mt-1">Bu Hafta</p>
+                  <span className="text-2xl font-bold text-white">{completedThisWeek}</span>
+                  <p className="text-[10px] text-slate-500 uppercase font-bold mt-1">Tamamlanan</p>
                 </div>
                 <div className="text-center p-4 bg-slate-900/50 rounded-2xl border border-border-subtle">
-                  <span className="text-2xl font-bold text-emerald-500">+15%</span>
-                  <p className="text-[10px] text-slate-500 uppercase font-bold mt-1">Büyüme</p>
+                  <span className="text-2xl font-bold text-emerald-500">{activities.length}</span>
+                  <p className="text-[10px] text-slate-500 uppercase font-bold mt-1">Toplam</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {isFormOpen && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+            <form onSubmit={handleSubmit} className="w-full max-w-2xl glass rounded-[32px] border border-border-subtle overflow-hidden shadow-2xl">
+              <div className="p-6 border-b border-border-subtle flex items-center justify-between bg-slate-800/40">
+                <div>
+                  <h2 className="text-xl font-bold text-white">Yeni Aktivite</h2>
+                  <p className="text-sm text-slate-400">Müşteri görüşmesi veya takip görevi oluşturun.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                  className="p-2 hover:bg-slate-800 rounded-xl transition-all text-slate-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <label className={labelClass}>Aktivite Tipi</label>
+                  <select className={inputClass} name="type" defaultValue="Arama">
+                    <option>Arama</option>
+                    <option>Toplantı</option>
+                    <option>E-posta</option>
+                    <option>Ziyaret</option>
+                    <option>WhatsApp</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className={labelClass}>Durum</label>
+                  <select className={inputClass} name="status" defaultValue="completed">
+                    <option value="completed">Tamamlandı</option>
+                    <option value="pending">Yaklaşan</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <label className={labelClass}>Konu</label>
+                  <input className={inputClass} name="subject" placeholder="Teklif takibi" required />
+                </div>
+
+                <div className="space-y-2">
+                  <label className={labelClass}>Şirket</label>
+                  <input className={inputClass} name="company" placeholder="Şirket adı" required />
+                </div>
+
+                <div className="space-y-2">
+                  <label className={labelClass}>Kaydeden</label>
+                  <input className={inputClass} name="user" defaultValue="Sistem Yöneticisi" required />
+                </div>
+
+                <div className="space-y-2">
+                  <label className={labelClass}>Tarih</label>
+                  <input className={inputClass} name="date" type="date" required />
+                </div>
+
+                <div className="space-y-2">
+                  <label className={labelClass}>Saat</label>
+                  <input className={inputClass} name="time" type="time" />
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-border-subtle flex justify-end gap-3 bg-slate-900/20">
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                  className="px-5 py-3 rounded-xl border border-border-subtle text-slate-300 hover:text-white hover:bg-slate-800 transition-all text-sm font-medium"
+                >
+                  Vazgeç
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-all shadow-lg shadow-blue-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  {isSaving ? 'Kaydediliyor...' : 'Aktiviteyi Kaydet'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </main>
     </div>
   );
