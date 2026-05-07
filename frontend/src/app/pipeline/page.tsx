@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { 
   Plus, 
   Search, 
@@ -8,30 +9,16 @@ import {
   LayoutGrid, 
   List, 
   MoreVertical, 
-  ExternalLink,
-  ChevronDown,
   Calendar,
   DollarSign,
   TrendingUp,
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 import Sidebar from '@/components/layout/Sidebar';
 import { cn } from '@/lib/utils';
-
-const mockDeals: {
-  id: string;
-  project: string;
-  company: string;
-  owner: string;
-  capacity: string;
-  stage: string;
-  probability: number;
-  value: string;
-  weighted: string;
-  color: string;
-  city: string;
-}[] = [];
+import { addDealNote, dealStages, getDeals, type DealItem } from '@/lib/deals';
 
 const stages = [
   { name: 'Potansiyel', color: 'slate' },
@@ -43,10 +30,50 @@ const stages = [
   { name: 'Kaybedildi', color: 'rose' },
 ];
 
+const formatCurrency = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
+
 export default function PipelinePage() {
   const [view, setView] = useState<'table' | 'kanban'>('table');
-  const [selectedDeal, setSelectedDeal] = useState<any>(null);
+  const [deals, setDeals] = useState<DealItem[]>([]);
+  const [selectedDeal, setSelectedDeal] = useState<DealItem | null>(null);
   const [search, setSearch] = useState('');
+  const [noteText, setNoteText] = useState('');
+
+  useEffect(() => {
+    setDeals(getDeals());
+  }, []);
+
+  const filteredDeals = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase('tr-TR');
+    if (!query) return deals;
+
+    return deals.filter((deal) => [
+      deal.id,
+      deal.project,
+      deal.company,
+      deal.owner,
+      deal.city,
+      deal.stage,
+    ].some((value) => value.toLocaleLowerCase('tr-TR').includes(query)));
+  }, [deals, search]);
+
+  const totalPipeline = filteredDeals.reduce((total, deal) => total + deal.valueAmount, 0);
+
+  const handleAddNote = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedDeal) return;
+
+    const updatedDeal = addDealNote(selectedDeal.id, noteText);
+    if (!updatedDeal) {
+      toast.error('Not kaydedilemedi.');
+      return;
+    }
+
+    setDeals(getDeals());
+    setSelectedDeal(updatedDeal);
+    setNoteText('');
+    toast.success('Not eklendi.');
+  };
 
   return (
     <div className="flex min-h-screen bg-main-bg">
@@ -73,10 +100,12 @@ export default function PipelinePage() {
                 <LayoutGrid className="w-5 h-5" />
               </button>
             </div>
-            <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
-              <Plus className="w-5 h-5" />
-              Yeni Deal
-            </button>
+            <Link href="/pipeline/new">
+              <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+                <Plus className="w-5 h-5" />
+                Yeni Deal
+              </button>
+            </Link>
           </div>
         </header>
 
@@ -102,12 +131,7 @@ export default function PipelinePage() {
             <div className="flex items-center gap-6 text-sm">
               <div className="flex flex-col">
                 <span className="text-slate-500 text-xs">Toplam Pipeline</span>
-                <span className="text-white font-bold">$0</span>
-              </div>
-              <div className="h-8 w-px bg-border-subtle" />
-              <div className="flex flex-col">
-                <span className="text-slate-500 text-xs">Ağırlıklı</span>
-                <span className="text-blue-400 font-bold">$0</span>
+                <span className="text-white font-bold">{formatCurrency(totalPipeline)}</span>
               </div>
             </div>
           </div>
@@ -128,12 +152,11 @@ export default function PipelinePage() {
                       <th>Kapasite</th>
                       <th>Aşama</th>
                       <th>Değer</th>
-                      <th>Ağırlıklı</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {mockDeals.map((deal) => (
+                    {filteredDeals.map((deal) => (
                       <tr 
                         key={deal.id} 
                         className="cursor-pointer group"
@@ -169,7 +192,6 @@ export default function PipelinePage() {
                           </div>
                         </td>
                         <td className="text-white font-semibold">{deal.value}</td>
-                        <td className="text-blue-400 font-medium">{deal.weighted}</td>
                         <td>
                           <button className="p-2 text-slate-500 hover:text-white transition-colors">
                             <MoreVertical className="w-5 h-5" />
@@ -180,25 +202,31 @@ export default function PipelinePage() {
                   </tbody>
                 </table>
               </div>
+              {filteredDeals.length === 0 && (
+                <div className="p-10 text-center border-t border-border-subtle">
+                  <p className="text-white font-semibold">Henüz deal yok</p>
+                  <p className="text-sm text-slate-400 mt-2">Yeni Deal butonuyla ilk fırsat kaydını oluşturabilirsiniz.</p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex gap-6 overflow-x-auto pb-8 min-h-[700px]">
-              {stages.slice(0, 5).map((stage) => (
+              {dealStages.slice(0, 5).map((stage) => (
                 <div key={stage.name} className="flex-1 min-w-[300px] flex flex-col gap-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <h3 className="text-slate-300 font-semibold text-sm uppercase tracking-wider">{stage.name}</h3>
                       <span className="bg-slate-800 text-slate-500 text-[10px] px-2 py-0.5 rounded-full border border-border-subtle">
-                        {mockDeals.filter(d => d.stage === stage.name).length}
+                        {filteredDeals.filter(d => d.stage === stage.name).length}
                       </span>
                     </div>
                     <span className="text-slate-500 text-xs font-mono">
-                      ${mockDeals.filter(d => d.stage === stage.name).reduce((acc, curr) => acc + parseInt(curr.value.replace('$', '').replace(',', '')), 0).toLocaleString()}
+                      {formatCurrency(filteredDeals.filter(d => d.stage === stage.name).reduce((acc, curr) => acc + curr.valueAmount, 0))}
                     </span>
                   </div>
                   
                   <div className="flex flex-col gap-4">
-                    {mockDeals.filter(d => d.stage === stage.name).map((deal) => (
+                    {filteredDeals.filter(d => d.stage === stage.name).map((deal) => (
                       <motion.div
                         layoutId={deal.id}
                         key={deal.id}
@@ -220,10 +248,12 @@ export default function PipelinePage() {
                         </div>
                       </motion.div>
                     ))}
-                    <button className="flex items-center justify-center gap-2 py-3 border border-dashed border-border-subtle rounded-2xl text-slate-500 hover:text-white hover:border-slate-400 transition-all text-sm group">
-                      <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                      Deal Ekle
-                    </button>
+                    <Link href="/pipeline/new">
+                      <button className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-border-subtle rounded-2xl text-slate-500 hover:text-white hover:border-slate-400 transition-all text-sm group">
+                        <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        Deal Ekle
+                      </button>
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -298,19 +328,19 @@ export default function PipelinePage() {
                       <div className="grid grid-cols-2 gap-6 bg-slate-900/30 p-6 rounded-3xl border border-border-subtle">
                         <div className="space-y-1">
                           <span className="text-xs text-slate-500">Jinko Fiyatı</span>
-                          <p className="text-white font-medium">$0.125 /Wp</p>
+                          <p className="text-white font-medium">{selectedDeal.jinkoPrice ? `$${selectedDeal.jinkoPrice} /Wp` : '-'}</p>
                         </div>
                         <div className="space-y-1">
                           <span className="text-xs text-slate-500">HSA Fiyatı</span>
-                          <p className="text-white font-medium">$0.132 /Wp</p>
+                          <p className="text-white font-medium">{selectedDeal.hsaPrice ? `$${selectedDeal.hsaPrice} /Wp` : '-'}</p>
                         </div>
                         <div className="space-y-1">
                           <span className="text-xs text-slate-500">Hedef Fiyat</span>
-                          <p className="text-white font-medium">$0.128 /Wp</p>
+                          <p className="text-white font-medium">{selectedDeal.targetPrice ? `$${selectedDeal.targetPrice} /Wp` : '-'}</p>
                         </div>
                         <div className="space-y-1">
                           <span className="text-xs text-slate-500">EPC Partneri</span>
-                          <p className="text-white font-medium">SolarMasters Ltd.</p>
+                          <p className="text-white font-medium">{selectedDeal.epcPartner ?? '-'}</p>
                         </div>
                       </div>
                     </div>
@@ -323,21 +353,64 @@ export default function PipelinePage() {
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-2xl border border-border-subtle">
                           <span className="text-sm text-slate-400">Oluşturma Tarihi</span>
-                          <span className="text-sm text-white">12 Mayıs 2024</span>
+                          <span className="text-sm text-white">{new Date(selectedDeal.createdAt).toLocaleDateString('tr-TR')}</span>
                         </div>
                         <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-2xl border border-border-subtle">
                           <span className="text-sm text-slate-400">Tahmini Teslimat</span>
-                          <span className="text-sm text-white">20 Eylül 2024</span>
+                          <span className="text-sm text-white">{selectedDeal.deliveryDate ? new Date(selectedDeal.deliveryDate).toLocaleDateString('tr-TR') : '-'}</span>
                         </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-blue-500" />
+                        Notlar
+                      </h4>
+
+                      <form onSubmit={handleAddNote} className="mb-5 space-y-3">
+                        <textarea
+                          value={noteText}
+                          onChange={(event) => setNoteText(event.target.value)}
+                          className="w-full min-h-28 resize-none rounded-2xl border border-border-subtle bg-slate-900/50 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+                          placeholder="Yeni not ekle..."
+                        />
+                        <div className="flex justify-end">
+                          <button
+                            type="submit"
+                            className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                            disabled={!noteText.trim()}
+                          >
+                            Not Ekle
+                          </button>
+                        </div>
+                      </form>
+
+                      <div className="space-y-3">
+                        {selectedDeal.noteHistory.map((note) => (
+                          <div key={note.id} className="rounded-2xl border border-border-subtle bg-slate-900/30 p-4">
+                            <div className="mb-2 text-xs text-slate-500">
+                              {new Date(note.createdAt).toLocaleString('tr-TR')}
+                            </div>
+                            <p className="whitespace-pre-wrap text-sm text-slate-200">{note.text}</p>
+                          </div>
+                        ))}
+                        {selectedDeal.noteHistory.length === 0 && (
+                          <p className="rounded-2xl border border-border-subtle bg-slate-900/30 p-4 text-sm text-slate-500">
+                            Henüz not eklenmemiş.
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="p-8 border-t border-border-subtle flex gap-4 bg-slate-900/20 backdrop-blur-md">
-                  <button className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20">
-                    Deal'i Düzenle
-                  </button>
+                  <Link href={`/pipeline/${selectedDeal.id}/edit`} className="flex-1">
+                    <button className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20">
+                      Deal'i Düzenle
+                    </button>
+                  </Link>
                   <button className="flex-1 border border-border-subtle text-white hover:bg-slate-800 py-3 rounded-xl font-bold transition-all">
                     Kazanıldı Olarak İşaretle
                   </button>
