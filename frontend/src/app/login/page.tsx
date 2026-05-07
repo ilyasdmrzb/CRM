@@ -1,23 +1,27 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Zap, Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { setCurrentUserByEmail } from '@/lib/auth';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const email = String(formData.get('email') ?? 'admin@company.com');
     
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
+      setCurrentUserByEmail(email);
       toast.success('Başarıyla giriş yapıldı!');
       router.push('/');
     }, 1500);
@@ -36,15 +40,15 @@ export default function LoginPage() {
         className="w-full max-w-md"
       >
         <div className="flex flex-col items-center mb-10">
-          <motion.div 
-            whileHover={{ rotate: 360 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
-            className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center shadow-2xl shadow-blue-500/40 mb-6"
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="w-28 h-20 rounded-2xl bg-white flex items-center justify-center shadow-2xl shadow-blue-500/20 mb-6 overflow-hidden"
           >
-            <Zap className="text-white w-10 h-10 fill-white" />
+            <img src="/hsa-enerji-logo-cropped.png" alt="HSA Enerji" className="h-16 w-24 object-contain" />
           </motion.div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">SolarCRM'e Hoş Geldiniz</h1>
-          <p className="text-slate-400 mt-2 text-center">Sürdürülebilir bir gelecek için kurumsal satış yönetim sistemi.</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">HSAles'e Hoş Geldiniz</h1>
+          <p className="text-slate-400 mt-2 text-center">HSA Enerji için kurumsal satış yönetim sistemi.</p>
         </div>
 
         <div className="glass p-8 md:p-10 rounded-[40px] border border-white/5 relative z-10">
@@ -53,7 +57,8 @@ export default function LoginPage() {
               <label className="text-sm font-medium text-slate-300 ml-1">E-posta Adresi</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
-                <input 
+                <input
+                  name="email"
                   type="email" 
                   required
                   placeholder="admin@company.com"
@@ -114,7 +119,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-slate-600 text-xs mt-8">
-          © 2024 SolarCRM. Tüm hakları saklıdır. Kurumsal ölçek için geliştirildi.
+          © 2024 HSAles. Tüm hakları saklıdır. Kurumsal ölçek için geliştirildi.
         </p>
       </motion.div>
     </div>

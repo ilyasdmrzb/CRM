@@ -246,3 +246,22 @@ export function addDealNote(id: string, text: string) {
   saveDeals(deals.map((deal) => deal.id === id ? updatedDeal : deal));
   return updatedDeal;
 }
+
+export function markDealAsWon(id: string) {
+  const deals = getDeals();
+  const currentDeal = deals.find((deal) => deal.id === id);
+  if (!currentDeal) return null;
+
+  const wonStage = getStageConfig('Kazanıldı');
+  const updatedDeal: DealItem = {
+    ...currentDeal,
+    stage: wonStage.name,
+    probability: wonStage.probability,
+    color: wonStage.color,
+    weighted: formatCurrency(currentDeal.valueAmount),
+    weightedAmount: currentDeal.valueAmount,
+  };
+
+  saveDeals(deals.map((deal) => deal.id === id ? updatedDeal : deal));
+  return updatedDeal;
+}

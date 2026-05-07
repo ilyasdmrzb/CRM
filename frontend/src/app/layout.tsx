@@ -6,8 +6,11 @@ import { Toaster } from 'react-hot-toast';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SolarCRM | Enterprise CRM",
-  description: "Güneş enerjisi için gelişmiş satış yönetim sistemi",
+  title: "HSAles | Sales CRM",
+  description: "HSA Enerji için satış yönetim sistemi",
+  icons: {
+    icon: "/hsa-enerji-logo-cropped.png",
+  },
 };
 
 export default function RootLayout({

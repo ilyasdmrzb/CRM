@@ -9,12 +9,10 @@ import {
   GitBranch, 
   Trophy, 
   CalendarCheck, 
-  Settings, 
   ShieldCheck,
   ChevronLeft, 
   ChevronRight,
-  LogOut,
-  Zap
+  LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
@@ -31,7 +29,6 @@ const sidebarItems = [
   { name: 'Win / Loss', icon: Trophy, path: '/win-loss' },
   { name: 'Activities', icon: CalendarCheck, path: '/activities' },
   { name: 'Admin Panel', icon: ShieldCheck, path: '/admin' },
-  { name: 'Settings', icon: Settings, path: '/settings' },
 ];
 
 export default function Sidebar() {
@@ -47,8 +44,8 @@ export default function Sidebar() {
       {/* Logo Area */}
       <div className="h-20 flex items-center px-6 relative">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <Zap className="text-white w-6 h-6 fill-white" />
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-lg shadow-blue-500/10">
+            <img src="/hsa-enerji-logo-cropped.png" alt="HSA Enerji" className="h-8 w-8 object-contain" />
           </div>
           <AnimatePresence>
             {!isCollapsed && (
@@ -58,7 +55,7 @@ export default function Sidebar() {
                 exit={{ opacity: 0, x: -10 }}
                 className="font-bold text-xl tracking-tight text-white whitespace-nowrap"
               >
-                Solar<span className="text-blue-500">CRM</span>
+                HSA<span className="text-blue-500">les</span>
               </motion.span>
             )}
           </AnimatePresence>

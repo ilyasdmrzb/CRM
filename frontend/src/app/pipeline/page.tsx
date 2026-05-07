@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Sidebar from '@/components/layout/Sidebar';
 import { cn } from '@/lib/utils';
-import { addDealNote, dealStages, getDeals, type DealItem } from '@/lib/deals';
+import { addDealNote, dealStages, getDeals, markDealAsWon, type DealItem } from '@/lib/deals';
 
 const stages = [
   { name: 'Potansiyel', color: 'slate' },
@@ -73,6 +73,20 @@ export default function PipelinePage() {
     setSelectedDeal(updatedDeal);
     setNoteText('');
     toast.success('Not eklendi.');
+  };
+
+  const handleMarkAsWon = () => {
+    if (!selectedDeal) return;
+
+    const updatedDeal = markDealAsWon(selectedDeal.id);
+    if (!updatedDeal) {
+      toast.error('Deal güncellenemedi.');
+      return;
+    }
+
+    setDeals(getDeals());
+    setSelectedDeal(updatedDeal);
+    toast.success(`${updatedDeal.id} kazanıldı olarak işaretlendi.`);
   };
 
   return (
@@ -411,8 +425,12 @@ export default function PipelinePage() {
                       Deal'i Düzenle
                     </button>
                   </Link>
-                  <button className="flex-1 border border-border-subtle text-white hover:bg-slate-800 py-3 rounded-xl font-bold transition-all">
-                    Kazanıldı Olarak İşaretle
+                  <button
+                    onClick={handleMarkAsWon}
+                    disabled={selectedDeal.stage === 'Kazanıldı'}
+                    className="flex-1 border border-border-subtle text-white hover:bg-slate-800 py-3 rounded-xl font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {selectedDeal.stage === 'Kazanıldı' ? 'Zaten Kazanıldı' : 'Kazanıldı Olarak İşaretle'}
                   </button>
                 </div>
               </motion.div>
