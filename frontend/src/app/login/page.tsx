@@ -47,7 +47,12 @@ export default function LoginPage() {
           >
             <img src="/hsa-enerji-logo-cropped.png" alt="HSA Enerji" className="h-16 w-24 object-contain" />
           </motion.div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">HSAles'e Hoş Geldiniz</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            <span className="text-blue-500">H</span>
+            <span className="text-white">SA</span>
+            <span className="text-blue-500">les</span>
+            <span className="text-white">'e Hoş Geldiniz</span>
+          </h1>
           <p className="text-slate-400 mt-2 text-center">HSA Enerji için kurumsal satış yönetim sistemi.</p>
         </div>
 

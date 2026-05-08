@@ -55,7 +55,9 @@ export default function Sidebar() {
                 exit={{ opacity: 0, x: -10 }}
                 className="font-bold text-xl tracking-tight text-white whitespace-nowrap"
               >
-                HSA<span className="text-blue-500">les</span>
+                <span className="text-blue-500">H</span>
+                <span className="text-white">SA</span>
+                <span className="text-blue-500">les</span>
               </motion.span>
             )}
           </AnimatePresence>

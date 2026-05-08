@@ -18,19 +18,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Sidebar from '@/components/layout/Sidebar';
 import { cn } from '@/lib/utils';
-import { addDealNote, dealStages, getDeals, markDealAsWon, type DealItem } from '@/lib/deals';
+import { addDealNote, dealStages, getDeals, markDealAsWon, updateDealStage, type DealItem, type DealStageName } from '@/lib/deals';
 
-const stages = [
-  { name: 'Potansiyel', color: 'slate' },
-  { name: 'Yeterlilik', color: 'indigo' },
-  { name: 'Teklif', color: 'blue' },
-  { name: 'Müzakere', color: 'orange' },
-  { name: 'Taahhüt', color: 'purple' },
-  { name: 'Kazanıldı', color: 'emerald' },
-  { name: 'Kaybedildi', color: 'rose' },
-];
 
 const formatCurrency = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
+
+const stageBorderColor = (color: string) => {
+  if (color === 'emerald') return '#10B981';
+  if (color === 'rose') return '#F43F5E';
+  if (color === 'orange') return '#F59E0B';
+  if (color === 'blue') return '#3B82F6';
+  if (color === 'purple') return '#8B5CF6';
+  if (color === 'indigo') return '#6366F1';
+  return '#94A3B8';
+};
 
 export default function PipelinePage() {
   const [view, setView] = useState<'table' | 'kanban'>('table');
@@ -38,6 +39,9 @@ export default function PipelinePage() {
   const [selectedDeal, setSelectedDeal] = useState<DealItem | null>(null);
   const [search, setSearch] = useState('');
   const [noteText, setNoteText] = useState('');
+  const [draggedDealId, setDraggedDealId] = useState<string | null>(null);
+  const [dragOverStage, setDragOverStage] = useState<DealStageName | null>(null);
+  const [recentlyDragged, setRecentlyDragged] = useState(false);
 
   useEffect(() => {
     setDeals(getDeals());
@@ -87,6 +91,40 @@ export default function PipelinePage() {
     setDeals(getDeals());
     setSelectedDeal(updatedDeal);
     toast.success(`${updatedDeal.id} kazanıldı olarak işaretlendi.`);
+  };
+
+  const handleDragStart = (event: React.DragEvent<HTMLDivElement>, dealId: string) => {
+    setDraggedDealId(dealId);
+    setRecentlyDragged(true);
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', dealId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedDealId(null);
+    setDragOverStage(null);
+    window.setTimeout(() => setRecentlyDragged(false), 120);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>, stageName: DealStageName) => {
+    event.preventDefault();
+
+    const dealId = event.dataTransfer.getData('text/plain') || draggedDealId;
+    const currentDeal = deals.find((deal) => deal.id === dealId);
+    if (!dealId || !currentDeal) return;
+
+    setDragOverStage(null);
+    if (currentDeal.stage === stageName) return;
+
+    const updatedDeal = updateDealStage(dealId, stageName);
+    if (!updatedDeal) {
+      toast.error('Deal asamasi guncellenemedi.');
+      return;
+    }
+
+    setDeals(getDeals());
+    if (selectedDeal?.id === updatedDeal.id) setSelectedDeal(updatedDeal);
+    toast.success(`${updatedDeal.id} ${stageName} asamasina tasindi.`);
   };
 
   return (
@@ -225,28 +263,59 @@ export default function PipelinePage() {
             </div>
           ) : (
             <div className="flex gap-6 overflow-x-auto pb-8 min-h-[700px]">
-              {dealStages.slice(0, 5).map((stage) => (
-                <div key={stage.name} className="flex-1 min-w-[300px] flex flex-col gap-4">
+              {dealStages.map((stage) => {
+                const stageDeals = filteredDeals.filter(d => d.stage === stage.name);
+                const isDropTarget = dragOverStage === stage.name;
+
+                return (
+                <div
+                  key={stage.name}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                    setDragOverStage(stage.name);
+                  }}
+                  onDragLeave={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                      setDragOverStage(null);
+                    }
+                  }}
+                  onDrop={(event) => handleDrop(event, stage.name)}
+                  className={cn(
+                    "flex-1 min-w-[300px] flex flex-col gap-4 rounded-3xl border border-transparent p-2 transition-all",
+                    isDropTarget && "border-blue-500/50 bg-blue-500/5"
+                  )}
+                >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <h3 className="text-slate-300 font-semibold text-sm uppercase tracking-wider">{stage.name}</h3>
                       <span className="bg-slate-800 text-slate-500 text-[10px] px-2 py-0.5 rounded-full border border-border-subtle">
-                        {filteredDeals.filter(d => d.stage === stage.name).length}
+                        {stageDeals.length}
                       </span>
                     </div>
                     <span className="text-slate-500 text-xs font-mono">
-                      {formatCurrency(filteredDeals.filter(d => d.stage === stage.name).reduce((acc, curr) => acc + curr.valueAmount, 0))}
+                      {formatCurrency(stageDeals.reduce((acc, curr) => acc + curr.valueAmount, 0))}
                     </span>
                   </div>
                   
-                  <div className="flex flex-col gap-4">
-                    {filteredDeals.filter(d => d.stage === stage.name).map((deal) => (
+                  <div className="flex min-h-24 flex-col gap-4">
+                    {stageDeals.map((deal) => (
+                      <div
+                        key={deal.id}
+                        draggable
+                        onDragStart={(event) => handleDragStart(event, deal.id)}
+                        onDragEnd={handleDragEnd}
+                        onClick={() => {
+                          if (!recentlyDragged && !draggedDealId) setSelectedDeal(deal);
+                        }}
+                      >
                       <motion.div
                         layoutId={deal.id}
-                        key={deal.id}
-                        onClick={() => setSelectedDeal(deal)}
-                        className="glass p-4 rounded-2xl border-l-4 hover:border-blue-500 transition-all cursor-pointer group"
-                        style={{ borderLeftColor: stage.color === 'orange' ? '#F59E0B' : stage.color === 'blue' ? '#3B82F6' : '#94A3B8' }}
+                        className={cn(
+                          "glass p-4 rounded-2xl border-l-4 transition-all cursor-grab active:cursor-grabbing group",
+                          draggedDealId === deal.id ? "opacity-50 scale-[0.98]" : "hover:border-blue-500"
+                        )}
+                        style={{ borderLeftColor: stageBorderColor(stage.color) }}
                       >
                         <div className="flex justify-between items-start mb-2">
                           <span className="text-[10px] font-mono text-slate-500">{deal.id}</span>
@@ -261,6 +330,7 @@ export default function PipelinePage() {
                           <span className="text-sm font-bold text-white">{deal.value}</span>
                         </div>
                       </motion.div>
+                      </div>
                     ))}
                     <Link href="/pipeline/new">
                       <button className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-border-subtle rounded-2xl text-slate-500 hover:text-white hover:border-slate-400 transition-all text-sm group">
@@ -270,7 +340,7 @@ export default function PipelinePage() {
                     </Link>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>

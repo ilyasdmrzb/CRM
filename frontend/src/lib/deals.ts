@@ -247,6 +247,26 @@ export function addDealNote(id: string, text: string) {
   return updatedDeal;
 }
 
+export function updateDealStage(id: string, stageName: DealStageName) {
+  const deals = getDeals();
+  const currentDeal = deals.find((deal) => deal.id === id);
+  if (!currentDeal) return null;
+
+  const stage = getStageConfig(stageName);
+  const weightedAmount = currentDeal.valueAmount * stage.probability / 100;
+  const updatedDeal: DealItem = {
+    ...currentDeal,
+    stage: stage.name,
+    probability: stage.probability,
+    color: stage.color,
+    weighted: formatCurrency(weightedAmount),
+    weightedAmount,
+  };
+
+  saveDeals(deals.map((deal) => deal.id === id ? updatedDeal : deal));
+  return updatedDeal;
+}
+
 export function markDealAsWon(id: string) {
   const deals = getDeals();
   const currentDeal = deals.find((deal) => deal.id === id);
