@@ -16,6 +16,16 @@ import Sidebar from '@/components/layout/Sidebar';
 import Link from 'next/link';
 import { defaultCustomers, getCustomers, type CustomerListItem } from '@/lib/customers';
 
+const ownerInitials = (owner: string) => {
+  return owner
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((name) => name.includes(' ') ? name.split(' ').map((part) => part[0]).join('').slice(0, 2) : name.slice(0, 4))
+    .join('+');
+};
+
 export default function CustomersPage() {
   const [search, setSearch] = useState('');
   const [customers, setCustomers] = useState<CustomerListItem[]>(defaultCustomers);
@@ -83,6 +93,7 @@ export default function CustomersPage() {
                     <th>Telefon</th>
                     <th>Mail Adresi</th>
                     <th>Şehir</th>
+                    <th>Sorumlu</th>
                     <th>Anlaşma Sayısı</th>
                     <th>Durum</th>
                     <th></th>
@@ -123,6 +134,11 @@ export default function CustomersPage() {
                           <div className="flex items-center gap-1.5 text-slate-300">
                             <MapPin className="w-3.5 h-3.5 text-slate-500" />
                             <span className="text-sm">{customer.city ?? '-'}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-2" title={customer.owner}>
+                            <span className="text-sm font-bold text-slate-300">{ownerInitials(customer.owner)}</span>
                           </div>
                         </td>
                         <td>

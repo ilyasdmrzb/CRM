@@ -9,6 +9,7 @@ namespace CRM.Application.DTOs
         public string? City { get; set; }
         public string? Address { get; set; }
         public string CreatedByName { get; set; } = string.Empty;
+        public string CreatedByShortName { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public int ContactCount { get; set; }

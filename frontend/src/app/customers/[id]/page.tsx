@@ -18,6 +18,16 @@ import {
 import Sidebar from '@/components/layout/Sidebar';
 import { getCustomerById, type CustomerListItem, updateCustomer } from '@/lib/customers';
 
+const ownerInitials = (owner: string) => {
+  return owner
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((name) => name.includes(' ') ? name.split(' ').map((part) => part[0]).join('').slice(0, 2) : name.slice(0, 4))
+    .join('+');
+};
+
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
 const labelClass = "text-sm font-medium text-slate-300";
 
@@ -83,7 +93,14 @@ export default function CustomerDetailPage() {
             <div className="h-6 w-px bg-border-subtle" />
             <div>
               <h1 className="text-2xl font-bold text-white">{customer.name}</h1>
-              <p className="text-sm text-slate-400">Müşteri detayları ve düzenlenebilir kayıt bilgileri.</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-slate-400">Müşteri detayları ve kayıt bilgileri.</p>
+                <span className="text-slate-600">•</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-blue-400 font-bold">{ownerInitials(customer.owner)}</span>
+                  <span className="text-xs text-slate-400 font-medium">{customer.owner}</span>
+                </div>
+              </div>
             </div>
           </div>
           <span className={isActive

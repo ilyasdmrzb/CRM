@@ -206,6 +206,7 @@ namespace CRM.Infrastructure.Services
             ContactName = d.Contact?.FullName,
             SalesUserId = d.SalesUserId,
             SalesUserName = d.SalesUser?.FullName ?? "",
+            SalesUserShortName = d.SalesUser?.GetInitials() ?? "??",
             ProjectName = d.ProjectName,
             StageId = d.StageId,
             StageName = d.Stage?.StageName ?? "",

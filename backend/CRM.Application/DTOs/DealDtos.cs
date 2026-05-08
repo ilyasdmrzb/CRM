@@ -11,6 +11,7 @@ namespace CRM.Application.DTOs
         public string? ContactName { get; set; }
         public Guid SalesUserId { get; set; }
         public string SalesUserName { get; set; } = string.Empty;
+        public string SalesUserShortName { get; set; } = string.Empty;
         public string ProjectName { get; set; } = string.Empty;
         public int StageId { get; set; }
         public string StageName { get; set; } = string.Empty;

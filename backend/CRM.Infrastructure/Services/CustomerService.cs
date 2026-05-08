@@ -109,6 +109,7 @@ namespace CRM.Infrastructure.Services
             City = c.City,
             Address = c.Address,
             CreatedByName = c.Creator?.FullName ?? "",
+            CreatedByShortName = c.Creator?.GetInitials() ?? "??",
             CreatedAt = c.CreatedAt,
             UpdatedAt = c.UpdatedAt,
             ContactCount = c.Contacts?.Count ?? 0,

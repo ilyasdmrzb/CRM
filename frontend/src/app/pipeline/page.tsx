@@ -233,11 +233,8 @@ export default function PipelinePage() {
                         </td>
                         <td className="text-slate-300">{deal.company}</td>
                         <td>
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold">
-                              {ownerInitials(deal.owner)}
-                            </div>
-                            <span className="text-sm" title={deal.owner}>{deal.owner}</span>
+                          <div className="flex items-center gap-2" title={deal.owner}>
+                            <span className="text-sm font-bold text-blue-400">{ownerInitials(deal.owner)}</span>
                           </div>
                         </td>
                         <td className="text-slate-400">{deal.capacity}</td>
@@ -334,8 +331,8 @@ export default function PipelinePage() {
                         <h4 className="text-white font-semibold mb-1 group-hover:text-blue-400 transition-colors">{deal.project}</h4>
                         <p className="text-xs text-slate-400 mb-4">{deal.company}</p>
                         <div className="flex items-center justify-between">
-                          <div className="flex -space-x-2">
-                            <div className="w-6 h-6 rounded-full bg-blue-600 border-2 border-slate-900 flex items-center justify-center text-[10px] font-bold text-white">GK</div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-blue-400" title={deal.owner}>{ownerInitials(deal.owner)}</span>
                           </div>
                           <span className="text-sm font-bold text-white">{deal.value}</span>
                         </div>
@@ -382,7 +379,14 @@ export default function PipelinePage() {
                       </div>
                     </div>
                     <h2 className="text-2xl font-bold text-white">{selectedDeal.project}</h2>
-                    <p className="text-slate-400">{selectedDeal.company}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-slate-400">{selectedDeal.company}</p>
+                      <span className="text-slate-600">•</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-blue-400 font-bold">{ownerInitials(selectedDeal.owner)}</span>
+                        <span className="text-xs text-slate-400 font-medium">{selectedDeal.owner}</span>
+                      </div>
+                    </div>
                   </div>
                   <button 
                     onClick={() => setSelectedDeal(null)}
