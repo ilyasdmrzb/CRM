@@ -18,7 +18,7 @@ import {
 import Sidebar from '@/components/layout/Sidebar';
 import { getAdminUsers, type AdminUser } from '@/lib/admin-users';
 import { getCustomers, type CustomerListItem } from '@/lib/customers';
-import { dealStages, getDealById, type DealItem, updateDeal } from '@/lib/deals';
+import { dealStages, getDealById, getLossReasonOptions, type DealItem, updateDeal } from '@/lib/deals';
 
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
 const labelClass = "text-sm font-medium text-slate-300";
@@ -33,6 +33,7 @@ export default function EditDealPage() {
   const [selectedStage, setSelectedStage] = useState(dealStages[0].name);
   const [selectedOwnerIds, setSelectedOwnerIds] = useState<string[]>([]);
   const [isOwnerPickerOpen, setIsOwnerPickerOpen] = useState(false);
+  const [lossReasonOptions, setLossReasonOptions] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function EditDealPage() {
     setDeal(currentDeal);
     setCustomers(getCustomers());
     setUsers(activeUsers);
+    setLossReasonOptions(getLossReasonOptions());
     if (currentDeal) {
       const ownerNames = currentDeal.owner.split(',').map((name) => name.trim()).filter(Boolean);
       setSelectedStage(currentDeal.stage);
@@ -64,6 +66,18 @@ export default function EditDealPage() {
     setIsSaving(true);
 
     const formData = new FormData(event.currentTarget);
+    const lossReason = String(formData.get('lossReason') ?? '').trim().replace(/\s+/g, ' ');
+    if (selectedStage === 'Kaybedildi' && !lossReason) {
+      setIsSaving(false);
+      toast.error('Kaybedilen deal icin kaybetme nedeni girin.');
+      return;
+    }
+    if (lossReason.split(' ').filter(Boolean).length > 3) {
+      setIsSaving(false);
+      toast.error('Kaybetme nedeni en fazla 3 kelime olmali.');
+      return;
+    }
+    formData.set('lossReason', lossReason);
     if (selectedOwners.length === 0) {
       setIsSaving(false);
       toast.error('En az bir satÄ±ÅŸ sorumlusu seÃ§in.');
@@ -275,6 +289,27 @@ export default function EditDealPage() {
                 <label className={labelClass}>Rakip</label>
                 <input className={inputClass} name="competitorName" defaultValue={valueOrEmpty(deal.competitorName)} />
               </div>
+
+              {selectedStage === 'Kaybedildi' && (
+                <div className="space-y-2">
+                  <label className={labelClass}>Kaybetme Nedeni</label>
+                  <input
+                    className={inputClass}
+                    name="lossReason"
+                    list="loss-reason-options"
+                    defaultValue={valueOrEmpty(deal.lossReason)}
+                    placeholder="Fiyat farki"
+                    maxLength={40}
+                    required
+                  />
+                  <datalist id="loss-reason-options">
+                    {lossReasonOptions.map((reason) => (
+                      <option key={reason} value={reason} />
+                    ))}
+                  </datalist>
+                  <p className="text-xs text-slate-500">Grafik etiketi icin en fazla 3 kelime.</p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className={labelClass}>Tahmini Teslimat</label>

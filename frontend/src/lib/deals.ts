@@ -19,6 +19,7 @@ export type DealItem = {
   hsaPrice: string | null;
   targetPrice: string | null;
   competitorName: string | null;
+  lossReason: string | null;
   epcPartner: string | null;
   deliveryDate: string | null;
   lastContactDate: string | null;
@@ -57,6 +58,11 @@ const createId = () => {
 
 const normalizeOptional = (value: FormDataEntryValue | null) => {
   const text = String(value ?? '').trim();
+  return text.length > 0 ? text : null;
+};
+
+const normalizeLossReason = (value: FormDataEntryValue | null) => {
+  const text = String(value ?? '').trim().replace(/\s+/g, ' ');
   return text.length > 0 ? text : null;
 };
 
@@ -108,6 +114,7 @@ const normalizeDeal = (deal: Partial<DealItem>): DealItem => {
     hsaPrice: deal.hsaPrice ?? null,
     targetPrice: deal.targetPrice ?? null,
     competitorName: deal.competitorName ?? null,
+    lossReason: deal.lossReason ?? null,
     epcPartner: deal.epcPartner ?? null,
     deliveryDate: deal.deliveryDate ?? null,
     lastContactDate: deal.lastContactDate ?? null,
@@ -165,6 +172,7 @@ export function addDeal(formData: FormData) {
     hsaPrice: normalizeOptional(formData.get('hsaPrice')),
     targetPrice: normalizeOptional(formData.get('targetPrice')),
     competitorName: normalizeOptional(formData.get('competitorName')),
+    lossReason: stage.name === 'Kaybedildi' ? normalizeLossReason(formData.get('lossReason')) : null,
     epcPartner: normalizeOptional(formData.get('epcPartner')),
     deliveryDate: normalizeOptional(formData.get('deliveryDate')),
     lastContactDate: normalizeOptional(formData.get('lastContactDate')),
@@ -212,6 +220,7 @@ export function updateDeal(id: string, formData: FormData) {
     hsaPrice: normalizeOptional(formData.get('hsaPrice')),
     targetPrice: normalizeOptional(formData.get('targetPrice')),
     competitorName: normalizeOptional(formData.get('competitorName')),
+    lossReason: stage.name === 'Kaybedildi' ? normalizeLossReason(formData.get('lossReason')) : null,
     epcPartner: normalizeOptional(formData.get('epcPartner')),
     deliveryDate: normalizeOptional(formData.get('deliveryDate')),
     lastContactDate: normalizeOptional(formData.get('lastContactDate')),
@@ -261,10 +270,19 @@ export function updateDealStage(id: string, stageName: DealStageName) {
     color: stage.color,
     weighted: formatCurrency(weightedAmount),
     weightedAmount,
+    lossReason: stage.name === 'Kaybedildi' ? currentDeal.lossReason : null,
   };
 
   saveDeals(deals.map((deal) => deal.id === id ? updatedDeal : deal));
   return updatedDeal;
+}
+
+export function getLossReasonOptions() {
+  const reasons = getDeals()
+    .map((deal) => deal.lossReason?.trim())
+    .filter((reason): reason is string => Boolean(reason));
+
+  return Array.from(new Set(reasons)).sort((a, b) => a.localeCompare(b, 'tr'));
 }
 
 export function markDealAsWon(id: string) {
@@ -280,6 +298,28 @@ export function markDealAsWon(id: string) {
     color: wonStage.color,
     weighted: formatCurrency(currentDeal.valueAmount),
     weightedAmount: currentDeal.valueAmount,
+    lossReason: null,
+  };
+
+  saveDeals(deals.map((deal) => deal.id === id ? updatedDeal : deal));
+  return updatedDeal;
+}
+
+export function markDealAsLost(id: string, lossReason: string, competitorName?: string) {
+  const deals = getDeals();
+  const currentDeal = deals.find((deal) => deal.id === id);
+  if (!currentDeal) return null;
+
+  const lostStage = getStageConfig('Kaybedildi');
+  const updatedDeal: DealItem = {
+    ...currentDeal,
+    stage: lostStage.name,
+    probability: lostStage.probability,
+    color: lostStage.color,
+    weighted: formatCurrency(0),
+    weightedAmount: 0,
+    lossReason: normalizeLossReason(lossReason),
+    competitorName: normalizeOptional(competitorName ?? currentDeal.competitorName),
   };
 
   saveDeals(deals.map((deal) => deal.id === id ? updatedDeal : deal));

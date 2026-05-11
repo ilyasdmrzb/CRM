@@ -50,17 +50,6 @@ const getCycleDays = (deal: DealItem) => {
   return Math.max(1, Math.ceil(diff / 86_400_000));
 };
 
-const getLossReason = (deal: DealItem) => {
-  const text = `${deal.notes ?? ''} ${deal.noteHistory.map((note) => note.text).join(' ')}`.toLocaleLowerCase('tr-TR');
-
-  if (text.includes('fiyat') || text.includes('pahalı') || text.includes('bütçe')) return 'Fiyat';
-  if (text.includes('rakip') || deal.competitorName) return 'Rakip';
-  if (text.includes('teslim') || text.includes('termin') || text.includes('gecik')) return 'Teslimat';
-  if (text.includes('teknik') || text.includes('ürün') || text.includes('kalite')) return 'Teknik';
-
-  return 'Belirtilmedi';
-};
-
 export default function WinLossPage() {
   const [chartsReady, setChartsReady] = useState(false);
   const [deals, setDeals] = useState<DealItem[]>([]);
@@ -107,7 +96,7 @@ export default function WinLossPage() {
 
   const lossReasonData = useMemo(() => {
     const grouped = lostDeals.reduce<Record<string, number>>((acc, deal) => {
-      const reason = getLossReason(deal);
+      const reason = deal.lossReason?.trim() || 'Belirtilmedi';
       acc[reason] = (acc[reason] ?? 0) + 1;
       return acc;
     }, {});
@@ -337,8 +326,8 @@ export default function WinLossPage() {
                   {filteredDeals.map((deal) => {
                     const isWon = isWonDeal(deal);
                     const detail = isWon
-                      ? deal.epcPartner || deal.notes || 'Kazanıldı'
-                      : deal.competitorName || getLossReason(deal);
+                      ? '-'
+                      : [deal.lossReason, deal.competitorName].filter(Boolean).join(' / ') || 'Belirtilmedi';
 
                     return (
                       <tr key={deal.id}>

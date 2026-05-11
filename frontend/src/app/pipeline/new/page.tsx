@@ -18,7 +18,7 @@ import {
 import Sidebar from '@/components/layout/Sidebar';
 import { getAdminUsers, type AdminUser } from '@/lib/admin-users';
 import { getCustomers, type CustomerListItem } from '@/lib/customers';
-import { addDeal, dealStages } from '@/lib/deals';
+import { addDeal, dealStages, getLossReasonOptions } from '@/lib/deals';
 
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
 const labelClass = "text-sm font-medium text-slate-300";
@@ -33,6 +33,7 @@ export default function NewDealPage() {
   const [selectedOwnerIds, setSelectedOwnerIds] = useState<string[]>([]);
   const [isOwnerPickerOpen, setIsOwnerPickerOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState(dealStages[0].name);
+  const [lossReasonOptions, setLossReasonOptions] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function NewDealPage() {
     const activeUsers = getAdminUsers().filter((user) => user.isActive);
     setCustomers(storedCustomers);
     setUsers(activeUsers);
+    setLossReasonOptions(getLossReasonOptions());
   }, []);
 
   const stageConfig = dealStages.find((stage) => stage.name === selectedStage) ?? dealStages[0];
@@ -96,6 +98,18 @@ export default function NewDealPage() {
     setIsSaving(true);
 
     const formData = new FormData(event.currentTarget);
+    const lossReason = String(formData.get('lossReason') ?? '').trim().replace(/\s+/g, ' ');
+    if (selectedStage === 'Kaybedildi' && !lossReason) {
+      setIsSaving(false);
+      toast.error('Kaybedilen deal icin kaybetme nedeni girin.');
+      return;
+    }
+    if (lossReason.split(' ').filter(Boolean).length > 3) {
+      setIsSaving(false);
+      toast.error('Kaybetme nedeni en fazla 3 kelime olmali.');
+      return;
+    }
+    formData.set('lossReason', lossReason);
     formData.set('company', selectedCustomer.name);
     formData.set('owner', selectedOwners.map((owner) => owner.initials).join(', '));
     if (selectedCustomer.city && !String(formData.get('city') ?? '').trim()) {
@@ -321,6 +335,26 @@ export default function NewDealPage() {
                 <label className={labelClass}>Rakip</label>
                 <input className={inputClass} name="competitorName" placeholder="Rakip firma" />
               </div>
+
+              {selectedStage === 'Kaybedildi' && (
+                <div className="space-y-2">
+                  <label className={labelClass}>Kaybetme Nedeni</label>
+                  <input
+                    className={inputClass}
+                    name="lossReason"
+                    list="loss-reason-options"
+                    placeholder="Fiyat farki"
+                    maxLength={40}
+                    required
+                  />
+                  <datalist id="loss-reason-options">
+                    {lossReasonOptions.map((reason) => (
+                      <option key={reason} value={reason} />
+                    ))}
+                  </datalist>
+                  <p className="text-xs text-slate-500">Grafik etiketi icin en fazla 3 kelime.</p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className={labelClass}>Tahmini Teslimat</label>

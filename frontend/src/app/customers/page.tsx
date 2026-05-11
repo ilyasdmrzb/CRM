@@ -15,6 +15,7 @@ import {
 import Sidebar from '@/components/layout/Sidebar';
 import Link from 'next/link';
 import { defaultCustomers, getCustomers, type CustomerListItem } from '@/lib/customers';
+import { getDeals, type DealItem } from '@/lib/deals';
 
 const ownerInitials = (owner: string) => {
   return owner
@@ -26,12 +27,21 @@ const ownerInitials = (owner: string) => {
     .join('+');
 };
 
+const isClosedDeal = (deal: DealItem) => deal.stage.startsWith('Kazan') || deal.stage.includes('Kaybed');
+
+const getCustomerDeals = (customer: CustomerListItem, deals: DealItem[]) => {
+  const customerName = customer.name.trim().toLocaleLowerCase('tr-TR');
+  return deals.filter((deal) => deal.company.trim().toLocaleLowerCase('tr-TR') === customerName);
+};
+
 export default function CustomersPage() {
   const [search, setSearch] = useState('');
   const [customers, setCustomers] = useState<CustomerListItem[]>(defaultCustomers);
+  const [deals, setDeals] = useState<DealItem[]>([]);
 
   useEffect(() => {
     setCustomers(getCustomers());
+    setDeals(getDeals());
   }, []);
 
   const filteredCustomers = useMemo(() => {
@@ -101,7 +111,9 @@ export default function CustomersPage() {
                 </thead>
                 <tbody>
                   {filteredCustomers.map((customer) => {
-                    const isActive = customer.deals > 0;
+                    const customerDeals = getCustomerDeals(customer, deals);
+                    const activeDeals = customerDeals.filter((deal) => !isClosedDeal(deal));
+                    const isActive = activeDeals.length > 0;
 
                     return (
                       <tr key={customer.id} className="group">
@@ -143,7 +155,7 @@ export default function CustomersPage() {
                         </td>
                         <td>
                           <span className={isActive ? "text-blue-400 font-medium" : "text-slate-500"}>
-                            {customer.deals}
+                            {customerDeals.length}
                           </span>
                         </td>
                         <td>

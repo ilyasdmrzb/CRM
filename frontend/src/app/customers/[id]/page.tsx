@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import { getCustomerById, type CustomerListItem, updateCustomer } from '@/lib/customers';
+import { getDeals, type DealItem } from '@/lib/deals';
 
 const ownerInitials = (owner: string) => {
   return owner
@@ -33,14 +34,23 @@ const labelClass = "text-sm font-medium text-slate-300";
 
 const valueOrEmpty = (value: string | null) => value ?? '';
 
+const isClosedDeal = (deal: DealItem) => deal.stage.startsWith('Kazan') || deal.stage.includes('Kaybed');
+
+const getCustomerDeals = (customer: CustomerListItem, deals: DealItem[]) => {
+  const customerName = customer.name.trim().toLocaleLowerCase('tr-TR');
+  return deals.filter((deal) => deal.company.trim().toLocaleLowerCase('tr-TR') === customerName);
+};
+
 export default function CustomerDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [customer, setCustomer] = useState<CustomerListItem | null>(null);
+  const [deals, setDeals] = useState<DealItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setCustomer(getCustomerById(params.id));
+    setDeals(getDeals());
   }, [params.id]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -77,7 +87,8 @@ export default function CustomerDetailPage() {
     );
   }
 
-  const isActive = customer.deals > 0;
+  const customerDeals = getCustomerDeals(customer, deals);
+  const isActive = customerDeals.some((deal) => !isClosedDeal(deal));
 
   return (
     <div className="flex min-h-screen bg-main-bg">
@@ -160,7 +171,7 @@ export default function CustomerDetailPage() {
 
                 <div className="space-y-2">
                   <label className={labelClass}>Anlaşma Sayısı</label>
-                  <input className={inputClass} name="deals" type="number" min="0" defaultValue={customer.deals} />
+                  <input className={inputClass} name="deals" type="number" min="0" value={customerDeals.length} readOnly />
                 </div>
               </div>
             </section>

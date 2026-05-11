@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Sidebar from '@/components/layout/Sidebar';
 import { cn } from '@/lib/utils';
-import { addDealNote, dealStages, getDeals, markDealAsWon, updateDealStage, type DealItem, type DealStageName } from '@/lib/deals';
+import { addDealNote, dealStages, getDeals, getLossReasonOptions, markDealAsLost, markDealAsWon, updateDealStage, type DealItem, type DealStageName } from '@/lib/deals';
 
 
 const formatCurrency = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
@@ -49,12 +49,17 @@ export default function PipelinePage() {
   const [selectedDeal, setSelectedDeal] = useState<DealItem | null>(null);
   const [search, setSearch] = useState('');
   const [noteText, setNoteText] = useState('');
+  const [isLossFormOpen, setIsLossFormOpen] = useState(false);
+  const [lossReason, setLossReason] = useState('');
+  const [lostCompetitorName, setLostCompetitorName] = useState('');
+  const [lossReasonOptions, setLossReasonOptions] = useState<string[]>([]);
   const [draggedDealId, setDraggedDealId] = useState<string | null>(null);
   const [dragOverStage, setDragOverStage] = useState<DealStageName | null>(null);
   const [recentlyDragged, setRecentlyDragged] = useState(false);
 
   useEffect(() => {
     setDeals(getDeals());
+    setLossReasonOptions(getLossReasonOptions());
   }, []);
 
   const filteredDeals = useMemo(() => {
@@ -72,6 +77,12 @@ export default function PipelinePage() {
   }, [deals, search]);
 
   const totalPipeline = filteredDeals.reduce((total, deal) => total + deal.valueAmount, 0);
+
+  const closeLossForm = () => {
+    setIsLossFormOpen(false);
+    setLossReason('');
+    setLostCompetitorName('');
+  };
 
   const handleAddNote = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -101,6 +112,33 @@ export default function PipelinePage() {
     setDeals(getDeals());
     setSelectedDeal(updatedDeal);
     toast.success(`${updatedDeal.id} kazanıldı olarak işaretlendi.`);
+  };
+
+  const handleMarkAsLost = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedDeal) return;
+
+    const normalizedReason = lossReason.trim().replace(/\s+/g, ' ');
+    if (!normalizedReason) {
+      toast.error('Kaybetme nedeni girin.');
+      return;
+    }
+    if (normalizedReason.split(' ').filter(Boolean).length > 3) {
+      toast.error('Kaybetme nedeni en fazla 3 kelime olmali.');
+      return;
+    }
+
+    const updatedDeal = markDealAsLost(selectedDeal.id, normalizedReason, lostCompetitorName);
+    if (!updatedDeal) {
+      toast.error('Deal guncellenemedi.');
+      return;
+    }
+
+    setDeals(getDeals());
+    setLossReasonOptions(getLossReasonOptions());
+    setSelectedDeal(updatedDeal);
+    closeLossForm();
+    toast.success(`${updatedDeal.id} kaybedildi olarak isaretlendi.`);
   };
 
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>, dealId: string) => {
@@ -503,6 +541,55 @@ export default function PipelinePage() {
                   </div>
                 </div>
 
+                {isLossFormOpen && (
+                  <form onSubmit={handleMarkAsLost} className="border-t border-border-subtle bg-slate-900/30 p-8 space-y-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-300">Kaybetme Nedeni</label>
+                        <input
+                          value={lossReason}
+                          onChange={(event) => setLossReason(event.target.value)}
+                          list="pipeline-loss-reason-options"
+                          className="w-full rounded-xl border border-border-subtle bg-slate-900/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+                          placeholder="Fiyat farki"
+                          maxLength={40}
+                          required
+                        />
+                        <datalist id="pipeline-loss-reason-options">
+                          {lossReasonOptions.map((reason) => (
+                            <option key={reason} value={reason} />
+                          ))}
+                        </datalist>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-300">Rakip</label>
+                        <input
+                          value={lostCompetitorName}
+                          onChange={(event) => setLostCompetitorName(event.target.value)}
+                          className="w-full rounded-xl border border-border-subtle bg-slate-900/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+                          placeholder="Rakip firma"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-500">Kaybetme nedeni grafik etiketi icin en fazla 3 kelime olmali.</p>
+                    <div className="flex justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={closeLossForm}
+                        className="rounded-xl border border-border-subtle px-4 py-2.5 text-sm font-bold text-slate-300 transition-all hover:bg-slate-800 hover:text-white"
+                      >
+                        Vazgec
+                      </button>
+                      <button
+                        type="submit"
+                        className="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-rose-500"
+                      >
+                        Kaybedildi Kaydet
+                      </button>
+                    </div>
+                  </form>
+                )}
+
                 <div className="p-8 border-t border-border-subtle flex gap-4 bg-slate-900/20 backdrop-blur-md">
                   <Link href={`/pipeline/${selectedDeal.id}/edit`} className="flex-1">
                     <button className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20">
@@ -515,6 +602,17 @@ export default function PipelinePage() {
                     className="flex-1 border border-border-subtle text-white hover:bg-slate-800 py-3 rounded-xl font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {selectedDeal.stage === 'Kazanıldı' ? 'Zaten Kazanıldı' : 'Kazanıldı Olarak İşaretle'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLostCompetitorName(selectedDeal.competitorName ?? '');
+                      setLossReason(selectedDeal.lossReason ?? '');
+                      setIsLossFormOpen(true);
+                    }}
+                    disabled={selectedDeal.stage === 'Kaybedildi'}
+                    className="flex-1 border border-rose-500/30 text-rose-300 hover:bg-rose-500/10 py-3 rounded-xl font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {selectedDeal.stage === 'Kaybedildi' ? 'Zaten Kaybedildi' : 'Kaybedildi Olarak Isaretle'}
                   </button>
                 </div>
               </motion.div>
