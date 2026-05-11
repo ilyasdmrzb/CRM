@@ -18,9 +18,15 @@ namespace CRM.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetDashboard()
+        public async Task<IActionResult> GetDashboard(
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] Guid? salesUserId = null,
+            [FromQuery] string? city = null,
+            [FromQuery] string? sector = null,
+            [FromQuery] Guid? customerId = null)
         {
-            var data = await _dashboardService.GetDashboardDataAsync();
+            var data = await _dashboardService.GetDashboardDataAsync(startDate, endDate, salesUserId, city, sector, customerId);
             return Ok(data);
         }
 

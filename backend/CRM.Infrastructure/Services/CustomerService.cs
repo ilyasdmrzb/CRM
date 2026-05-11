@@ -42,12 +42,11 @@ namespace CRM.Infrastructure.Services
 
         public async Task<CustomerDto> CreateAsync(CreateCustomerDto dto, Guid userId)
         {
-            // Case-insensitive duplicate check
-            var normalized = dto.CompanyName.Trim().ToLower();
+            var normalized = NormalizeForDuplicateCheck(dto.CompanyName);
             var exists = await _context.Customers
-                .AnyAsync(c => c.CompanyName.ToLower() == normalized);
+                .AnyAsync(c => NormalizeForDuplicateCheck(c.CompanyName) == normalized);
 
-            if (exists) throw new InvalidOperationException($"'{dto.CompanyName}' şirketi zaten kayıtlı.");
+            if (exists) throw new InvalidOperationException($"'{dto.CompanyName}' (veya benzeri) zaten kayıtlı.");
 
             var customer = new Customer
             {
@@ -55,6 +54,7 @@ namespace CRM.Infrastructure.Services
                 CariCode = NormalizeOptional(dto.CariCode),
                 TaxNumber = NormalizeOptional(dto.TaxNumber),
                 City = NormalizeOptional(dto.City),
+                Sector = NormalizeOptional(dto.Sector),
                 Address = NormalizeOptional(dto.Address),
                 CreatedBy = userId
             };
@@ -69,16 +69,17 @@ namespace CRM.Infrastructure.Services
             var customer = await _context.Customers.FindAsync(id);
             if (customer == null) return null;
 
-            // Check duplicate (excluding self)
-            var normalized = dto.CompanyName.Trim().ToLower();
+            var normalized = NormalizeForDuplicateCheck(dto.CompanyName);
             var exists = await _context.Customers
-                .AnyAsync(c => c.CompanyName.ToLower() == normalized && c.Id != id);
-            if (exists) throw new InvalidOperationException($"'{dto.CompanyName}' şirketi zaten kayıtlı.");
+                .AnyAsync(c => NormalizeForDuplicateCheck(c.CompanyName) == normalized && c.Id != id);
+            
+            if (exists) throw new InvalidOperationException($"'{dto.CompanyName}' (veya benzeri) zaten kayıtlı.");
 
             customer.CompanyName = dto.CompanyName.Trim();
             customer.CariCode = NormalizeOptional(dto.CariCode);
             customer.TaxNumber = NormalizeOptional(dto.TaxNumber);
             customer.City = NormalizeOptional(dto.City);
+            customer.Sector = NormalizeOptional(dto.Sector);
             customer.Address = NormalizeOptional(dto.Address);
             customer.UpdatedAt = DateTime.UtcNow;
 
@@ -100,6 +101,14 @@ namespace CRM.Infrastructure.Services
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
+        private static string NormalizeForDuplicateCheck(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return string.Empty;
+            // Boşlukları temizle, büyük harfe çevir (Türkçe karakter duyarlılığı için ToUpper kullanılabilir ama SQL tarafında collation önemli)
+            // C# tarafında InMemory veya Client-side evaluation için:
+            return name.Replace(" ", "").ToUpperInvariant();
+        }
+
         private static CustomerDto MapToDto(Customer c) => new()
         {
             Id = c.Id,
@@ -107,6 +116,7 @@ namespace CRM.Infrastructure.Services
             CariCode = c.CariCode,
             TaxNumber = c.TaxNumber,
             City = c.City,
+            Sector = c.Sector,
             Address = c.Address,
             CreatedByName = c.Creator?.FullName ?? "",
             CreatedByShortName = c.Creator?.GetInitials() ?? "??",

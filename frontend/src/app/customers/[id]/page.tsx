@@ -16,6 +16,7 @@ import {
   User,
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
+import { getActivities, type ActivityItem } from '@/lib/activities';
 import { getCustomerById, type CustomerListItem, updateCustomer } from '@/lib/customers';
 import { getDeals, type DealItem } from '@/lib/deals';
 
@@ -41,16 +42,25 @@ const getCustomerDeals = (customer: CustomerListItem, deals: DealItem[]) => {
   return deals.filter((deal) => deal.company.trim().toLocaleLowerCase('tr-TR') === customerName);
 };
 
+const getCustomerActivities = (customer: CustomerListItem, activities: ActivityItem[]) => {
+  const customerName = customer.name.trim().toLocaleLowerCase('tr-TR');
+  return activities.filter((activity) => activity.company.trim().toLocaleLowerCase('tr-TR') === customerName);
+};
+
+const formatCurrency = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
+
 export default function CustomerDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [customer, setCustomer] = useState<CustomerListItem | null>(null);
   const [deals, setDeals] = useState<DealItem[]>([]);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setCustomer(getCustomerById(params.id));
     setDeals(getDeals());
+    setActivities(getActivities());
   }, [params.id]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -88,7 +98,22 @@ export default function CustomerDetailPage() {
   }
 
   const customerDeals = getCustomerDeals(customer, deals);
-  const isActive = customerDeals.some((deal) => !isClosedDeal(deal));
+  const customerActivities = getCustomerActivities(customer, activities);
+  const openDeals = customerDeals.filter((deal) => !isClosedDeal(deal));
+  const isActive = openDeals.length > 0;
+  const potentialValue = openDeals.reduce((total, deal) => total + deal.valueAmount, 0);
+  const contactDateValues = [
+    ...customerDeals.map((deal) => deal.lastContactDate ?? deal.createdAt),
+    ...customerActivities.map((activity) => activity.completedAt ?? activity.date ?? activity.createdAt),
+  ]
+    .map((value) => Date.parse(value))
+    .filter(Number.isFinite);
+  const lastContactDate = contactDateValues.length > 0
+    ? new Date(Math.max(...contactDateValues)).toLocaleDateString('tr-TR')
+    : null;
+  const statusReason = isActive
+    ? `${openDeals.length} acik deal var`
+    : customerDeals.length > 0 ? 'Tum deal ler kapali' : 'Deal yok';
 
   return (
     <div className="flex min-h-screen bg-main-bg">
@@ -123,6 +148,25 @@ export default function CustomerDetailPage() {
         </header>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <div className="glass rounded-2xl border border-border-subtle p-5">
+              <p className="text-xs text-slate-500">Durum Nedeni</p>
+              <p className="mt-2 text-lg font-bold text-white">{statusReason}</p>
+            </div>
+            <div className="glass rounded-2xl border border-border-subtle p-5">
+              <p className="text-xs text-slate-500">Acik Deal</p>
+              <p className="mt-2 text-lg font-bold text-blue-400">{openDeals.length}</p>
+            </div>
+            <div className="glass rounded-2xl border border-border-subtle p-5">
+              <p className="text-xs text-slate-500">Toplam Potansiyel</p>
+              <p className="mt-2 text-lg font-bold text-white">{formatCurrency(potentialValue)}</p>
+            </div>
+            <div className="glass rounded-2xl border border-border-subtle p-5">
+              <p className="text-xs text-slate-500">Son Temas</p>
+              <p className="mt-2 text-lg font-bold text-white">{lastContactDate ?? '-'}</p>
+            </div>
+          </section>
+
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
             <section className="xl:col-span-2 glass rounded-[32px] border border-border-subtle overflow-hidden">
               <div className="p-6 border-b border-border-subtle flex items-center gap-3 bg-slate-800/30">
@@ -248,6 +292,69 @@ export default function CustomerDetailPage() {
                   <FileText className="absolute left-4 top-4 w-4 h-4 text-slate-500" />
                   <textarea className={`${inputClass} min-h-28 resize-none pl-11`} name="notes" defaultValue={valueOrEmpty(customer.notes)} placeholder="Müşteriyle ilgili kısa notlar" />
                 </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="grid grid-cols-1 gap-8 xl:grid-cols-2">
+            <div className="glass rounded-[32px] border border-border-subtle overflow-hidden">
+              <div className="p-6 border-b border-border-subtle bg-slate-800/30">
+                <h2 className="text-lg font-semibold text-white">Musteri Deal Gecmisi</h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="crm-table">
+                  <thead>
+                    <tr>
+                      <th>Deal</th>
+                      <th>Asama</th>
+                      <th>Deger</th>
+                      <th>Kapanis</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {customerDeals.map((deal) => (
+                      <tr key={deal.id}>
+                        <td>
+                          <Link href={`/pipeline/${deal.id}/edit`} className="text-blue-400 hover:text-blue-300">
+                            {deal.project}
+                          </Link>
+                          <p className="text-xs text-slate-500">{deal.id}</p>
+                        </td>
+                        <td className="text-slate-300">{deal.stage}</td>
+                        <td className="font-medium text-white">{deal.value}</td>
+                        <td className="text-slate-400">{deal.closedDate ? new Date(deal.closedDate).toLocaleDateString('tr-TR') : '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {customerDeals.length === 0 && (
+                  <p className="p-6 text-sm text-slate-500">Bu musteriye ait deal yok.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="glass rounded-[32px] border border-border-subtle overflow-hidden">
+              <div className="p-6 border-b border-border-subtle bg-slate-800/30">
+                <h2 className="text-lg font-semibold text-white">Musteri Aktiviteleri</h2>
+              </div>
+              <div className="p-6 space-y-4">
+                {customerActivities.map((activity) => (
+                  <div key={activity.id} className="rounded-2xl border border-border-subtle bg-slate-900/30 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-medium text-white">{activity.type}</p>
+                      <span className={activity.status === 'completed' ? 'text-xs font-bold text-emerald-400' : 'text-xs font-bold text-amber-400'}>
+                        {activity.status === 'completed' ? 'Tamamlandi' : 'Bekliyor'}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-400">{activity.subject || '-'}</p>
+                    <p className="mt-2 text-xs text-slate-500">{activity.date || new Date(activity.createdAt).toLocaleDateString('tr-TR')}{activity.time ? `, ${activity.time}` : ''}</p>
+                  </div>
+                ))}
+                {customerActivities.length === 0 && (
+                  <p className="rounded-2xl border border-dashed border-border-subtle bg-slate-900/30 p-6 text-sm text-slate-500">
+                    Bu musteriye ait aktivite yok.
+                  </p>
+                )}
               </div>
             </div>
           </section>

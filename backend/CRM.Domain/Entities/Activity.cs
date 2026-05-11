@@ -13,6 +13,8 @@ namespace CRM.Domain.Entities
         public string? Description { get; set; }
         public DateTime ActivityDate { get; set; }
         public DateTime? NextActionDate { get; set; }
+        public bool IsCompleted { get; set; }
+        public string Status { get; set; } = "planned"; // planned, completed, cancelled
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation

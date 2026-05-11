@@ -37,7 +37,8 @@ namespace CRM.Infrastructure.Services
             {
                 CustomerId = dto.CustomerId, DealId = dto.DealId, UserId = userId,
                 ActivityType = dto.ActivityType, Subject = dto.Subject, Description = dto.Description,
-                ActivityDate = dto.ActivityDate, NextActionDate = dto.NextActionDate
+                ActivityDate = dto.ActivityDate, NextActionDate = dto.NextActionDate,
+                IsCompleted = dto.IsCompleted, Status = dto.Status
             };
             _context.Activities.Add(activity);
             await _context.SaveChangesAsync();
@@ -57,6 +58,8 @@ namespace CRM.Infrastructure.Services
             activity.ActivityType = dto.ActivityType; activity.Subject = dto.Subject;
             activity.Description = dto.Description; activity.ActivityDate = dto.ActivityDate;
             activity.NextActionDate = dto.NextActionDate;
+            activity.IsCompleted = dto.IsCompleted;
+            activity.Status = dto.Status;
             await _context.SaveChangesAsync();
             return await GetByIdAsync(id);
         }
@@ -85,7 +88,7 @@ namespace CRM.Infrastructure.Services
             DealId = a.DealId, DealCode = a.Deal?.DealCode, ProjectName = a.Deal?.ProjectName,
             UserId = a.UserId, UserName = a.User?.FullName ?? "", ActivityType = a.ActivityType,
             Subject = a.Subject, Description = a.Description, ActivityDate = a.ActivityDate,
-            NextActionDate = a.NextActionDate, CreatedAt = a.CreatedAt
+            NextActionDate = a.NextActionDate, IsCompleted = a.IsCompleted, Status = a.Status, CreatedAt = a.CreatedAt
         };
     }
 }

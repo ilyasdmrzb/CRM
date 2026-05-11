@@ -18,7 +18,7 @@ import {
 import Sidebar from '@/components/layout/Sidebar';
 import { getAdminUsers, type AdminUser } from '@/lib/admin-users';
 import { getCustomers, type CustomerListItem } from '@/lib/customers';
-import { dealStages, getDealById, getLossReasonOptions, type DealItem, updateDeal } from '@/lib/deals';
+import { dealStages, getDealById, getLossReasonOptions, type DealItem, updateDeal, lossReasonList } from '@/lib/deals';
 
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
 const labelClass = "text-sm font-medium text-slate-300";
@@ -144,12 +144,12 @@ export default function EditDealPage() {
 
               <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2 md:col-span-2">
-                  <label className={labelClass}>Proje Adı</label>
+                  <label className={labelClass}>Proje Adı <span className="text-rose-500">*</span></label>
                   <input className={inputClass} name="project" defaultValue={deal.project} required />
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelClass}>Şirket</label>
+                  <label className={labelClass}>Şirket <span className="text-rose-500">*</span></label>
                   <input className={inputClass} name="company" list="customer-options" defaultValue={deal.company} required />
                   <datalist id="customer-options">
                     {customers.map((customer) => (
@@ -164,7 +164,7 @@ export default function EditDealPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelClass}>Aşama</label>
+                  <label className={labelClass}>Aşama <span className="text-rose-500">*</span></label>
                   <select
                     className={inputClass}
                     name="stage"
@@ -186,7 +186,7 @@ export default function EditDealPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelClass}>Satış Sorumlusu</label>
+                  <label className={labelClass}>Satış Sorumlusu <span className="text-rose-500">*</span></label>
                   <div
                     className="relative"
                     onBlur={() => window.setTimeout(() => setIsOwnerPickerOpen(false), 120)}
@@ -251,7 +251,7 @@ export default function EditDealPage() {
 
               <div className="p-6 space-y-5">
                 <div className="space-y-2">
-                  <label className={labelClass}>Deal Değeri ($)</label>
+                  <label className={labelClass}>Deal Değeri ($) <span className="text-rose-500">*</span></label>
                   <input className={inputClass} name="valueAmount" type="number" min="0" step="1" defaultValue={deal.valueAmount} required />
                 </div>
 
@@ -287,7 +287,12 @@ export default function EditDealPage() {
 
               <div className="space-y-2">
                 <label className={labelClass}>Rakip</label>
-                <input className={inputClass} name="competitorName" defaultValue={valueOrEmpty(deal.competitorName)} />
+                <input 
+                  className={inputClass} 
+                  name="competitorName" 
+                  defaultValue={valueOrEmpty(deal.competitorName)} 
+                  placeholder="Rakip firma"
+                />
               </div>
 
               {selectedStage === 'Kaybedildi' && (
@@ -303,7 +308,7 @@ export default function EditDealPage() {
                     required
                   />
                   <datalist id="loss-reason-options">
-                    {lossReasonOptions.map((reason) => (
+                    {lossReasonList.map((reason) => (
                       <option key={reason} value={reason} />
                     ))}
                   </datalist>

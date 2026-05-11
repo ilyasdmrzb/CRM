@@ -10,10 +10,15 @@ namespace CRM.Application.DTOs
         public int OpenDealsCount { get; set; }
         public int WonDealsCount { get; set; }
         public int LostDealsCount { get; set; }
+        public decimal WinRate { get; set; }
+        public decimal AverageDealValue { get; set; }
+        public double AverageClosingTimeDays { get; set; }
         public List<StageDistributionDto> StageDistribution { get; set; } = new();
         public List<MonthlyPipelineDto> MonthlyPipeline { get; set; } = new();
         public List<TopSalesUserDto> TopSalesUsers { get; set; } = new();
         public List<WonLostChartDto> WonLostChart { get; set; } = new();
+        public List<ActivityDto> TodayActivities { get; set; } = new();
+        public List<ActivityDto> OverdueActivities { get; set; } = new();
     }
 
     public class StageDistributionDto

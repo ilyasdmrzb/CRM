@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace CRM.Application.DTOs
 {
     public class DealDto
@@ -29,21 +31,31 @@ namespace CRM.Application.DTOs
         public string? CurrentUpdate { get; set; }
         public string? Notes { get; set; }
         public string Status { get; set; } = "open";
+        public DateTime? LastActivityDate { get; set; }
+        public DateTime? NextActionDate { get; set; }
+        public string? NextActionSubject { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }
 
     public class CreateDealDto
     {
+        [Required(ErrorMessage = "Müşteri seçimi zorunludur.")]
         public Guid CustomerId { get; set; }
         public Guid? ContactId { get; set; }
+        [Required(ErrorMessage = "Satış sorumlusu seçimi zorunludur.")]
         public Guid SalesUserId { get; set; }
+        [Required(ErrorMessage = "Proje adı zorunludur.")]
         public string ProjectName { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Aşama seçimi zorunludur.")]
         public int StageId { get; set; }
+        [Range(0, 1000, ErrorMessage = "Kapasite 0-1000 MW arasında olmalıdır.")]
         public decimal? CapacityMw { get; set; }
         public int Probability { get; set; }
         public decimal? JinkoPrice { get; set; }
         public decimal? HsaPrice { get; set; }
+        [Required(ErrorMessage = "Deal değeri zorunludur.")]
+        [Range(0, 1000000000, ErrorMessage = "Geçersiz deal değeri.")]
         public decimal? DealValue { get; set; }
         public decimal? TargetPrice { get; set; }
         public string? CompetitorName { get; set; }

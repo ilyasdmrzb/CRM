@@ -9,6 +9,7 @@ namespace CRM.Domain.Entities
         public string? CariCode { get; set; }
         public string? TaxNumber { get; set; }
         public string? City { get; set; }
+        public string? Sector { get; set; }
         public string? Address { get; set; }
         public Guid CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

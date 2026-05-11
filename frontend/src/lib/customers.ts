@@ -21,8 +21,7 @@ export type CustomerListItem = {
 };
 
 const STORAGE_KEY = 'solar-crm-customers';
-
-export const defaultCustomers: CustomerListItem[] = [];
+const DEMO_CUSTOMER_NAMES = new Set(['ornek firma', 'abc solar energy', 'jinko']);
 
 const normalizeOptional = (value: FormDataEntryValue | null) => {
   const text = String(value ?? '').trim();
@@ -68,17 +67,25 @@ const normalizeCustomer = (customer: Partial<CustomerListItem>): CustomerListIte
   };
 };
 
+const isDemoCustomer = (customer: CustomerListItem) => {
+  const name = customer.name.trim().toLocaleLowerCase('tr-TR').replace('ö', 'o');
+  return DEMO_CUSTOMER_NAMES.has(name);
+};
+
 const readStoredCustomers = () => {
-  if (typeof window === 'undefined') return defaultCustomers;
+  if (typeof window === 'undefined') return [];
 
   const rawCustomers = window.localStorage.getItem(STORAGE_KEY);
-  if (!rawCustomers) return defaultCustomers;
+  if (!rawCustomers) return [];
 
   try {
     const customers = JSON.parse(rawCustomers) as Partial<CustomerListItem>[];
-    return customers.map(normalizeCustomer);
+    const normalizedCustomers = customers.map(normalizeCustomer);
+    const realCustomers = normalizedCustomers.filter((customer) => !isDemoCustomer(customer));
+    if (realCustomers.length !== normalizedCustomers.length) saveCustomers(realCustomers);
+    return realCustomers;
   } catch {
-    return defaultCustomers;
+    return [];
   }
 };
 

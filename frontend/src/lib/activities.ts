@@ -6,9 +6,13 @@ export type ActivityItem = {
   subject: string;
   time: string;
   date: string;
-  status: 'completed' | 'pending';
+  status: 'planned' | 'completed' | 'cancelled';
+  isCompleted: boolean;
   completedAt: string | null;
   createdAt: string;
+  nextActionDate?: string;
+  projectName?: string;
+  dealCode?: string;
 };
 
 const STORAGE_KEY = 'solar-crm-activities';
@@ -39,8 +43,12 @@ const normalizeActivity = (activity: Partial<ActivityItem>): ActivityItem => {
     time: activity.time ?? '',
     date: activity.date ?? '',
     status: activity.status ?? 'completed',
+    isCompleted: activity.isCompleted ?? (activity.status === 'completed'),
     completedAt: activity.completedAt ?? null,
     createdAt: activity.createdAt ?? now,
+    nextActionDate: activity.nextActionDate,
+    projectName: activity.projectName,
+    dealCode: activity.dealCode,
   };
 };
 
@@ -75,9 +83,11 @@ export function addActivity(formData: FormData) {
     subject: String(formData.get('subject') ?? '').trim(),
     time: String(formData.get('time') ?? '').trim(),
     date: String(formData.get('date') ?? '').trim(),
-    status: normalizeStatus(formData.get('status')),
-    completedAt: normalizeStatus(formData.get('status')) === 'completed' ? new Date().toISOString() : null,
+    status: (formData.get('status') as ActivityItem['status']) ?? 'planned',
+    isCompleted: formData.get('status') === 'completed',
+    completedAt: formData.get('status') === 'completed' ? new Date().toISOString() : null,
     createdAt: new Date().toISOString(),
+    nextActionDate: String(formData.get('nextActionDate') ?? '').trim() || undefined,
   };
 
   const activities = [activity, ...getActivities()];

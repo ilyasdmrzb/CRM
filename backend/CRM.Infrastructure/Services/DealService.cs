@@ -18,6 +18,7 @@ namespace CRM.Infrastructure.Services
                 .Include(d => d.Contact)
                 .Include(d => d.SalesUser)
                 .Include(d => d.Stage)
+                .Include(d => d.Activities)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -42,6 +43,7 @@ namespace CRM.Infrastructure.Services
                 .Include(x => x.Contact)
                 .Include(x => x.SalesUser)
                 .Include(x => x.Stage)
+                .Include(x => x.Activities)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return d == null ? null : MapToDto(d);
         }
@@ -53,6 +55,7 @@ namespace CRM.Infrastructure.Services
                 .Include(d => d.Contact)
                 .Include(d => d.SalesUser)
                 .Include(d => d.Stage)
+                .Include(d => d.Activities)
                 .Where(d => d.CustomerId == customerId)
                 .OrderByDescending(d => d.CreatedAt)
                 .Select(d => MapToDto(d))
@@ -224,6 +227,9 @@ namespace CRM.Infrastructure.Services
             CurrentUpdate = d.CurrentUpdate,
             Notes = d.Notes,
             Status = d.Status,
+            LastActivityDate = d.Activities?.Where(a => a.IsCompleted).OrderByDescending(a => a.ActivityDate).FirstOrDefault()?.ActivityDate,
+            NextActionDate = d.Activities?.Where(a => !a.IsCompleted).OrderBy(a => a.ActivityDate).FirstOrDefault()?.ActivityDate,
+            NextActionSubject = d.Activities?.Where(a => !a.IsCompleted).OrderBy(a => a.ActivityDate).FirstOrDefault()?.Subject,
             CreatedAt = d.CreatedAt,
             UpdatedAt = d.UpdatedAt
         };

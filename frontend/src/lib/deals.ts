@@ -20,9 +20,16 @@ export type DealItem = {
   targetPrice: string | null;
   competitorName: string | null;
   lossReason: string | null;
+  wonReason: string | null;
+  finalPrice: number | null;
+  closedDate: string | null;
+  lossLesson: string | null;
   epcPartner: string | null;
   deliveryDate: string | null;
   lastContactDate: string | null;
+  lastActivityDate: string | null;
+  nextActionDate: string | null;
+  nextActionSubject: string | null;
   notes: string | null;
   noteHistory: DealNote[];
   createdAt: string;
@@ -35,6 +42,8 @@ export type DealNote = {
 };
 
 const STORAGE_KEY = 'solar-crm-deals';
+const DEMO_DEAL_IDS = new Set<string>([]);
+const DEMO_COMPANY_NAMES = new Set<string>([]);
 
 export const dealStages: { name: DealStageName; color: string; probability: number }[] = [
   { name: 'Potansiyel', color: 'slate', probability: 10 },
@@ -47,6 +56,18 @@ export const dealStages: { name: DealStageName; color: string; probability: numb
 ];
 
 export const defaultDeals: DealItem[] = [];
+
+export const lossReasonList = [
+  'Fiyat (Yüksek)',
+  'Teknik Yetersizlik',
+  'Teslim Süresi',
+  'Müşteri Kararsızlığı',
+  'Finansal Nedenler',
+  'Rakip Üstünlüğü',
+  'İlişki Yönetimi',
+  'Proje İptal Edildi',
+  'Diğer'
+];
 
 const createId = () => {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -115,13 +136,29 @@ const normalizeDeal = (deal: Partial<DealItem>): DealItem => {
     targetPrice: deal.targetPrice ?? null,
     competitorName: deal.competitorName ?? null,
     lossReason: deal.lossReason ?? null,
+    wonReason: deal.wonReason ?? null,
+    finalPrice: deal.finalPrice ?? null,
+    closedDate: deal.closedDate ?? null,
+    lossLesson: deal.lossLesson ?? null,
     epcPartner: deal.epcPartner ?? null,
     deliveryDate: deal.deliveryDate ?? null,
     lastContactDate: deal.lastContactDate ?? null,
+    lastActivityDate: deal.lastActivityDate ?? null,
+    nextActionDate: deal.nextActionDate ?? null,
+    nextActionSubject: deal.nextActionSubject ?? null,
     notes: deal.notes ?? null,
     noteHistory: deal.noteHistory ?? (deal.notes ? [{ id: `${deal.id ?? 'deal'}-initial-note`, text: deal.notes, createdAt: deal.createdAt ?? new Date().toISOString() }] : []),
     createdAt: deal.createdAt ?? new Date().toISOString(),
   };
+};
+
+const normalizeDemoText = (value: string) => {
+  return value.trim().toLocaleLowerCase('tr-TR').replace('ö', 'o');
+};
+
+const isDemoDeal = (deal: DealItem) => {
+  return DEMO_DEAL_IDS.has(deal.id) ||
+    (normalizeDemoText(deal.project) === 'ornek proje' && DEMO_COMPANY_NAMES.has(normalizeDemoText(deal.company)));
 };
 
 const readStoredDeals = () => {
@@ -132,7 +169,10 @@ const readStoredDeals = () => {
 
   try {
     const deals = JSON.parse(rawDeals) as Partial<DealItem>[];
-    return deals.map(normalizeDeal);
+    const normalizedDeals = deals.map(normalizeDeal);
+    const realDeals = normalizedDeals.filter((deal) => !isDemoDeal(deal));
+    if (realDeals.length !== normalizedDeals.length) saveDeals(realDeals);
+    return realDeals;
   } catch {
     return defaultDeals;
   }
@@ -173,6 +213,10 @@ export function addDeal(formData: FormData) {
     targetPrice: normalizeOptional(formData.get('targetPrice')),
     competitorName: normalizeOptional(formData.get('competitorName')),
     lossReason: stage.name === 'Kaybedildi' ? normalizeLossReason(formData.get('lossReason')) : null,
+    wonReason: null,
+    finalPrice: null,
+    closedDate: null,
+    lossLesson: null,
     epcPartner: normalizeOptional(formData.get('epcPartner')),
     deliveryDate: normalizeOptional(formData.get('deliveryDate')),
     lastContactDate: normalizeOptional(formData.get('lastContactDate')),
@@ -181,6 +225,9 @@ export function addDeal(formData: FormData) {
       ? [{ id: createId(), text: String(formData.get('notes')).trim(), createdAt: new Date().toISOString() }]
       : [],
     createdAt: new Date().toISOString(),
+    lastActivityDate: null,
+    nextActionDate: null,
+    nextActionSubject: null
   };
 
   saveDeals([deal, ...deals]);
@@ -221,6 +268,10 @@ export function updateDeal(id: string, formData: FormData) {
     targetPrice: normalizeOptional(formData.get('targetPrice')),
     competitorName: normalizeOptional(formData.get('competitorName')),
     lossReason: stage.name === 'Kaybedildi' ? normalizeLossReason(formData.get('lossReason')) : null,
+    wonReason: stage.name === 'Kazanıldı' ? currentDeal.wonReason : null,
+    finalPrice: stage.name === 'Kazanıldı' ? currentDeal.finalPrice : null,
+    closedDate: stage.name === 'Kazanıldı' || stage.name === 'Kaybedildi' ? currentDeal.closedDate : null,
+    lossLesson: stage.name === 'Kaybedildi' ? currentDeal.lossLesson : null,
     epcPartner: normalizeOptional(formData.get('epcPartner')),
     deliveryDate: normalizeOptional(formData.get('deliveryDate')),
     lastContactDate: normalizeOptional(formData.get('lastContactDate')),
@@ -271,6 +322,10 @@ export function updateDealStage(id: string, stageName: DealStageName) {
     weighted: formatCurrency(weightedAmount),
     weightedAmount,
     lossReason: stage.name === 'Kaybedildi' ? currentDeal.lossReason : null,
+    wonReason: stage.name === 'Kazanıldı' ? currentDeal.wonReason : null,
+    finalPrice: stage.name === 'Kazanıldı' ? currentDeal.finalPrice : null,
+    closedDate: stage.name === 'Kazanıldı' || stage.name === 'Kaybedildi' ? currentDeal.closedDate : null,
+    lossLesson: stage.name === 'Kaybedildi' ? currentDeal.lossLesson : null,
   };
 
   saveDeals(deals.map((deal) => deal.id === id ? updatedDeal : deal));
@@ -285,27 +340,36 @@ export function getLossReasonOptions() {
   return Array.from(new Set(reasons)).sort((a, b) => a.localeCompare(b, 'tr'));
 }
 
-export function markDealAsWon(id: string) {
+export function markDealAsWon(id: string, data?: { wonReason?: string; finalPrice?: number; deliveryDate?: string; epcPartner?: string; closedDate?: string }) {
   const deals = getDeals();
   const currentDeal = deals.find((deal) => deal.id === id);
   if (!currentDeal) return null;
 
   const wonStage = getStageConfig('Kazanıldı');
+  const finalPrice = data?.finalPrice && data.finalPrice > 0 ? data.finalPrice : currentDeal.valueAmount;
   const updatedDeal: DealItem = {
     ...currentDeal,
     stage: wonStage.name,
     probability: wonStage.probability,
     color: wonStage.color,
-    weighted: formatCurrency(currentDeal.valueAmount),
-    weightedAmount: currentDeal.valueAmount,
+    value: formatCurrency(finalPrice),
+    valueAmount: finalPrice,
+    weighted: formatCurrency(finalPrice),
+    weightedAmount: finalPrice,
     lossReason: null,
+    lossLesson: null,
+    wonReason: normalizeOptional(data?.wonReason ?? null),
+    finalPrice,
+    deliveryDate: normalizeOptional(data?.deliveryDate ?? currentDeal.deliveryDate),
+    epcPartner: normalizeOptional(data?.epcPartner ?? currentDeal.epcPartner),
+    closedDate: normalizeOptional(data?.closedDate ?? new Date().toISOString().slice(0, 10)),
   };
 
   saveDeals(deals.map((deal) => deal.id === id ? updatedDeal : deal));
   return updatedDeal;
 }
 
-export function markDealAsLost(id: string, lossReason: string, competitorName?: string) {
+export function markDealAsLost(id: string, lossReason: string, competitorName?: string, data?: { lossLesson?: string; closedDate?: string }) {
   const deals = getDeals();
   const currentDeal = deals.find((deal) => deal.id === id);
   if (!currentDeal) return null;
@@ -320,6 +384,10 @@ export function markDealAsLost(id: string, lossReason: string, competitorName?: 
     weightedAmount: 0,
     lossReason: normalizeLossReason(lossReason),
     competitorName: normalizeOptional(competitorName ?? currentDeal.competitorName),
+    wonReason: null,
+    finalPrice: null,
+    closedDate: normalizeOptional(data?.closedDate ?? new Date().toISOString().slice(0, 10)),
+    lossLesson: normalizeOptional(data?.lossLesson ?? null),
   };
 
   saveDeals(deals.map((deal) => deal.id === id ? updatedDeal : deal));

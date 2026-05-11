@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import Link from 'next/link';
-import { defaultCustomers, getCustomers, type CustomerListItem } from '@/lib/customers';
+import { getCustomers, type CustomerListItem } from '@/lib/customers';
 import { getDeals, type DealItem } from '@/lib/deals';
 
 const ownerInitials = (owner: string) => {
@@ -36,7 +36,7 @@ const getCustomerDeals = (customer: CustomerListItem, deals: DealItem[]) => {
 
 export default function CustomersPage() {
   const [search, setSearch] = useState('');
-  const [customers, setCustomers] = useState<CustomerListItem[]>(defaultCustomers);
+  const [customers, setCustomers] = useState<CustomerListItem[]>([]);
   const [deals, setDeals] = useState<DealItem[]>([]);
 
   useEffect(() => {

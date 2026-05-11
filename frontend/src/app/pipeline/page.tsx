@@ -12,13 +12,15 @@ import {
   Calendar,
   DollarSign,
   TrendingUp,
-  X
+  X,
+  MessageSquare,
+  CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Sidebar from '@/components/layout/Sidebar';
 import { cn } from '@/lib/utils';
-import { addDealNote, dealStages, getDeals, getLossReasonOptions, markDealAsLost, markDealAsWon, updateDealStage, type DealItem, type DealStageName } from '@/lib/deals';
+import { addDealNote, dealStages, getDeals, getLossReasonOptions, markDealAsLost, markDealAsWon, updateDealStage, type DealItem, type DealStageName, lossReasonList } from '@/lib/deals';
 
 
 const formatCurrency = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
@@ -49,9 +51,17 @@ export default function PipelinePage() {
   const [selectedDeal, setSelectedDeal] = useState<DealItem | null>(null);
   const [search, setSearch] = useState('');
   const [noteText, setNoteText] = useState('');
+  const [isWonFormOpen, setIsWonFormOpen] = useState(false);
+  const [wonReason, setWonReason] = useState('');
+  const [wonFinalPrice, setWonFinalPrice] = useState('');
+  const [wonDeliveryDate, setWonDeliveryDate] = useState('');
+  const [wonEpcPartner, setWonEpcPartner] = useState('');
+  const [wonClosedDate, setWonClosedDate] = useState(new Date().toISOString().slice(0, 10));
   const [isLossFormOpen, setIsLossFormOpen] = useState(false);
   const [lossReason, setLossReason] = useState('');
   const [lostCompetitorName, setLostCompetitorName] = useState('');
+  const [lossLesson, setLossLesson] = useState('');
+  const [lossClosedDate, setLossClosedDate] = useState(new Date().toISOString().slice(0, 10));
   const [lossReasonOptions, setLossReasonOptions] = useState<string[]>([]);
   const [draggedDealId, setDraggedDealId] = useState<string | null>(null);
   const [dragOverStage, setDragOverStage] = useState<DealStageName | null>(null);
@@ -82,6 +92,17 @@ export default function PipelinePage() {
     setIsLossFormOpen(false);
     setLossReason('');
     setLostCompetitorName('');
+    setLossLesson('');
+    setLossClosedDate(new Date().toISOString().slice(0, 10));
+  };
+
+  const closeWonForm = () => {
+    setIsWonFormOpen(false);
+    setWonReason('');
+    setWonFinalPrice('');
+    setWonDeliveryDate('');
+    setWonEpcPartner('');
+    setWonClosedDate(new Date().toISOString().slice(0, 10));
   };
 
   const handleAddNote = (event: React.FormEvent<HTMLFormElement>) => {
@@ -100,10 +121,23 @@ export default function PipelinePage() {
     toast.success('Not eklendi.');
   };
 
-  const handleMarkAsWon = () => {
+  const handleMarkAsWon = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (!selectedDeal) return;
 
-    const updatedDeal = markDealAsWon(selectedDeal.id);
+    if (!wonReason.trim()) {
+      toast.error('Kazanma nedeni girin.');
+      return;
+    }
+
+    const finalPrice = Number(wonFinalPrice || selectedDeal.valueAmount);
+    const updatedDeal = markDealAsWon(selectedDeal.id, {
+      wonReason: wonReason.trim(),
+      finalPrice: Number.isFinite(finalPrice) ? finalPrice : selectedDeal.valueAmount,
+      deliveryDate: wonDeliveryDate,
+      epcPartner: wonEpcPartner,
+      closedDate: wonClosedDate,
+    });
     if (!updatedDeal) {
       toast.error('Deal güncellenemedi.');
       return;
@@ -111,6 +145,7 @@ export default function PipelinePage() {
 
     setDeals(getDeals());
     setSelectedDeal(updatedDeal);
+    closeWonForm();
     toast.success(`${updatedDeal.id} kazanıldı olarak işaretlendi.`);
   };
 
@@ -128,7 +163,10 @@ export default function PipelinePage() {
       return;
     }
 
-    const updatedDeal = markDealAsLost(selectedDeal.id, normalizedReason, lostCompetitorName);
+    const updatedDeal = markDealAsLost(selectedDeal.id, normalizedReason, lostCompetitorName, {
+      lossLesson,
+      closedDate: lossClosedDate,
+    });
     if (!updatedDeal) {
       toast.error('Deal guncellenemedi.');
       return;
@@ -164,6 +202,27 @@ export default function PipelinePage() {
     setDragOverStage(null);
     if (currentDeal.stage === stageName) return;
 
+    if (stageName === 'Kazanıldı') {
+      setSelectedDeal(currentDeal);
+      setWonReason(currentDeal.wonReason ?? '');
+      setWonFinalPrice(String(currentDeal.finalPrice ?? currentDeal.valueAmount));
+      setWonDeliveryDate(currentDeal.deliveryDate ?? '');
+      setWonEpcPartner(currentDeal.epcPartner ?? '');
+      setWonClosedDate(currentDeal.closedDate ?? new Date().toISOString().slice(0, 10));
+      setIsWonFormOpen(true);
+      return;
+    }
+
+    if (stageName === 'Kaybedildi') {
+      setSelectedDeal(currentDeal);
+      setLostCompetitorName(currentDeal.competitorName ?? '');
+      setLossReason(currentDeal.lossReason ?? '');
+      setLossLesson(currentDeal.lossLesson ?? '');
+      setLossClosedDate(currentDeal.closedDate ?? new Date().toISOString().slice(0, 10));
+      setIsLossFormOpen(true);
+      return;
+    }
+
     const updatedDeal = updateDealStage(dealId, stageName);
     if (!updatedDeal) {
       toast.error('Deal asamasi guncellenemedi.');
@@ -182,7 +241,20 @@ export default function PipelinePage() {
         {/* Header */}
         <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
           <div>
-            <h1 className="text-2xl font-bold text-white">Pipeline</h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold text-white">Pipeline</h1>
+              <button 
+                onClick={() => {
+                  if (confirm('Tüm yerel veriler temizlenecek. Emin misiniz?')) {
+                    localStorage.clear();
+                    window.location.reload();
+                  }
+                }}
+                className="text-[10px] text-rose-500 hover:text-rose-400 transition-colors uppercase font-bold tracking-wider"
+              >
+                [Yerel Verileri Sıfırla]
+              </button>
+            </div>
             <p className="text-sm text-slate-400">Deal'lerinizi yönetin ve ilerlemeyi takip edin.</p>
           </div>
           <div className="flex items-center gap-3">
@@ -252,6 +324,7 @@ export default function PipelinePage() {
                       <th>Kapasite</th>
                       <th>Aşama</th>
                       <th>Değer</th>
+                      <th>Son Aksiyon</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -289,6 +362,12 @@ export default function PipelinePage() {
                           </div>
                         </td>
                         <td className="text-white font-semibold">{deal.value}</td>
+                        <td>
+                          <div className="flex flex-col">
+                            <span className="text-xs text-white">{deal.nextActionDate ? new Date(deal.nextActionDate).toLocaleDateString('tr-TR') : (deal.lastActivityDate ? new Date(deal.lastActivityDate).toLocaleDateString('tr-TR') : '-')}</span>
+                            <span className="text-[10px] text-slate-500 truncate max-w-[100px]">{deal.nextActionSubject || 'Aksiyon planlanmadı'}</span>
+                          </div>
+                        </td>
                         <td>
                           <button className="p-2 text-slate-500 hover:text-white transition-colors">
                             <MoreVertical className="w-5 h-5" />
@@ -367,7 +446,26 @@ export default function PipelinePage() {
                           <span className="text-[10px] font-medium text-slate-500 group-hover:text-blue-400 transition-colors">{deal.capacity}</span>
                         </div>
                         <h4 className="text-white font-semibold mb-1 group-hover:text-blue-400 transition-colors">{deal.project}</h4>
-                        <p className="text-xs text-slate-400 mb-4">{deal.company}</p>
+                        <p className="text-xs text-slate-400 mb-3">{deal.company}</p>
+                        
+                        {(deal.lastActivityDate || deal.nextActionDate) && (
+                          <div className="flex flex-col gap-2 mb-4 p-2 rounded-xl bg-slate-900/50 border border-border-subtle/50">
+                            {deal.lastActivityDate && (
+                              <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-500/70" />
+                                <span>Son: {new Date(deal.lastActivityDate).toLocaleDateString('tr-TR')}</span>
+                              </div>
+                            )}
+                            {deal.nextActionDate && (
+                              <div className="flex items-center gap-1.5 text-[10px] text-blue-400 font-medium">
+                                <Calendar className="w-3 h-3" />
+                                <span>Gelecek: {new Date(deal.nextActionDate).toLocaleDateString('tr-TR')}</span>
+                                {deal.nextActionSubject && <span className="truncate opacity-70">- {deal.nextActionSubject}</span>}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-bold text-blue-400" title={deal.owner}>{ownerInitials(deal.owner)}</span>
@@ -541,6 +639,71 @@ export default function PipelinePage() {
                   </div>
                 </div>
 
+                {isWonFormOpen && (
+                  <form onSubmit={handleMarkAsWon} className="border-t border-border-subtle bg-slate-900/30 p-8 space-y-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-300">Kazanma Nedeni</label>
+                        <input
+                          value={wonReason}
+                          onChange={(event) => setWonReason(event.target.value)}
+                          className="w-full rounded-xl border border-border-subtle bg-slate-900/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+                          placeholder="Fiyat / stok / iliski"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-300">Final Fiyat ($)</label>
+                        <input
+                          value={wonFinalPrice}
+                          onChange={(event) => setWonFinalPrice(event.target.value)}
+                          className="w-full rounded-xl border border-border-subtle bg-slate-900/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+                          type="number"
+                          min="0"
+                          step="1"
+                          placeholder={String(selectedDeal.valueAmount)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-300">Teslim Tarihi</label>
+                        <input
+                          value={wonDeliveryDate}
+                          onChange={(event) => setWonDeliveryDate(event.target.value)}
+                          className="w-full rounded-xl border border-border-subtle bg-slate-900/60 px-4 py-3 text-sm text-white outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+                          type="date"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-300">Kapanis Tarihi</label>
+                        <input
+                          value={wonClosedDate}
+                          onChange={(event) => setWonClosedDate(event.target.value)}
+                          className="w-full rounded-xl border border-border-subtle bg-slate-900/60 px-4 py-3 text-sm text-white outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+                          type="date"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <label className="text-sm font-medium text-slate-300">EPC Partner</label>
+                        <input
+                          value={wonEpcPartner}
+                          onChange={(event) => setWonEpcPartner(event.target.value)}
+                          className="w-full rounded-xl border border-border-subtle bg-slate-900/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+                          placeholder="Partner firma"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3">
+                      <button type="button" onClick={closeWonForm} className="rounded-xl border border-border-subtle px-4 py-2.5 text-sm font-bold text-slate-300 transition-all hover:bg-slate-800 hover:text-white">
+                        Vazgec
+                      </button>
+                      <button type="submit" className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-emerald-500">
+                        Kazanildi Kaydet
+                      </button>
+                    </div>
+                  </form>
+                )}
+
                 {isLossFormOpen && (
                   <form onSubmit={handleMarkAsLost} className="border-t border-border-subtle bg-slate-900/30 p-8 space-y-4">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -556,7 +719,7 @@ export default function PipelinePage() {
                           required
                         />
                         <datalist id="pipeline-loss-reason-options">
-                          {lossReasonOptions.map((reason) => (
+                          {lossReasonList.map((reason) => (
                             <option key={reason} value={reason} />
                           ))}
                         </datalist>
@@ -568,6 +731,25 @@ export default function PipelinePage() {
                           onChange={(event) => setLostCompetitorName(event.target.value)}
                           className="w-full rounded-xl border border-border-subtle bg-slate-900/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
                           placeholder="Rakip firma"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-300">Kapanis Tarihi</label>
+                        <input
+                          value={lossClosedDate}
+                          onChange={(event) => setLossClosedDate(event.target.value)}
+                          className="w-full rounded-xl border border-border-subtle bg-slate-900/60 px-4 py-3 text-sm text-white outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+                          type="date"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <label className="text-sm font-medium text-slate-300">Ogrenilen Ders / Aksiyon</label>
+                        <textarea
+                          value={lossLesson}
+                          onChange={(event) => setLossLesson(event.target.value)}
+                          className="w-full min-h-24 resize-none rounded-xl border border-border-subtle bg-slate-900/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+                          placeholder="Sonraki benzer firsat icin alinacak aksiyon"
                         />
                       </div>
                     </div>
@@ -597,7 +779,14 @@ export default function PipelinePage() {
                     </button>
                   </Link>
                   <button
-                    onClick={handleMarkAsWon}
+                    onClick={() => {
+                      setWonReason(selectedDeal.wonReason ?? '');
+                      setWonFinalPrice(String(selectedDeal.finalPrice ?? selectedDeal.valueAmount));
+                      setWonDeliveryDate(selectedDeal.deliveryDate ?? '');
+                      setWonEpcPartner(selectedDeal.epcPartner ?? '');
+                      setWonClosedDate(selectedDeal.closedDate ?? new Date().toISOString().slice(0, 10));
+                      setIsWonFormOpen(true);
+                    }}
                     disabled={selectedDeal.stage === 'Kazanıldı'}
                     className="flex-1 border border-border-subtle text-white hover:bg-slate-800 py-3 rounded-xl font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50"
                   >
@@ -607,6 +796,8 @@ export default function PipelinePage() {
                     onClick={() => {
                       setLostCompetitorName(selectedDeal.competitorName ?? '');
                       setLossReason(selectedDeal.lossReason ?? '');
+                      setLossLesson(selectedDeal.lossLesson ?? '');
+                      setLossClosedDate(selectedDeal.closedDate ?? new Date().toISOString().slice(0, 10));
                       setIsLossFormOpen(true);
                     }}
                     disabled={selectedDeal.stage === 'Kaybedildi'}

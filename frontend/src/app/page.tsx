@@ -7,13 +7,19 @@ import {
   BarChart3,
   Layers,
   TrendingUp,
+  Clock,
+  AlertCircle,
+  DollarSign,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
   Area,
   AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
   Cell,
+  ComposedChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -82,6 +88,14 @@ export default function Dashboard() {
   const [deals, setDeals] = useState<DealItem[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [trendRange, setTrendRange] = useState<TrendRange>(6);
+  const [filters, setFilters] = useState({
+    startDate: '',
+    endDate: '',
+    user: 'all',
+    city: 'all',
+    sector: 'all',
+    customer: 'all'
+  });
 
   useEffect(() => {
     setDeals(getDeals());
@@ -93,21 +107,63 @@ export default function Dashboard() {
     return () => cancelAnimationFrame(frameId);
   }, []);
 
-  const openDeals = useMemo(() => deals.filter(isOpenDeal), [deals]);
-  const wonDeals = useMemo(() => deals.filter(isWonDeal), [deals]);
-  const lostDeals = useMemo(() => deals.filter(isLostDeal), [deals]);
+  const filteredDeals = useMemo(() => {
+    return deals.filter(deal => {
+      if (filters.startDate && deal.createdAt < filters.startDate) return false;
+      if (filters.endDate && deal.createdAt > filters.endDate) return false;
+      if (filters.user !== 'all' && !deal.owner.includes(filters.user)) return false;
+      if (filters.city !== 'all' && deal.city !== filters.city) return false;
+      if (filters.customer !== 'all' && deal.company !== filters.customer) return false;
+      // Note: sector is not in deal currently, would need to join with customer data
+      return true;
+    });
+  }, [deals, filters]);
+
+  const filteredActivities = useMemo(() => {
+    return activities.filter(act => {
+      if (filters.user !== 'all' && act.user !== filters.user) return false;
+      if (filters.customer !== 'all' && act.company !== filters.customer) return false;
+      return true;
+    });
+  }, [activities, filters]);
+
+  const openDeals = useMemo(() => filteredDeals.filter(isOpenDeal), [filteredDeals]);
+  const wonDeals = useMemo(() => filteredDeals.filter(isWonDeal), [filteredDeals]);
+  const lostDeals = useMemo(() => filteredDeals.filter(isLostDeal), [filteredDeals]);
 
   const totalPipeline = openDeals.reduce((total, deal) => total + deal.valueAmount, 0);
   const wonValue = wonDeals.reduce((total, deal) => total + deal.valueAmount, 0);
   const lostValue = lostDeals.reduce((total, deal) => total + deal.valueAmount, 0);
   const totalCapacity = openDeals.reduce((total, deal) => total + (deal.capacityMw ?? 0), 0);
 
+  const winRate = useMemo(() => {
+    const closedCount = wonDeals.length + lostDeals.length;
+    return closedCount > 0 ? Math.round((wonDeals.length / closedCount) * 100) : 0;
+  }, [wonDeals, lostDeals]);
+
+  const averageDealValue = useMemo(() => {
+    return wonDeals.length > 0 ? Math.round(wonValue / wonDeals.length) : 0;
+  }, [wonDeals, wonValue]);
+
+  const averageClosingTime = useMemo(() => {
+    const closedDeals = [...wonDeals, ...lostDeals];
+    if (closedDeals.length === 0) return 0;
+    
+    const totalDays = closedDeals.reduce((acc, deal) => {
+      const created = new Date(deal.createdAt).getTime();
+      const closed = deal.closedDate ? new Date(deal.closedDate).getTime() : new Date().getTime();
+      return acc + (closed - created) / (1000 * 60 * 60 * 24);
+    }, 0);
+    
+    return Math.round(totalDays / closedDeals.length);
+  }, [wonDeals, lostDeals]);
+
   const pipelineData = useMemo<PipelineData[]>(() => {
     const now = new Date();
     const range = trendRange === 'all'
       ? Math.max(
           1,
-          ...deals.map((deal) => {
+          ...filteredDeals.map((deal) => {
             const created = new Date(deal.createdAt);
             if (Number.isNaN(created.getTime())) return 1;
 
@@ -118,7 +174,7 @@ export default function Dashboard() {
 
     return Array.from({ length: range }, (_, index) => {
       const month = new Date(now.getFullYear(), now.getMonth() - (range - 1 - index), 1);
-      const monthDeals = deals.filter((deal) => {
+      const monthDeals = filteredDeals.filter((deal) => {
         const created = new Date(deal.createdAt);
         return created.getFullYear() === month.getFullYear() && created.getMonth() === month.getMonth();
       });
@@ -128,20 +184,35 @@ export default function Dashboard() {
         value: monthDeals.reduce((total, deal) => total + deal.valueAmount, 0),
       };
     });
-  }, [deals, trendRange]);
+  }, [filteredDeals, trendRange]);
+
+  const wonLostData = useMemo(() => {
+    const now = new Date();
+    return Array.from({ length: 6 }, (_, index) => {
+      const month = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+      const mWon = filteredDeals.filter(d => isWonDeal(d) && d.closedDate && new Date(d.closedDate).getMonth() === month.getMonth() && new Date(d.closedDate).getFullYear() === month.getFullYear());
+      const mLost = filteredDeals.filter(d => isLostDeal(d) && d.closedDate && new Date(d.closedDate).getMonth() === month.getMonth() && new Date(d.closedDate).getFullYear() === month.getFullYear());
+      
+      return {
+        name: monthLabel(month),
+        won: mWon.length,
+        lost: mLost.length,
+      };
+    });
+  }, [filteredDeals]);
 
   const stageData = useMemo<StageData[]>(() => {
     return dealStages
       .map((stage) => ({
         name: stage.name,
-        value: deals.filter((deal) => deal.stage === stage.name).length,
+        value: filteredDeals.filter((deal) => deal.stage === stage.name).length,
         color: stageColors[stage.color] ?? '#94A3B8',
       }))
       .filter((stage) => stage.value > 0);
-  }, [deals]);
+  }, [filteredDeals]);
 
   const topSalesUsers = useMemo<TopSalesUser[]>(() => {
-    const grouped = deals.reduce<Record<string, { name: string; won: number; total: number; value: number }>>((acc, deal) => {
+    const grouped = filteredDeals.reduce<Record<string, { name: string; won: number; total: number; value: number }>>((acc, deal) => {
       const owners = deal.owner.split(',').map((owner) => owner.trim()).filter(Boolean);
       const names = owners.length > 0 ? owners : ['Belirtilmedi'];
 
@@ -164,10 +235,10 @@ export default function Dashboard() {
         value: formatCurrency(user.value),
         rate: `${user.total > 0 ? Math.round((user.won / user.total) * 100) : 0}%`,
       }));
-  }, [deals]);
+  }, [filteredDeals]);
 
   const recentActivities = useMemo(() => {
-    return activities
+    return filteredActivities
       .filter((activity) => activity.status === 'completed')
       .slice(0, 5)
       .map((activity) => ({
@@ -176,7 +247,7 @@ export default function Dashboard() {
         company: activity.company || activity.subject || '-',
         time: getActivityTimeLabel(activity),
       }));
-  }, [activities]);
+  }, [filteredActivities]);
 
   const hasPipelineData = pipelineData.some((item) => item.value > 0);
 
@@ -190,7 +261,13 @@ export default function Dashboard() {
             <p className="text-sm text-slate-400">Tekrar hos geldiniz, pipeline ozetiniz burada.</p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end">
+            <Link href="/reports">
+              <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 border border-border-subtle text-slate-300 hover:text-white transition-all text-xs font-bold">
+                <BarChart3 className="w-4 h-4 text-orange-500" />
+                Detaylı Raporlar
+              </button>
+            </Link>
+            <div className="flex bg-slate-800 p-1 rounded-xl border border-border-subtle">
               <span className="text-sm font-medium text-white">Sistem Yoneticisi</span>
               <span className="text-xs text-slate-400">admin@company.com</span>
             </div>
@@ -201,57 +278,133 @@ export default function Dashboard() {
         </header>
 
         <div className="p-8 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            <StatCard title="Toplam Pipeline" value={formatCurrency(totalPipeline)} subValue={`${openDeals.length} acik deal`} icon={Layers} color="blue" />
-            <StatCard title="Kazanilan Deal" value={formatCurrency(wonValue)} subValue={`${wonDeals.length} deal`} icon={Award} color="emerald" />
-            <StatCard title="Kaybedilen Deal" value={formatCurrency(lostValue)} subValue={`${lostDeals.length} deal`} icon={TrendingUp} color="rose" />
-            <StatCard title="Toplam Kapasite" value={`${Number(totalCapacity.toFixed(2))} MW`} icon={Activity} color="orange" />
-            <StatCard title="Acik Deal" value={String(openDeals.length)} icon={BarChart3} color="slate" />
+          {/* Filters Bar */}
+          <div className="glass p-6 rounded-[32px] flex flex-wrap gap-4 items-end">
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 ml-1">Tarih Aralığı</label>
+              <div className="flex items-center gap-2">
+                <input 
+                  type="date" 
+                  value={filters.startDate}
+                  onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                  className="bg-slate-900 border border-border-subtle rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                />
+                <span className="text-slate-600">-</span>
+                <input 
+                  type="date" 
+                  value={filters.endDate}
+                  onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                  className="bg-slate-900 border border-border-subtle rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 ml-1">Satış Sorumlusu</label>
+              <select 
+                value={filters.user}
+                onChange={(e) => setFilters(prev => ({ ...prev, user: e.target.value }))}
+                className="bg-slate-900 border border-border-subtle rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 min-w-[150px]"
+              >
+                <option value="all">Tüm Ekip</option>
+                {Array.from(new Set(deals.map(d => d.owner))).map(user => (
+                  <option key={user} value={user}>{user}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 ml-1">Şehir</label>
+              <select 
+                value={filters.city}
+                onChange={(e) => setFilters(prev => ({ ...prev, city: e.target.value }))}
+                className="bg-slate-900 border border-border-subtle rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              >
+                <option value="all">Tüm Şehirler</option>
+                {Array.from(new Set(deals.map(d => d.city))).filter(Boolean).map(city => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 ml-1">Müşteri</label>
+              <select 
+                value={filters.customer}
+                onChange={(e) => setFilters(prev => ({ ...prev, customer: e.target.value }))}
+                className="bg-slate-900 border border-border-subtle rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 min-w-[150px]"
+              >
+                <option value="all">Tüm Müşteriler</option>
+                {Array.from(new Set(deals.map(d => d.company))).map(company => (
+                  <option key={company} value={company}>{company}</option>
+                ))}
+              </select>
+            </div>
+
+            <button 
+              onClick={() => {
+                if (confirm('Tüm yerel veriler temizlenecek. Emin misiniz?')) {
+                  localStorage.clear();
+                  window.location.reload();
+                }
+              }}
+              className="ml-2 text-xs text-rose-500 hover:text-rose-400 transition-colors mb-2 mr-2"
+            >
+              Yerel Verileri Sıfırla
+            </button>
+
+            <button 
+              onClick={() => setFilters({ startDate: '', endDate: '', user: 'all', city: 'all', sector: 'all', customer: 'all' })}
+              className="ml-auto text-xs text-slate-500 hover:text-white transition-colors mb-2 mr-2"
+            >
+              Filtreleri Temizle
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-6">
+            <StatCard title="Pipeline" value={formatCurrency(totalPipeline)} subValue={`${openDeals.length} açık`} icon={Layers} color="blue" />
+            <StatCard title="Kazanılan" value={formatCurrency(wonValue)} subValue={`${wonDeals.length} deal`} icon={Award} color="emerald" />
+            <StatCard title="Kapasite" value={`${Number(totalCapacity.toFixed(1))} MW`} icon={Activity} color="orange" />
+            <StatCard title="Açık Deal" value={String(openDeals.length)} icon={BarChart3} color="slate" />
+            
+            <StatCard title="Kazanma Oranı" value={`%${winRate}`} icon={TrendingUp} color="indigo" />
+            <StatCard title="Ort. Deal Değeri" value={formatCurrency(averageDealValue)} icon={DollarSign} color="purple" />
+            <StatCard title="Kapanma Süresi" value={`${averageClosingTime} Gün`} icon={Clock} color="rose" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="glass p-8 rounded-[32px] min-w-0">
               <div className="flex justify-between items-center mb-8">
-                <h3 className="text-lg font-semibold text-white">Pipeline Trendi</h3>
-                <select
-                  value={trendRange}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    setTrendRange(value === 'all' ? 'all' : Number(value) as TrendRange);
-                  }}
-                  className="bg-slate-800 text-slate-300 text-xs px-3 py-1.5 rounded-lg border border-border-subtle outline-none"
-                >
-                  <option value={1}>Son 1 Ay</option>
-                  <option value={3}>Son 3 Ay</option>
-                  <option value={6}>Son 6 Ay</option>
-                  <option value={12}>Son 1 Yil</option>
-                  <option value="all">Hepsi</option>
-                </select>
+                <h3 className="text-lg font-semibold text-white">Satış Performansı (Kazanılan/Kaybedilen)</h3>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">Kazanılan</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-rose-500" />
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">Kaybedilen</span>
+                  </div>
+                </div>
               </div>
               <div className="h-[350px] min-w-0">
-                {chartsReady && hasPipelineData ? (
+                {chartsReady ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={pipelineData}>
-                      <defs>
-                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
+                    <BarChart data={wonLostData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                       <XAxis dataKey="name" stroke="#64748B" fontSize={12} axisLine={false} tickLine={false} />
-                      <YAxis stroke="#64748B" fontSize={12} axisLine={false} tickLine={false} tickFormatter={(v) => `$${Number(v) / 1000}k`} />
+                      <YAxis stroke="#64748B" fontSize={12} axisLine={false} tickLine={false} />
                       <Tooltip
                         contentStyle={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '12px' }}
                         itemStyle={{ color: '#F8FAFC' }}
-                        formatter={(value) => formatCurrency(Number(value))}
                       />
-                      <Area type="monotone" dataKey="value" name="Pipeline" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
-                    </AreaChart>
+                      <Bar dataKey="won" name="Kazanılan" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20} />
+                      <Bar dataKey="lost" name="Kaybedilen" fill="#F43F5E" radius={[4, 4, 0, 0]} barSize={20} />
+                    </BarChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="h-full rounded-3xl border border-dashed border-border-subtle bg-slate-900/30 flex items-center justify-center text-sm text-slate-500">
-                    Pipeline trendi icin deal verisi bekleniyor.
+                    Grafik yükleniyor...
                   </div>
                 )}
               </div>
@@ -289,6 +442,68 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="glass p-8 rounded-[32px]">
+              <div className="flex items-center gap-2 mb-6">
+                <Clock className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-lg font-semibold text-white">Bugün Yapılacaklar</h3>
+                <span className="ml-auto bg-indigo-500/10 text-indigo-400 text-xs px-2 py-1 rounded-full border border-indigo-500/20">
+                  {activities.filter(a => a.date === new Date().toISOString().split('T')[0] && a.status === 'planned').length}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {activities
+                  .filter(a => a.date === new Date().toISOString().split('T')[0] && a.status === 'planned')
+                  .slice(0, 4)
+                  .map((act, i) => (
+                  <div key={i} className="group p-4 rounded-2xl bg-slate-900/30 border border-border-subtle hover:border-indigo-500/50 transition-all">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">{act.type}</span>
+                      <span className="text-[10px] text-slate-500">{act.time}</span>
+                    </div>
+                    <p className="text-sm font-medium text-white mb-1 truncate">{act.subject}</p>
+                    <p className="text-xs text-slate-400 truncate">{act.company}</p>
+                  </div>
+                ))}
+                {activities.filter(a => a.date === new Date().toISOString().split('T')[0] && a.status === 'planned').length === 0 && (
+                  <div className="col-span-full py-8 text-center border border-dashed border-border-subtle rounded-2xl">
+                    <p className="text-sm text-slate-500">Bugün için planlanmış aksiyon yok.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="glass p-8 rounded-[32px]">
+              <div className="flex items-center gap-2 mb-6">
+                <AlertCircle className="w-5 h-5 text-rose-400" />
+                <h3 className="text-lg font-semibold text-white">Geciken Aktiviteler</h3>
+                <span className="ml-auto bg-rose-500/10 text-rose-400 text-xs px-2 py-1 rounded-full border border-rose-500/20">
+                  {activities.filter(a => a.date < new Date().toISOString().split('T')[0] && a.status === 'planned').length}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {activities
+                  .filter(a => a.date < new Date().toISOString().split('T')[0] && a.status === 'planned')
+                  .slice(0, 4)
+                  .map((act, i) => (
+                  <div key={i} className="group p-4 rounded-2xl bg-rose-500/5 border border-rose-500/20 hover:border-rose-500/50 transition-all">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">{act.type}</span>
+                      <span className="text-[10px] text-rose-400/60">{act.date}</span>
+                    </div>
+                    <p className="text-sm font-medium text-white mb-1 truncate">{act.subject}</p>
+                    <p className="text-xs text-slate-400 truncate">{act.company}</p>
+                  </div>
+                ))}
+                {activities.filter(a => a.date < new Date().toISOString().split('T')[0] && a.status === 'planned').length === 0 && (
+                  <div className="col-span-full py-8 text-center border border-dashed border-border-subtle rounded-2xl">
+                    <p className="text-sm text-slate-500">Geciken aktivite bulunmuyor.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

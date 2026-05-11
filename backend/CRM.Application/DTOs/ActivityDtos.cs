@@ -15,6 +15,8 @@ namespace CRM.Application.DTOs
         public string? Description { get; set; }
         public DateTime ActivityDate { get; set; }
         public DateTime? NextActionDate { get; set; }
+        public bool IsCompleted { get; set; }
+        public string Status { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
     }
 
@@ -27,6 +29,8 @@ namespace CRM.Application.DTOs
         public string? Description { get; set; }
         public DateTime ActivityDate { get; set; }
         public DateTime? NextActionDate { get; set; }
+        public bool IsCompleted { get; set; }
+        public string Status { get; set; } = "planned";
     }
 
     public class UpdateActivityDto
@@ -36,5 +40,7 @@ namespace CRM.Application.DTOs
         public string? Description { get; set; }
         public DateTime ActivityDate { get; set; }
         public DateTime? NextActionDate { get; set; }
+        public bool IsCompleted { get; set; }
+        public string Status { get; set; } = "planned";
     }
 }

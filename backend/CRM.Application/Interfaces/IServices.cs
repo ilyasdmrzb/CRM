@@ -44,7 +44,7 @@ namespace CRM.Application.Interfaces
 
     public interface IDashboardService
     {
-        Task<DashboardDto> GetDashboardDataAsync();
+        Task<DashboardDto> GetDashboardDataAsync(DateTime? startDate = null, DateTime? endDate = null, Guid? salesUserId = null, string? city = null, string? sector = null, Guid? customerId = null);
         Task<WinLossDto> GetWinLossDataAsync();
     }
 

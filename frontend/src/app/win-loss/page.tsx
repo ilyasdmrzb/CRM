@@ -34,7 +34,7 @@ const lossReasonColors = ['#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#14B8A6']
 
 const formatCurrency = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
 
-const getClosedDate = (deal: DealItem) => deal.deliveryDate ?? deal.lastContactDate ?? deal.createdAt;
+const getClosedDate = (deal: DealItem) => deal.closedDate ?? deal.deliveryDate ?? deal.lastContactDate ?? deal.createdAt;
 
 const isWonDeal = (deal: DealItem) => deal.stage.startsWith('Kazan');
 
