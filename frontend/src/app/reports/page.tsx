@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { 
-  BarChart3, 
+  BarChart as BarChartIcon, 
   Download, 
   FileSpreadsheet, 
   Users, 
@@ -178,7 +178,10 @@ export default function ReportsPage() {
       <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition min-h-screen relative overflow-hidden">
         <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
           <div>
-            <h1 className="text-2xl font-bold text-white">Raporlar & Analiz</h1>
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              <BarChartIcon className="w-6 h-6 text-blue-500" />
+              Raporlar & Analiz
+            </h1>
             <p className="text-sm text-slate-400">Verilerinizi analiz edin ve dışa aktarın.</p>
           </div>
           <div className="flex items-center gap-3">
@@ -277,7 +280,7 @@ export default function ReportsPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={pipelineDistribution}
+                      data={pipelineDistribution.filter(d => d.value > 0)}
                       cx="50%"
                       cy="50%"
                       innerRadius={80}

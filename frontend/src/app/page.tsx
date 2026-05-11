@@ -1,10 +1,11 @@
 "use client";
 
+import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   Award,
-  BarChart3,
+  BarChart as BarChartIcon,
   Layers,
   TrendingUp,
   Clock,
@@ -263,7 +264,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             <Link href="/reports">
               <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 border border-border-subtle text-slate-300 hover:text-white transition-all text-xs font-bold">
-                <BarChart3 className="w-4 h-4 text-orange-500" />
+                <BarChartIcon className="w-4 h-4 text-orange-500" />
                 Detaylı Raporlar
               </button>
             </Link>
@@ -365,7 +366,7 @@ export default function Dashboard() {
             <StatCard title="Pipeline" value={formatCurrency(totalPipeline)} subValue={`${openDeals.length} açık`} icon={Layers} color="blue" />
             <StatCard title="Kazanılan" value={formatCurrency(wonValue)} subValue={`${wonDeals.length} deal`} icon={Award} color="emerald" />
             <StatCard title="Kapasite" value={`${Number(totalCapacity.toFixed(1))} MW`} icon={Activity} color="orange" />
-            <StatCard title="Açık Deal" value={String(openDeals.length)} icon={BarChart3} color="slate" />
+            <StatCard title="Açık Deal" value={String(openDeals.length)} icon={BarChartIcon} color="slate" />
             
             <StatCard title="Kazanma Oranı" value={`%${winRate}`} icon={TrendingUp} color="indigo" />
             <StatCard title="Ort. Deal Değeri" value={formatCurrency(averageDealValue)} icon={DollarSign} color="purple" />

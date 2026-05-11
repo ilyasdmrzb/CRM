@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   ArrowDownRight,
   ArrowUpRight,
-  BarChart3,
+  BarChart as BarChartIcon,
   Building2,
   Frown,
   Search,
@@ -193,7 +193,7 @@ export default function WinLossPage() {
             <div className="glass p-6 rounded-3xl border border-border-subtle">
               <div className="flex justify-between items-start mb-4">
                 <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400">
-                  <BarChart3 className="w-6 h-6" />
+                  <BarChartIcon className="w-6 h-6" />
                 </div>
               </div>
               <span className="text-slate-500 text-xs block mb-1">Ort. Döngü Süresi</span>

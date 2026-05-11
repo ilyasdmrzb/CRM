@@ -10,7 +10,7 @@ import {
   Trophy, 
   CalendarCheck, 
   ShieldCheck,
-  BarChart3,
+  BarChart,
   ChevronLeft, 
   ChevronRight,
   LogOut
@@ -29,7 +29,7 @@ const sidebarItems = [
   { name: 'Pipeline', icon: GitBranch, path: '/pipeline' },
   { name: 'Win / Loss', icon: Trophy, path: '/win-loss' },
   { name: 'Activities', icon: CalendarCheck, path: '/activities' },
-  { name: 'Reports', icon: BarChart3, path: '/reports' },
+  { name: 'Reports', icon: BarChart, path: '/reports' },
   { name: 'Admin Panel', icon: ShieldCheck, path: '/admin' },
 ];
 

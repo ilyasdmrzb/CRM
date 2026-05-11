@@ -237,7 +237,7 @@ export default function PipelinePage() {
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
-      <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition min-h-screen relative overflow-hidden">
+      <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition h-screen flex flex-col overflow-hidden">
         {/* Header */}
         <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
           <div>
@@ -310,7 +310,7 @@ export default function PipelinePage() {
         </div>
 
         {/* Content */}
-        <div className="p-8">
+        <div className="flex-1 overflow-auto p-8 custom-scrollbar">
           {view === 'table' ? (
             <div className="glass rounded-[32px] overflow-hidden border border-border-subtle">
               <div className="overflow-x-auto">
@@ -386,7 +386,7 @@ export default function PipelinePage() {
               )}
             </div>
           ) : (
-            <div className="flex gap-6 overflow-x-auto pb-8 min-h-[700px]">
+            <div className="flex gap-6 overflow-x-auto pb-8">
               {dealStages.map((stage) => {
                 const stageDeals = filteredDeals.filter(d => d.stage === stage.name);
                 const isDropTarget = dragOverStage === stage.name;
