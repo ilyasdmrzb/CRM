@@ -138,22 +138,22 @@ export default function ActivitiesPage() {
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
-      <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition min-h-screen">
-        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Activity Tracking</h1>
-            <p className="text-sm text-slate-400">Tüm etkileşimleri ve planlanan görevleri takip edin.</p>
+      <main className="main-content">
+        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-4 md:px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
+          <div className="ml-12 md:ml-0 overflow-hidden">
+            <h1 className="text-xl md:text-2xl font-bold text-white">Aktiviteler</h1>
+            <p className="text-xs md:text-sm text-slate-400 hidden sm:block">Müşteri etkileşimlerini takip edin.</p>
           </div>
           <button
             onClick={() => setIsFormOpen(true)}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+            className="bg-blue-600 hover:bg-blue-500 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-xs md:text-sm"
           >
-            <Plus className="w-5 h-5" />
-            Aktivite Ekle
+            <Plus className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="hidden sm:inline">Aktivite Ekle</span>
           </button>
         </header>
 
-        <div className="p-8 grid grid-cols-1 xl:grid-cols-4 gap-8">
+        <div className="p-4 md:p-8 grid grid-cols-1 xl:grid-cols-4 gap-8">
           <div className="xl:col-span-3 space-y-6">
             <div className="flex items-center gap-4 mb-8">
               <div className="relative flex-1">
@@ -179,10 +179,10 @@ export default function ActivitiesPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     key={act.id}
-                    className="glass p-6 rounded-3xl border border-border-subtle group hover:border-blue-500/30 transition-all flex items-center gap-6"
+                    className="glass p-4 md:p-6 rounded-3xl border border-border-subtle group hover:border-blue-500/30 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6"
                   >
-                    <div className={`p-4 rounded-2xl border group-hover:scale-110 transition-transform ${colorClasses[color]}`}>
-                      <Icon className="w-6 h-6" />
+                    <div className={`p-3 md:p-4 rounded-2xl border group-hover:scale-110 transition-transform ${colorClasses[color]}`}>
+                      <Icon className="w-5 h-5 md:w-6 md:h-6" />
                     </div>
 
                     <div className="flex-1">

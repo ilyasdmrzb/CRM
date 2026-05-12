@@ -118,60 +118,62 @@ export default function CustomerDetailPage() {
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
-      <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition min-h-screen">
-        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
-          <div className="flex items-center gap-4">
+      <main className="flex-1 min-h-screen ml-0 md:ml-[80px] lg:ml-[260px] sidebar-transition w-full max-w-full overflow-x-hidden">
+        <header className="h-auto min-h-[5rem] border-b border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between p-4 md:px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40 gap-4">
+          <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
             <Link href="/customers">
-              <button className="p-2 hover:bg-slate-800 rounded-xl transition-all text-slate-400 hover:text-white">
+              <button className="p-2 hover:bg-slate-800 rounded-xl transition-all text-slate-400 hover:text-white shrink-0">
                 <ArrowLeft className="w-5 h-5" />
               </button>
             </Link>
-            <div className="h-6 w-px bg-border-subtle" />
-            <div>
-              <h1 className="text-2xl font-bold text-white">{customer.name}</h1>
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-slate-400">Müşteri detayları ve kayıt bilgileri.</p>
-                <span className="text-slate-600">•</span>
+            <div className="h-6 w-px bg-border-subtle hidden xs:block" />
+            <div className="overflow-hidden">
+              <h1 className="text-lg md:text-2xl font-bold text-white truncate">{customer.name}</h1>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <p className="text-[10px] md:text-sm text-slate-400">Müşteri Detayı</p>
+                <span className="text-slate-600 hidden xs:inline">•</span>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-blue-400 font-bold">{ownerInitials(customer.owner)}</span>
-                  <span className="text-xs text-slate-400 font-medium">{customer.owner}</span>
+                  <span className="text-[10px] text-blue-400 font-bold">{ownerInitials(customer.owner)}</span>
+                  <span className="text-[10px] text-slate-400 font-medium truncate max-w-[80px] md:max-w-none">{customer.owner}</span>
                 </div>
               </div>
             </div>
           </div>
-          <span className={isActive
-            ? "rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-500"
-            : "rounded-full border border-slate-500/20 bg-slate-500/10 px-3 py-1 text-xs font-bold text-slate-400"
-          }>
-            {isActive ? 'Aktif' : 'Pasif'}
-          </span>
+          <div className="flex items-center justify-between sm:justify-end gap-3">
+            <span className={isActive
+              ? "rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-500"
+              : "rounded-full border border-slate-500/20 bg-slate-500/10 px-2.5 py-1 text-[10px] font-bold text-slate-400"
+            }>
+              {isActive ? 'Aktif' : 'Pasif'}
+            </span>
+          </div>
         </header>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <div className="glass rounded-2xl border border-border-subtle p-5">
-              <p className="text-xs text-slate-500">Durum Nedeni</p>
-              <p className="mt-2 text-lg font-bold text-white">{statusReason}</p>
+        <form onSubmit={handleSubmit} className="p-4 md:p-8 space-y-6 md:space-y-8">
+          <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div className="glass rounded-xl md:rounded-2xl border border-border-subtle p-3 md:p-5">
+              <p className="text-[10px] text-slate-500">Durum</p>
+              <p className="mt-1 text-xs md:text-lg font-bold text-white truncate">{statusReason}</p>
             </div>
-            <div className="glass rounded-2xl border border-border-subtle p-5">
-              <p className="text-xs text-slate-500">Acik Deal</p>
-              <p className="mt-2 text-lg font-bold text-blue-400">{openDeals.length}</p>
+            <div className="glass rounded-xl md:rounded-2xl border border-border-subtle p-3 md:p-5">
+              <p className="text-[10px] text-slate-500">Açık Deal</p>
+              <p className="mt-1 text-xs md:text-lg font-bold text-blue-400">{openDeals.length}</p>
             </div>
-            <div className="glass rounded-2xl border border-border-subtle p-5">
-              <p className="text-xs text-slate-500">Toplam Potansiyel</p>
-              <p className="mt-2 text-lg font-bold text-white">{formatCurrency(potentialValue)}</p>
+            <div className="glass rounded-xl md:rounded-2xl border border-border-subtle p-3 md:p-5">
+              <p className="text-[10px] text-slate-500">Potansiyel</p>
+              <p className="mt-1 text-xs md:text-lg font-bold text-white truncate">{formatCurrency(potentialValue)}</p>
             </div>
-            <div className="glass rounded-2xl border border-border-subtle p-5">
-              <p className="text-xs text-slate-500">Son Temas</p>
-              <p className="mt-2 text-lg font-bold text-white">{lastContactDate ?? '-'}</p>
+            <div className="glass rounded-xl md:rounded-2xl border border-border-subtle p-3 md:p-5">
+              <p className="text-[10px] text-slate-500">Son Temas</p>
+              <p className="mt-1 text-xs md:text-lg font-bold text-white">{lastContactDate ?? '-'}</p>
             </div>
           </section>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            <section className="xl:col-span-2 glass rounded-[32px] border border-border-subtle overflow-hidden">
-              <div className="p-6 border-b border-border-subtle flex items-center gap-3 bg-slate-800/30">
+            <section className="xl:col-span-2 glass rounded-2xl md:rounded-[32px] border border-border-subtle overflow-hidden">
+              <div className="p-4 md:p-6 border-b border-border-subtle flex items-center gap-3 bg-slate-800/30">
                 <Building2 className="w-5 h-5 text-blue-500" />
-                <h2 className="text-lg font-semibold text-white">Şirket Bilgileri</h2>
+                <h2 className="text-base md:text-lg font-semibold text-white">Şirket Bilgileri</h2>
               </div>
 
               <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -220,10 +222,10 @@ export default function CustomerDetailPage() {
               </div>
             </section>
 
-            <section className="glass rounded-[32px] border border-border-subtle overflow-hidden">
-              <div className="p-6 border-b border-border-subtle flex items-center gap-3 bg-slate-800/30">
+            <section className="glass rounded-2xl md:rounded-[32px] border border-border-subtle overflow-hidden">
+              <div className="p-4 md:p-6 border-b border-border-subtle flex items-center gap-3 bg-slate-800/30">
                 <User className="w-5 h-5 text-blue-500" />
-                <h2 className="text-lg font-semibold text-white">Birincil Kişi</h2>
+                <h2 className="text-base md:text-lg font-semibold text-white">Birincil Kişi</h2>
               </div>
 
               <div className="p-6 space-y-5">
@@ -305,24 +307,24 @@ export default function CustomerDetailPage() {
                 <table className="crm-table">
                   <thead>
                     <tr>
-                      <th>Deal</th>
-                      <th>Asama</th>
-                      <th>Deger</th>
-                      <th>Kapanis</th>
+                      <th className="px-4 py-3">Deal</th>
+                      <th className="hidden sm:table-cell px-4 py-3">Aşama</th>
+                      <th className="px-4 py-3">Değer</th>
+                      <th className="hidden xs:table-cell px-4 py-3">Kapanış</th>
                     </tr>
                   </thead>
                   <tbody>
                     {customerDeals.map((deal) => (
                       <tr key={deal.id}>
-                        <td>
-                          <Link href={`/pipeline/${deal.id}/edit`} className="text-blue-400 hover:text-blue-300">
+                        <td className="px-4 py-3">
+                          <Link href={`/pipeline/${deal.id}/edit`} className="text-blue-400 hover:text-blue-300 font-medium text-xs md:text-sm">
                             {deal.project}
                           </Link>
-                          <p className="text-xs text-slate-500">{deal.id}</p>
+                          <p className="text-[10px] text-slate-500">{deal.id}</p>
                         </td>
-                        <td className="text-slate-300">{deal.stage}</td>
-                        <td className="font-medium text-white">{deal.value}</td>
-                        <td className="text-slate-400">{deal.closedDate ? new Date(deal.closedDate).toLocaleDateString('tr-TR') : '-'}</td>
+                        <td className="hidden sm:table-cell px-4 py-3 text-slate-300 text-xs">{deal.stage}</td>
+                        <td className="px-4 py-3 font-bold text-white text-xs md:text-sm">{deal.value}</td>
+                        <td className="hidden xs:table-cell px-4 py-3 text-slate-400 text-xs">{deal.closedDate ? new Date(deal.closedDate).toLocaleDateString('tr-TR') : '-'}</td>
                       </tr>
                     ))}
                   </tbody>

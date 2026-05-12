@@ -137,74 +137,74 @@ export default function WinLossPage() {
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
-      <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition min-h-screen">
-        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Win / Loss Analizi</h1>
-            <p className="text-sm text-slate-400">Kapanan deal performansını, rakip etkisini ve kayıp nedenlerini takip edin.</p>
+      <main className="flex-1 min-h-screen ml-0 md:ml-[80px] lg:ml-[260px] sidebar-transition w-full max-w-full overflow-x-hidden">
+        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-4 md:px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
+          <div className="ml-12 md:ml-0 overflow-hidden">
+            <h1 className="text-xl md:text-2xl font-bold text-white">Win / Loss Analizi</h1>
+            <p className="text-xs md:text-sm text-slate-400 hidden sm:block">Kapanan deal performansını takip edin.</p>
           </div>
-          <div className="hidden md:flex items-center gap-3 rounded-2xl border border-border-subtle bg-slate-800/40 px-4 py-3">
-            <Building2 className="w-5 h-5 text-blue-500" />
+          <div className="hidden lg:flex items-center gap-3 rounded-2xl border border-border-subtle bg-slate-800/40 px-3 py-2">
+            <Building2 className="w-4 h-4 text-blue-500" />
             <div>
-              <p className="text-xs text-slate-500">Kapanan Deal</p>
-              <p className="text-sm font-bold text-white">{closedDeals.length}</p>
+              <p className="text-[10px] text-slate-500 leading-none">Kapanan Deal</p>
+              <p className="text-xs font-bold text-white">{closedDeals.length}</p>
             </div>
           </div>
         </header>
 
-        <div className="p-8 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <div className="glass p-6 rounded-3xl border border-border-subtle">
+        <div className="p-4 md:p-8 space-y-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+            <div className="glass p-3 md:p-6 rounded-xl md:rounded-3xl border border-border-subtle">
               <div className="flex justify-between items-start mb-4">
-                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
-                  <Trophy className="w-6 h-6" />
+                <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-emerald-500/10 text-emerald-500">
+                  <Trophy className="w-4 h-4 md:w-6 md:h-6" />
                 </div>
-                <span className="flex items-center gap-1 text-xs text-emerald-500 font-medium bg-emerald-500/10 px-2 py-1 rounded-full">
-                  <ArrowUpRight className="w-3 h-3" /> {wonDeals.length} deal
+                <span className="flex items-center gap-1 text-[8px] md:text-xs text-emerald-500 font-medium bg-emerald-500/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full">
+                  <ArrowUpRight className="w-2 h-2 md:w-3 md:h-3" /> {wonDeals.length}
                 </span>
               </div>
-              <span className="text-slate-500 text-xs block mb-1">Toplam Kazanılan Değer</span>
-              <span className="text-2xl font-bold text-white">{formatCurrency(wonValue)}</span>
+              <span className="text-slate-500 text-[10px] block mb-0.5">Kazanılan Değer</span>
+              <span className="text-sm md:text-2xl font-bold text-white block truncate">{formatCurrency(wonValue)}</span>
             </div>
 
-            <div className="glass p-6 rounded-3xl border border-border-subtle">
+            <div className="glass p-3 md:p-6 rounded-xl md:rounded-3xl border border-border-subtle">
               <div className="flex justify-between items-start mb-4">
-                <div className="p-2 rounded-xl bg-rose-500/10 text-rose-500">
-                  <Frown className="w-6 h-6" />
+                <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-rose-500/10 text-rose-500">
+                  <Frown className="w-4 h-4 md:w-6 md:h-6" />
                 </div>
-                <span className="flex items-center gap-1 text-xs text-rose-500 font-medium bg-rose-500/10 px-2 py-1 rounded-full">
-                  <ArrowDownRight className="w-3 h-3" /> {lostDeals.length} deal
+                <span className="flex items-center gap-1 text-[8px] md:text-xs text-rose-500 font-medium bg-rose-500/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full">
+                  <ArrowDownRight className="w-2 h-2 md:w-3 md:h-3" /> {lostDeals.length}
                 </span>
               </div>
-              <span className="text-slate-500 text-xs block mb-1">Toplam Kaybedilen Değer</span>
-              <span className="text-2xl font-bold text-white">{formatCurrency(lostValue)}</span>
+              <span className="text-slate-500 text-[10px] block mb-0.5">Kaybedilen Değer</span>
+              <span className="text-sm md:text-2xl font-bold text-white block truncate">{formatCurrency(lostValue)}</span>
             </div>
 
-            <div className="glass p-6 rounded-3xl border border-border-subtle">
+            <div className="glass p-3 md:p-6 rounded-xl md:rounded-3xl border border-border-subtle">
               <div className="flex justify-between items-start mb-4">
-                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
-                  <TrendingUp className="w-6 h-6" />
+                <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-blue-500/10 text-blue-500">
+                  <TrendingUp className="w-4 h-4 md:w-6 md:h-6" />
                 </div>
               </div>
-              <span className="text-slate-500 text-xs block mb-1">Genel Kazanma Oranı</span>
-              <span className="text-2xl font-bold text-white">{winRate}%</span>
+              <span className="text-slate-500 text-[10px] block mb-0.5">Kazanma Oranı</span>
+              <span className="text-sm md:text-2xl font-bold text-white">{winRate}%</span>
             </div>
 
-            <div className="glass p-6 rounded-3xl border border-border-subtle">
+            <div className="glass p-3 md:p-6 rounded-xl md:rounded-3xl border border-border-subtle">
               <div className="flex justify-between items-start mb-4">
-                <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400">
-                  <BarChartIcon className="w-6 h-6" />
+                <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-violet-500/10 text-violet-400">
+                  <BarChartIcon className="w-4 h-4 md:w-6 md:h-6" />
                 </div>
               </div>
-              <span className="text-slate-500 text-xs block mb-1">Ort. Döngü Süresi</span>
-              <span className="text-2xl font-bold text-white">{averageCycle} Gün</span>
+              <span className="text-slate-500 text-[10px] block mb-0.5">Döngü Süresi</span>
+              <span className="text-sm md:text-2xl font-bold text-white">{averageCycle} G</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="glass p-8 rounded-[32px] border border-border-subtle min-w-0">
+            <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px] border border-border-subtle min-w-0">
               <h3 className="text-lg font-semibold text-white mb-8">Rakip Analizi</h3>
-              <div className="h-[300px] min-w-0">
+              <div className="h-[250px] md:h-[300px] min-w-0">
                 {competitorData.length > 0 && chartsReady ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={competitorData} layout="vertical" margin={{ left: 12, right: 12 }}>
@@ -227,9 +227,9 @@ export default function WinLossPage() {
               </div>
             </div>
 
-            <div className="glass p-8 rounded-[32px] border border-border-subtle min-w-0">
+            <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px] border border-border-subtle min-w-0">
               <h3 className="text-lg font-semibold text-white mb-8">Başlıca Kaybetme Nedenleri</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-center h-[300px]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-auto md:h-[300px]">
                 <div className="h-full min-w-0">
                   {lossReasonData.length > 0 && chartsReady ? (
                     <ResponsiveContainer width="100%" height="100%">
@@ -275,7 +275,7 @@ export default function WinLossPage() {
           </div>
 
           <div className="glass rounded-[32px] overflow-hidden border border-border-subtle">
-            <div className="p-8 border-b border-border-subtle flex flex-col gap-4 bg-slate-800/30 xl:flex-row xl:items-center xl:justify-between">
+            <div className="p-4 md:p-8 border-b border-border-subtle flex flex-col gap-4 bg-slate-800/30 xl:flex-row xl:items-center xl:justify-between">
               <h3 className="text-lg font-semibold text-white">Son Kazanılan / Kaybedilen Deal'ler</h3>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="flex rounded-xl border border-border-subtle bg-slate-900 p-1">
@@ -313,13 +313,13 @@ export default function WinLossPage() {
               <table className="crm-table">
                 <thead>
                   <tr>
-                    <th>Deal ID</th>
+                    <th className="hidden sm:table-cell">Deal ID</th>
                     <th>Proje</th>
-                    <th>Şirket</th>
+                    <th className="hidden md:table-cell">Şirket</th>
                     <th>Sonuç</th>
                     <th>Değer</th>
-                    <th>Neden / Rakip</th>
-                    <th>Kapanış Tarihi</th>
+                    <th className="hidden lg:table-cell">Neden / Rakip</th>
+                    <th className="hidden sm:table-cell">Kapanış Tarihi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -331,16 +331,16 @@ export default function WinLossPage() {
 
                     return (
                       <tr key={deal.id}>
-                        <td className="font-mono text-xs text-blue-400">
+                        <td className="font-mono text-xs text-blue-400 hidden sm:table-cell">
                           <Link href={`/pipeline/${deal.id}/edit`} className="hover:text-blue-300">
                             {deal.id}
                           </Link>
                         </td>
                         <td className="text-white font-medium">{deal.project}</td>
-                        <td className="text-slate-400">{deal.company}</td>
+                        <td className="text-slate-400 hidden md:table-cell">{deal.company}</td>
                         <td>
                           <div className={cn(
-                            'px-3 py-1 rounded-full text-[10px] font-bold uppercase w-fit border',
+                            'px-2 md:px-3 py-1 rounded-full text-[8px] md:text-[10px] font-bold uppercase w-fit border',
                             isWon
                               ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                               : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
@@ -348,9 +348,9 @@ export default function WinLossPage() {
                             {isWon ? 'Kazanıldı' : 'Kaybedildi'}
                           </div>
                         </td>
-                        <td className="text-white font-bold">{deal.value}</td>
-                        <td className="text-sm text-slate-500">{detail}</td>
-                        <td className="text-sm text-slate-400">{new Date(getClosedDate(deal)).toLocaleDateString('tr-TR')}</td>
+                        <td className="text-white font-bold text-xs md:text-sm">{deal.value}</td>
+                        <td className="text-sm text-slate-500 hidden lg:table-cell">{detail}</td>
+                        <td className="text-sm text-slate-400 hidden sm:table-cell">{new Date(getClosedDate(deal)).toLocaleDateString('tr-TR')}</td>
                       </tr>
                     );
                   })}

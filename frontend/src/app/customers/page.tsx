@@ -16,6 +16,12 @@ import Sidebar from '@/components/layout/Sidebar';
 import Link from 'next/link';
 import { getCustomers, type CustomerListItem } from '@/lib/customers';
 import { getDeals, type DealItem } from '@/lib/deals';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 const ownerInitials = (owner: string) => {
   return owner
@@ -62,23 +68,23 @@ export default function CustomersPage() {
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
-      <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition min-h-screen">
-        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Customers</h1>
-            <p className="text-sm text-slate-400">Toplam {customers.length} şirket kayıtlı.</p>
+      <main className="main-content">
+        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-4 md:px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
+          <div className="ml-12 md:ml-0 overflow-hidden">
+            <h1 className="text-xl md:text-2xl font-bold text-white">Müşteriler</h1>
+            <p className="text-xs md:text-sm text-slate-400 hidden sm:block">Toplam {customers.length} şirket kayıtlı.</p>
           </div>
           <Link href="/customers/new">
-            <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
-              <Plus className="w-5 h-5" />
-              Müşteri Ekle
+            <button className="bg-blue-600 hover:bg-blue-500 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-xs md:text-sm">
+              <Plus className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="hidden sm:inline">Müşteri Ekle</span>
             </button>
           </Link>
         </header>
 
-        <div className="p-8 space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
+        <div className="p-4 md:p-8 space-y-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+            <div className="relative flex-1 w-full max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
                 type="text"
@@ -100,12 +106,12 @@ export default function CustomersPage() {
                 <thead>
                   <tr>
                     <th>Müşteri Bilgileri</th>
-                    <th>Telefon</th>
-                    <th>Mail Adresi</th>
-                    <th>Şehir</th>
-                    <th>Sorumlu</th>
-                    <th>Anlaşma Sayısı</th>
-                    <th>Durum</th>
+                    <th className="hidden lg:table-cell">Telefon</th>
+                    <th className="hidden xl:table-cell">Mail Adresi</th>
+                    <th className="hidden sm:table-cell">Şehir</th>
+                    <th className="hidden md:table-cell">Sorumlu</th>
+                    <th className="hidden sm:table-cell text-center">Anlaşmalar</th>
+                    <th className="text-center">Durum</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -117,63 +123,69 @@ export default function CustomersPage() {
 
                     return (
                       <tr key={customer.id} className="group">
-                        <td>
+                        <td className="px-4 py-3">
                           <Link href={`/customers/${customer.id}`}>
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all">
-                                <Building2 className="w-5 h-5" />
+                            <div className="flex items-center gap-2 md:gap-3">
+                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all shrink-0">
+                                <Building2 className="w-4 h-4 md:w-5 md:h-5" />
                               </div>
-                              <div className="flex flex-col">
-                                <span className="font-semibold text-white group-hover:text-blue-400 transition-colors">{customer.name}</span>
-                                <span className="text-xs text-slate-500">{customer.contactName ?? 'İlgili kişi girilmemiş'}</span>
+                              <div className="flex flex-col overflow-hidden">
+                                <span className="font-semibold text-white group-hover:text-blue-400 transition-colors truncate max-w-[120px] md:max-w-none">{customer.name}</span>
+                                <span className="text-[10px] md:text-xs text-slate-500 truncate">{customer.contactName ?? '-'}</span>
                               </div>
                             </div>
                           </Link>
                         </td>
-                        <td>
+                        <td className="hidden lg:table-cell px-4 py-3">
                           <div className="flex items-center gap-1.5 text-slate-300">
                             <Phone className="w-3.5 h-3.5 text-slate-500" />
                             <span className="text-sm">{customer.phone ?? '-'}</span>
                           </div>
                         </td>
-                        <td>
+                        <td className="hidden xl:table-cell px-4 py-3">
                           <div className="flex items-center gap-1.5 text-slate-300">
                             <Mail className="w-3.5 h-3.5 text-slate-500" />
-                            <span className="text-sm">{customer.email ?? '-'}</span>
+                            <span className="text-sm truncate max-w-[150px]">{customer.email ?? '-'}</span>
                           </div>
                         </td>
-                        <td>
-                          <div className="flex items-center gap-1.5 text-slate-300">
-                            <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                        <td className="hidden sm:table-cell px-4 py-3">
+                          <div className="flex items-center gap-1.5 text-slate-400">
+                            <MapPin className="w-3.5 h-3.5 text-slate-600" />
                             <span className="text-sm">{customer.city ?? '-'}</span>
                           </div>
                         </td>
-                        <td>
-                          <div className="flex items-center gap-2" title={customer.owner}>
-                            <span className="text-sm font-bold text-slate-300">{ownerInitials(customer.owner)}</span>
+                        <td className="hidden md:table-cell px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-slate-800 border border-border-subtle flex items-center justify-center text-[10px] font-bold text-slate-400">
+                              {(customer.owner ?? 'A')[0]}
+                            </div>
+                            <span className="text-sm text-slate-300">{customer.owner ?? '-'}</span>
                           </div>
                         </td>
-                        <td>
-                          <span className={isActive ? "text-blue-400 font-medium" : "text-slate-500"}>
-                            {customerDeals.length}
-                          </span>
+                        <td className="hidden sm:table-cell px-4 py-3 text-center">
+                          <div className="inline-flex items-center justify-center bg-slate-800/50 px-2 py-1 rounded-lg border border-border-subtle">
+                            <span className="text-xs font-bold text-white">{customerDeals.length}</span>
+                          </div>
                         </td>
-                        <td>
-                          <span className={isActive
-                            ? "inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-500"
-                            : "inline-flex rounded-full border border-slate-500/20 bg-slate-500/10 px-3 py-1 text-xs font-bold text-slate-400"
-                          }>
-                            {isActive ? 'Aktif' : 'Pasif'}
-                          </span>
+                        <td className="px-4 py-3 text-center">
+                          <div className={cn(
+                            "inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold border",
+                            isActive 
+                              ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
+                              : "bg-slate-500/10 text-slate-500 border-slate-500/20"
+                          )}>
+                            <div className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-emerald-500" : "bg-slate-500")} />
+                            <span className="hidden xs:inline">{isActive ? 'Aktif' : 'Pasif'}</span>
+                          </div>
                         </td>
-                        <td>
-                          <div className="flex items-center gap-2">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1 md:gap-2">
                             <Link href={`/customers/${customer.id}`}>
                               <button className="p-2 text-slate-500 hover:text-blue-400 transition-colors">
-                                <ChevronRight className="w-5 h-5" />
+                                <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                               </button>
                             </Link>
-                            <button className="p-2 text-slate-500 hover:text-white transition-colors">
+                            <button className="p-2 text-slate-500 hover:text-white transition-colors hidden md:block">
                               <MoreVertical className="w-5 h-5" />
                             </button>
                           </div>

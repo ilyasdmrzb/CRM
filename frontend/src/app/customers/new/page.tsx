@@ -40,7 +40,7 @@ export default function NewCustomerPage() {
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
-      <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition min-h-screen">
+      <main className="main-content">
         <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <Link href="/customers">

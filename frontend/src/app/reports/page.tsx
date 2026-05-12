@@ -186,14 +186,14 @@ export default function ReportsPage() {
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
-      <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition min-h-screen relative overflow-hidden">
-        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
-          <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              <BarChartIcon className="w-6 h-6 text-blue-500" />
-              Raporlar & Analiz
+      <main className="flex-1 min-h-screen ml-0 md:ml-[80px] lg:ml-[260px] sidebar-transition w-full max-w-full overflow-x-hidden relative">
+        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-4 md:px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
+          <div className="ml-12 md:ml-0 overflow-hidden">
+            <h1 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
+              <BarChartIcon className="w-5 h-5 md:w-6 md:h-6 text-blue-500" />
+              <span className="truncate">Raporlar & Analiz</span>
             </h1>
-            <p className="text-sm text-slate-400">Verilerinizi analiz edin ve dışa aktarın.</p>
+            <p className="text-xs md:text-sm text-slate-400 hidden sm:block">Verilerinizi analiz edin ve dışa aktarın.</p>
           </div>
           <div className="flex items-center gap-3">
              <div className="flex bg-slate-800 p-1 rounded-xl border border-border-subtle">
@@ -216,7 +216,7 @@ export default function ReportsPage() {
 
         <div className="p-8 space-y-8">
           {/* Export Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {[
               { title: 'Pipeline Export', icon: FileSpreadsheet, action: handleExportPipeline, color: 'blue' },
               { title: 'Müşteri Listesi', icon: Users, action: handleExportCustomers, color: 'emerald' },
@@ -245,17 +245,17 @@ export default function ReportsPage() {
           {/* Visual Reports */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             {/* Sales Performance Chart */}
-            <div className="glass rounded-[32px] border border-border-subtle overflow-hidden">
-              <div className="p-6 border-b border-border-subtle flex items-center justify-between">
+            <div className="glass rounded-[24px] md:rounded-[32px] border border-border-subtle overflow-hidden">
+              <div className="p-4 md:p-6 border-b border-border-subtle flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <TrendingUp className="w-5 h-5 text-orange-500" />
-                  <h2 className="text-lg font-bold text-white">Satışçı Performans Karşılaştırması</h2>
+                  <h2 className="text-lg font-bold text-white">Satışçı Performansı</h2>
                 </div>
                 <button onClick={handleExportPerformance} className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-all">
                   <Download className="w-4 h-4" />
                 </button>
               </div>
-              <div className="p-6 h-[400px]">
+              <div className="p-4 md:p-6 h-[300px] md:h-[400px]">
                 {mounted && (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={salesPerformance} layout="vertical">

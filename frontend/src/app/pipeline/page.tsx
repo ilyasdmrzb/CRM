@@ -237,12 +237,12 @@ export default function PipelinePage() {
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
-      <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition h-screen flex flex-col overflow-hidden">
+      <main className="main-content flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
-          <div>
+        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-4 md:px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
+          <div className="ml-12 md:ml-0 overflow-hidden">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-white">Pipeline</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-white">Pipeline</h1>
               <button 
                 onClick={() => {
                   if (confirm('Tüm yerel veriler temizlenecek. Emin misiniz?')) {
@@ -250,59 +250,55 @@ export default function PipelinePage() {
                     window.location.reload();
                   }
                 }}
-                className="text-[10px] text-rose-500 hover:text-rose-400 transition-colors uppercase font-bold tracking-wider"
+                className="text-[8px] md:text-[10px] text-rose-500 hover:text-rose-400 transition-colors uppercase font-bold tracking-wider hidden sm:block"
               >
-                [Yerel Verileri Sıfırla]
+                [Sıfırla]
               </button>
             </div>
-            <p className="text-sm text-slate-400">Deal'lerinizi yönetin ve ilerlemeyi takip edin.</p>
+            <p className="text-xs md:text-sm text-slate-400 truncate">Fırsatları yönetin ve ilerlemeyi takip edin.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <div className="flex bg-slate-800 p-1 rounded-xl border border-border-subtle">
               <button 
                 onClick={() => setView('table')}
-                className={cn("p-2 rounded-lg transition-all", view === 'table' ? "bg-blue-600 text-white shadow-lg" : "text-slate-400 hover:text-white")}
+                className={cn("p-1.5 md:p-2 rounded-lg transition-all", view === 'table' ? "bg-blue-600 text-white shadow-lg" : "text-slate-400 hover:text-white")}
               >
-                <List className="w-5 h-5" />
+                <List className="w-4 h-4 md:w-5 md:h-5" />
               </button>
               <button 
                 onClick={() => setView('kanban')}
-                className={cn("p-2 rounded-lg transition-all", view === 'kanban' ? "bg-blue-600 text-white shadow-lg" : "text-slate-400 hover:text-white")}
+                className={cn("p-1.5 md:p-2 rounded-lg transition-all", view === 'kanban' ? "bg-blue-600 text-white shadow-lg" : "text-slate-400 hover:text-white")}
               >
-                <LayoutGrid className="w-5 h-5" />
+                <LayoutGrid className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             </div>
             <Link href="/pipeline/new">
-              <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
-                <Plus className="w-5 h-5" />
-                Yeni Deal
+              <button className="bg-blue-600 hover:bg-blue-500 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-xs md:text-sm">
+                <Plus className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="hidden sm:inline">Yeni Deal</span>
               </button>
             </Link>
           </div>
         </header>
 
         {/* Toolbar */}
-        <div className="p-8 pb-0">
+        <div className="p-4 md:p-8 pb-0">
           <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-800/40 p-4 rounded-2xl border border-border-subtle backdrop-blur-sm">
-            <div className="flex items-center gap-4 flex-1 min-w-[300px]">
+            <div className="flex items-center gap-4 flex-1 min-w-[200px]">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input 
                   type="text" 
-                  placeholder="Proje, şirket veya ID ara..."
+                  placeholder="Ara..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full bg-slate-900 border border-border-subtle rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                 />
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border-subtle text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-                <Filter className="w-4 h-4" />
-                Filtreler
-              </button>
             </div>
             <div className="flex items-center gap-6 text-sm">
               <div className="flex flex-col">
-                <span className="text-slate-500 text-xs">Toplam Pipeline</span>
+                <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Toplam Pipeline</span>
                 <span className="text-white font-bold">{formatCurrency(totalPipeline)}</span>
               </div>
             </div>
@@ -310,7 +306,7 @@ export default function PipelinePage() {
         </div>
 
         {/* Content */}
-        <div className={cn("flex-1 p-8", view === 'table' ? "overflow-auto" : "overflow-hidden flex flex-col")}>
+        <div className={cn("flex-1 p-4 md:p-8", view === 'table' ? "overflow-auto" : "overflow-hidden flex flex-col")}>
           {view === 'table' ? (
             <div className="glass rounded-[32px] overflow-hidden border border-border-subtle">
               <div className="overflow-x-auto">
@@ -436,7 +432,7 @@ export default function PipelinePage() {
                       <motion.div
                         layoutId={deal.id}
                         className={cn(
-                          "glass p-4 rounded-2xl border-l-4 transition-all cursor-grab active:cursor-grabbing group",
+                          "glass p-3 md:p-4 rounded-xl md:rounded-2xl border-l-4 transition-all cursor-grab active:cursor-grabbing group",
                           draggedDealId === deal.id ? "opacity-50 scale-[0.98]" : "hover:border-blue-500"
                         )}
                         style={{ borderLeftColor: stageBorderColor(stage.color) }}

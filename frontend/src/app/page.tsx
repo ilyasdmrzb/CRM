@@ -63,23 +63,23 @@ const getActivityTimeLabel = (activity: ActivityItem) => {
 const StatCard = ({ title, value, subValue, icon: Icon, color, trend }: any) => (
   <motion.div
     whileHover={{ y: -5 }}
-    className="glass p-6 rounded-3xl relative overflow-hidden"
+    className="glass p-3 md:p-6 rounded-xl md:rounded-3xl relative overflow-hidden"
   >
-    <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-10 bg-${color}-500`} />
-    <div className="flex justify-between items-start mb-4">
-      <div className={`p-3 rounded-2xl bg-${color}-500/10 border border-${color}-500/20`}>
-        <Icon className={`w-6 h-6 text-${color}-500`} />
+    <div className={`absolute top-0 right-0 w-16 md:w-24 h-16 md:h-24 -mr-6 md:-mr-8 -mt-6 md:-mt-8 rounded-full opacity-10 bg-${color}-500`} />
+    <div className="flex justify-between items-start mb-3 md:mb-4">
+      <div className={`p-1.5 md:p-3 rounded-lg md:rounded-2xl bg-${color}-500/10 border border-${color}-500/20`}>
+        <Icon className={`w-4 h-4 md:w-6 md:h-6 text-${color}-500`} />
       </div>
       {trend && (
-        <span className={`text-xs font-medium px-2 py-1 rounded-full ${trend > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+        <span className={`text-[10px] md:text-xs font-medium px-1.5 md:px-2 py-0.5 md:py-1 rounded-full ${trend > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
           {trend > 0 ? '+' : ''}{trend}%
         </span>
       )}
     </div>
-    <div className="space-y-1">
-      <h3 className="text-slate-400 text-sm font-medium">{title}</h3>
-      <p className="text-2xl font-bold text-white">{value}</p>
-      {subValue && <p className="text-xs text-slate-500 mt-1">{subValue}</p>}
+    <div className="space-y-0.5 md:space-y-1">
+      <h3 className="text-slate-400 text-[10px] md:text-sm font-medium">{title}</h3>
+      <p className="text-sm md:text-2xl font-bold text-white truncate">{value}</p>
+      {subValue && <p className="text-[9px] md:text-xs text-slate-500">{subValue}</p>}
     </div>
   </motion.div>
 );
@@ -255,30 +255,30 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
-      <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition min-h-screen">
-        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Sales Dashboard</h1>
-            <p className="text-sm text-slate-400">Tekrar hos geldiniz, pipeline ozetiniz burada.</p>
+      <main className="flex-1 min-h-screen ml-0 md:ml-[80px] lg:ml-[260px] sidebar-transition w-full max-w-full overflow-x-hidden">
+        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-4 md:px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
+          <div className="ml-12 md:ml-0">
+            <h1 className="text-xl md:text-2xl font-bold text-white">Sales Dashboard</h1>
+            <p className="text-xs md:text-sm text-slate-400 hidden sm:block">Tekrar hoş geldiniz, pipeline özetiniz burada.</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <Link href="/reports">
-              <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 border border-border-subtle text-slate-300 hover:text-white transition-all text-xs font-bold">
+              <button className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800 border border-border-subtle text-slate-300 hover:text-white transition-all text-[10px] md:text-xs font-bold">
                 <BarChartIcon className="w-4 h-4 text-orange-500" />
-                Detaylı Raporlar
+                <span className="hidden sm:inline">Detaylı Raporlar</span>
               </button>
             </Link>
-            <div className="flex bg-slate-800 p-1 rounded-xl border border-border-subtle">
-              <span className="text-sm font-medium text-white">Sistem Yoneticisi</span>
-              <span className="text-xs text-slate-400">admin@company.com</span>
+            <div className="hidden md:flex bg-slate-800 p-1 px-3 rounded-xl border border-border-subtle flex-col">
+              <span className="text-sm font-medium text-white leading-tight">Sistem Yöneticisi</span>
+              <span className="text-[10px] text-slate-400">admin@company.com</span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 font-bold">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 font-bold text-sm">
               SA
             </div>
           </div>
         </header>
 
-        <div className="p-8 space-y-8">
+        <div className="p-4 md:p-8 space-y-6 md:space-y-8">
           {/* Filters Bar */}
           <div className="glass p-6 rounded-[32px] flex flex-wrap gap-4 items-end">
             <div className="space-y-1.5">
@@ -362,7 +362,7 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 md:gap-6">
             <StatCard title="Pipeline" value={formatCurrency(totalPipeline)} subValue={`${openDeals.length} açık`} icon={Layers} color="blue" />
             <StatCard title="Kazanılan" value={formatCurrency(wonValue)} subValue={`${wonDeals.length} deal`} icon={Award} color="emerald" />
             <StatCard title="Kapasite" value={`${Number(totalCapacity.toFixed(1))} MW`} icon={Activity} color="orange" />
@@ -374,7 +374,7 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="glass p-8 rounded-[32px] min-w-0">
+            <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px] min-w-0">
               <div className="flex justify-between items-center mb-8">
                 <h3 className="text-lg font-semibold text-white">Satış Performansı (Kazanılan/Kaybedilen)</h3>
                 <div className="flex items-center gap-4">
@@ -388,7 +388,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="h-[350px] min-w-0">
+              <div className="h-[280px] md:h-[350px] min-w-0">
                 {chartsReady ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={wonLostData}>
@@ -411,9 +411,9 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="glass p-8 rounded-[32px] min-w-0">
+            <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px] min-w-0">
               <h3 className="text-lg font-semibold text-white mb-8">Aşama Dağılımı</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-[350px]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 items-center h-auto md:h-[350px]">
                 <div className="h-full min-w-0">
                   {chartsReady && stageData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
@@ -448,7 +448,7 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="glass p-8 rounded-[32px]">
+            <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
               <div className="flex items-center gap-2 mb-6">
                 <Clock className="w-5 h-5 text-indigo-400" />
                 <h3 className="text-lg font-semibold text-white">Bugün Yapılacaklar</h3>
@@ -478,7 +478,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="glass p-8 rounded-[32px]">
+            <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
               <div className="flex items-center gap-2 mb-6">
                 <AlertCircle className="w-5 h-5 text-rose-400" />
                 <h3 className="text-lg font-semibold text-white">Geciken Aktiviteler</h3>
@@ -510,7 +510,7 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            <div className="xl:col-span-2 glass p-8 rounded-[32px]">
+            <div className="xl:col-span-2 glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
               <h3 className="text-lg font-semibold text-white mb-6">En Aktif Satış Kullanıcıları</h3>
               <table className="crm-table">
                 <thead>
@@ -551,7 +551,7 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="glass p-8 rounded-[32px]">
+            <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
               <h3 className="text-lg font-semibold text-white mb-6">Son Aktiviteler</h3>
               <div className="space-y-6">
                 {recentActivities.map((act, i) => (

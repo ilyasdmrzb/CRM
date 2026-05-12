@@ -12,6 +12,13 @@
   --foreground: #F8FAFC;
 }
 
+html, body {
+  @apply overflow-x-hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
@@ -71,4 +78,53 @@ body {
 }
 .crm-table tr:hover td {
   background: rgba(51, 65, 85, 0.3);
+}
+.main-content {
+  @apply flex-1 min-h-screen ml-0 md:ml-[80px] lg:ml-[260px];
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile-Specific Refinements */
+@media (max-width: 768px) {
+  h1 { font-size: 1.25rem !important; }
+  h2 { font-size: 1.1rem !important; }
+  h3 { font-size: 1rem !important; }
+  .glass { 
+    padding: 1rem !important; 
+    border-radius: 1.5rem !important; 
+  }
+  .crm-table th, .crm-table td { 
+    padding: 0.75rem 0.5rem !important; 
+    font-size: 0.75rem !important; 
+  }
+  .text-2xl { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+  .text-3xl { font-size: 1.5rem !important; line-height: 2rem !important; }
+  .text-4xl { font-size: 1.75rem !important; line-height: 2.25rem !important; }
+  
+  /* Layout adjustments */
+  .p-8 { padding: 1rem !important; }
+  .p-6 { padding: 0.75rem !important; }
+  .gap-8 { gap: 1rem !important; }
+  .gap-6 { gap: 0.75rem !important; }
+}
+
+/* Extra Small Screens (e.g. Galaxy) */
+@media (max-width: 480px) {
+  h1 { font-size: 1.1rem !important; }
+  h2 { font-size: 1rem !important; }
+  h3 { font-size: 0.9rem !important; }
+  .text-2xl { font-size: 1.1rem !important; }
+  .text-xl { font-size: 1rem !important; }
+  .p-4 { padding: 0.5rem !important; }
+  .p-8 { padding: 0.75rem !important; }
+  .gap-4 { gap: 0.5rem !important; }
+  .crm-table th, .crm-table td { 
+    padding: 0.5rem 0.3rem !important; 
+    font-size: 0.7rem !important; 
+  }
+  .h-20 { height: 4rem !important; } /* Header height */
+  input, select, textarea {
+    font-size: 0.75rem !important;
+    padding: 0.4rem 0.6rem !important;
+  }
 }

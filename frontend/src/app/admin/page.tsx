@@ -164,7 +164,7 @@ export default function AdminPanelPage() {
     return (
       <div className="flex min-h-screen bg-main-bg">
         <Sidebar />
-        <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition min-h-screen p-8">
+        <main className="main-content p-4 md:p-8">
           <div className="glass rounded-[32px] border border-border-subtle p-8">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-400">
               <Lock className="h-6 w-6" />
@@ -183,18 +183,18 @@ export default function AdminPanelPage() {
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
-      <main className="flex-1 ml-[80px] md:ml-[260px] sidebar-transition min-h-screen">
-        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
-            <p className="text-sm text-slate-400">Kullanıcıları, rolleri ve pipeline ayarlarını yönetin.</p>
+      <main className="main-content">
+        <header className="h-20 border-b border-border-subtle flex items-center justify-between px-4 md:px-8 bg-main-bg/80 backdrop-blur-md sticky top-0 z-40">
+          <div className="ml-12 md:ml-0 overflow-hidden">
+            <h1 className="text-xl md:text-2xl font-bold text-white">Admin Panel</h1>
+            <p className="text-xs md:text-sm text-slate-400 hidden sm:block">Kullanıcıları, rolleri ve pipeline ayarlarını yönetin.</p>
           </div>
-          <div className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-400">
+          <div className="rounded-full border border-blue-500/20 bg-blue-500/10 px-2 py-1 text-[10px] md:text-xs font-bold text-blue-400">
             Yalnızca Admin
           </div>
         </header>
 
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           <div className="mb-8 flex flex-wrap gap-2">
             {[
               { id: 'users', label: 'Kullanıcı Yönetimi', icon: Users },

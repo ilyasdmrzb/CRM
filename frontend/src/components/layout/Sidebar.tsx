@@ -13,7 +13,9 @@ import {
   BarChart,
   ChevronLeft, 
   ChevronRight,
-  LogOut
+  LogOut,
+  Menu,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
@@ -36,6 +38,7 @@ const sidebarItems = [
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
   const pathname = usePathname();
 
@@ -43,18 +46,19 @@ export default function Sidebar() {
     setMounted(true);
   }, []);
 
+  // Close mobile menu on path change
+  React.useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
   const handleLogout = () => {
     if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
       logout();
     }
   };
 
-  return (
-    <motion.aside
-      initial={false}
-      animate={{ width: isCollapsed ? 80 : 260 }}
-      className="fixed left-0 top-0 h-screen bg-sidebar border-r border-border-subtle flex flex-col z-50 sidebar-transition"
-    >
+  const SidebarContent = () => (
+    <>
       {/* Logo Area */}
       <div className="h-20 flex items-center px-6 relative">
         <div className="flex items-center gap-3">
@@ -62,7 +66,7 @@ export default function Sidebar() {
             <img src="/hsa-enerji-logo-cropped.png" alt="HSA Enerji" className="h-8 w-8 object-contain" />
           </div>
           <AnimatePresence>
-            {!isCollapsed && (
+            {(!isCollapsed || isMobileMenuOpen) && (
               <motion.span
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -76,16 +80,21 @@ export default function Sidebar() {
             )}
           </AnimatePresence>
         </div>
+        {isMobileMenuOpen && (
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="ml-auto p-2 text-slate-400 hover:text-white md:hidden"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
         {sidebarItems.map((item) => {
-          // Role check - only check roles after mounting to avoid hydration mismatch
           const canShow = !item.roles || (mounted && hasRole(item.roles));
-          if (!canShow) {
-            return null;
-          }
+          if (!canShow) return null;
 
           const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
           
@@ -100,10 +109,10 @@ export default function Sidebar() {
                 )}
               >
                 <item.icon className={cn("w-5 h-5", isActive ? "text-blue-500" : "group-hover:text-white")} />
-                {!isCollapsed && (
+                {(!isCollapsed || isMobileMenuOpen) && (
                   <span className="font-medium text-sm whitespace-nowrap">{item.name}</span>
                 )}
-                {isActive && !isCollapsed && (
+                {isActive && (!isCollapsed || isMobileMenuOpen) && (
                   <motion.div
                     layoutId="active-pill"
                     className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
@@ -119,7 +128,7 @@ export default function Sidebar() {
       <div className="p-4 border-t border-border-subtle">
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all group"
+          className="w-full hidden md:flex items-center gap-3 px-3 py-3 rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all group"
         >
           {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           {!isCollapsed && <span className="font-medium text-sm">Menüyü Daralt</span>}
@@ -130,9 +139,56 @@ export default function Sidebar() {
           className="w-full flex items-center gap-3 px-3 py-3 mt-2 rounded-xl text-red-400 hover:bg-red-500/10 transition-all"
         >
           <LogOut className="w-5 h-5" />
-          {!isCollapsed && <span className="font-medium text-sm">Çıkış Yap</span>}
+          {(!isCollapsed || isMobileMenuOpen) && <span className="font-medium text-sm">Çıkış Yap</span>}
         </button>
       </div>
-    </motion.aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile Hamburger Button */}
+      <div className="fixed top-4 left-4 z-[60] md:hidden">
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="p-3 rounded-xl bg-sidebar border border-border-subtle text-white shadow-xl"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Mobile Drawer Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] md:hidden"
+            />
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed left-0 top-0 h-screen w-[280px] bg-sidebar border-r border-border-subtle flex flex-col z-[60] md:hidden"
+            >
+              <SidebarContent />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Desktop Sidebar */}
+      <motion.aside
+        initial={false}
+        animate={{ width: isCollapsed ? 80 : 260 }}
+        className="fixed left-0 top-0 h-screen bg-sidebar border-r border-border-subtle hidden md:flex flex-col z-50 sidebar-transition"
+      >
+        <SidebarContent />
+      </motion.aside>
+    </>
   );
 }
