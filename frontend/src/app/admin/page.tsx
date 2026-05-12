@@ -20,9 +20,10 @@ import {
   Users,
   Eye,
   EyeOff,
+  X,
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
-import { addAdminUser, getAdminUsers, setAdminUserStatus, type AdminUser } from '@/lib/admin-users';
+import { addAdminUser, getAdminUsers, setAdminUserStatus, deleteAdminUser, updateAdminUser, type AdminUser } from '@/lib/admin-users';
 import { isCurrentUserAdmin } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 
@@ -46,6 +47,7 @@ export default function AdminPanelPage() {
   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'stages'>('users');
   const [hasAdminAccess, setHasAdminAccess] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
 
   const fetchUsers = async () => {
     const data = await getAdminUsers();
@@ -79,34 +81,83 @@ export default function AdminPanelPage() {
     const form = event.currentTarget;
     const formData = new FormData(form);
     
-    const userData = {
+    const userData: any = {
       fullName: String(formData.get('fullName')),
       email: String(formData.get('email')),
-      password: String(formData.get('password')),
       role: String(formData.get('role')),
       phone: String(formData.get('phone') || ''),
+      isActive: editingUser ? editingUser.isActive : true
     };
 
+    const password = String(formData.get('password') || '');
+    if (password) {
+      userData.password = password;
+    }
+
     try {
-      await addAdminUser(userData);
-      toast.success('Kullanıcı başarıyla kaydedildi.');
+      if (editingUser) {
+        await updateAdminUser(editingUser.id, userData);
+        toast.success('Kullanıcı başarıyla güncellendi.');
+        setEditingUser(null);
+      } else {
+        if (!password) {
+          toast.error('Yeni kullanıcı için şifre gereklidir.');
+          setIsSaving(false);
+          return;
+        }
+        await addAdminUser(userData);
+        toast.success('Kullanıcı başarıyla kaydedildi.');
+      }
       form.reset();
       await fetchUsers();
     } catch (error: any) {
-      toast.error(error.message || 'Kullanıcı kaydedilemedi.');
+      toast.error(error.message || 'İşlem başarısız.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleStatusChange = async (id: string, isActive: boolean) => {
-    const success = await setAdminUserStatus(id, isActive);
-    if (success) {
+  const handleStatusChange = async (user: AdminUser) => {
+    try {
+      await updateAdminUser(user.id, { 
+        fullName: user.fullName, 
+        role: user.role, 
+        isActive: !user.isActive 
+      });
       toast.success('Kullanıcı durumu güncellendi.');
       await fetchUsers();
-    } else {
+    } catch (error: any) {
       toast.error('Kullanıcı durumu güncellenemedi.');
     }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    // Check if user is trying to delete themselves
+    const currentUserJson = localStorage.getItem('crm-user');
+    const currentUser = currentUserJson ? JSON.parse(currentUserJson) : null;
+    if (currentUser && currentUser.userId === id) {
+      toast.error('Kendi hesabınızı pasifleştiremezsiniz.');
+      return;
+    }
+
+    const confirmMessage = `Verilerin korunması ve bütünlüğü açısından kullanıcı pasifleştirmek daha iyidir. Silmek istediğinize emin misiniz? (${name})`;
+    if (window.confirm(confirmMessage)) {
+      try {
+        console.log('Deleting user:', id);
+        await deleteAdminUser(id);
+        toast.success('Kullanıcı kalıcı olarak silindi.');
+        await fetchUsers();
+      } catch (error: any) {
+        console.error('Delete error:', error);
+        toast.error(error.message || 'Kullanıcı silinemedi.');
+      }
+    }
+  };
+
+  const startEdit = (user: AdminUser) => {
+    setEditingUser(user);
+    // Form values will be set via defaultValue in inputs or state if we use controlled components.
+    // For simplicity with uncontrolled components, we'll use a key to reset the form.
   };
 
   if (!hasAdminAccess) {
@@ -169,33 +220,65 @@ export default function AdminPanelPage() {
           {activeTab === 'users' && (
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
               <section className="glass rounded-[32px] border border-border-subtle overflow-hidden">
-                <div className="p-6 border-b border-border-subtle flex items-center gap-3 bg-slate-800/30">
-                  <UserPlus className="w-5 h-5 text-blue-500" />
-                  <h2 className="text-lg font-semibold text-white">Kullanıcı Kaydet</h2>
+                <div className="p-6 border-b border-border-subtle flex items-center justify-between bg-slate-800/30">
+                  <div className="flex items-center gap-3">
+                    {editingUser ? <Edit2 className="w-5 h-5 text-blue-500" /> : <UserPlus className="w-5 h-5 text-blue-500" />}
+                    <h2 className="text-lg font-semibold text-white">
+                      {editingUser ? 'Kullanıcı Düzenle' : 'Kullanıcı Kaydet'}
+                    </h2>
+                  </div>
+                  {editingUser && (
+                    <button 
+                      onClick={() => setEditingUser(null)}
+                      className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 transition-all"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                <form 
+                  key={editingUser?.id || 'new'} 
+                  onSubmit={handleSubmit} 
+                  className="p-6 space-y-5"
+                >
                   <div className="space-y-2">
                     <label className={labelClass}>Ad Soyad</label>
-                    <input className={inputClass} name="fullName" placeholder="Ayşe Yılmaz" required />
+                    <input 
+                      className={inputClass} 
+                      name="fullName" 
+                      placeholder="Ayşe Yılmaz" 
+                      defaultValue={editingUser?.fullName || ''}
+                      required 
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <label className={labelClass}>E-posta</label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                      <input className={`${inputClass} pl-11`} name="email" type="email" placeholder="kullanici@company.com" required />
+                      <input 
+                        className={`${inputClass} pl-11`} 
+                        name="email" 
+                        type="email" 
+                        placeholder="kullanici@company.com" 
+                        defaultValue={editingUser?.email || ''}
+                        required 
+                        disabled={!!editingUser}
+                      />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className={labelClass}>Şifre</label>
+                    <label className={labelClass}>
+                      {editingUser ? 'Şifre (Değiştirmek için doldurun)' : 'Şifre'}
+                    </label>
                     <div className="relative group">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
                       <input 
                         name="password"
                         type={showPassword ? "text" : "password"} 
-                        required
+                        required={!editingUser}
                         placeholder="••••••••"
                         className={`${inputClass} pl-11 pr-12`}
                       />
@@ -213,13 +296,22 @@ export default function AdminPanelPage() {
                     <label className={labelClass}>Telefon</label>
                     <div className="relative">
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                      <input className={`${inputClass} pl-11`} name="phone" placeholder="+90 532 000 0000" />
+                      <input 
+                        className={`${inputClass} pl-11`} 
+                        name="phone" 
+                        placeholder="+90 532 000 0000" 
+                        defaultValue={editingUser?.phone || ''}
+                      />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <label className={labelClass}>Rol</label>
-                    <select className={inputClass} name="role" defaultValue="Sales">
+                    <select 
+                      className={inputClass} 
+                      name="role" 
+                      defaultValue={editingUser?.role || "Sales"}
+                    >
                       <option value="Admin">Admin</option>
                       <option value="Manager">Manager</option>
                       <option value="Sales">Sales</option>
@@ -231,8 +323,8 @@ export default function AdminPanelPage() {
                     disabled={isSaving}
                     className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-70"
                   >
-                    <Plus className="w-4 h-4" />
-                    {isSaving ? 'Kaydediliyor...' : 'Kullanıcı Kaydet'}
+                    {editingUser ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                    {isSaving ? 'Kaydediliyor...' : editingUser ? 'Değişiklikleri Kaydet' : 'Kullanıcı Kaydet'}
                   </button>
                 </form>
               </section>
@@ -267,8 +359,8 @@ export default function AdminPanelPage() {
                     </thead>
                     <tbody>
                       {filteredUsers.map((user) => (
-                        <tr key={user.id}>
-                          <td>
+                        <tr key={user.id} className={cn(editingUser?.id === user.id && "bg-blue-600/5")}>
+                          <td className="cursor-pointer" onClick={() => startEdit(user)}>
                             <div className="flex items-center gap-3">
                               <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white">
                                 {user.initials || user.fullName.charAt(0).toUpperCase()}
@@ -279,29 +371,43 @@ export default function AdminPanelPage() {
                               </div>
                             </div>
                           </td>
-                          <td>
+                          <td className="cursor-pointer" onClick={() => startEdit(user)}>
                             <span className="inline-flex items-center gap-1 rounded-lg border border-blue-500/20 bg-blue-500/10 px-2.5 py-1 text-[10px] font-bold text-blue-400">
                               <ShieldCheck className="w-3 h-3" />
                               {user.role}
                             </span>
                           </td>
-                          <td className="text-sm text-slate-400">{user.phone ?? '-'}</td>
-                          <td>
-                            <span className={user.isActive
-                              ? "inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-500"
-                              : "inline-flex rounded-full border border-slate-500/20 bg-slate-500/10 px-3 py-1 text-xs font-bold text-slate-400"
-                            }>
-                              {user.isActive ? 'Aktif' : 'Pasif'}
-                            </span>
-                          </td>
+                          <td className="text-sm text-slate-400 cursor-pointer" onClick={() => startEdit(user)}>{user.phone ?? '-'}</td>
                           <td>
                             <button
-                              onClick={() => handleStatusChange(user.id, !user.isActive)}
-                              className="flex items-center gap-2 rounded-xl border border-border-subtle px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all"
+                              onClick={() => handleStatusChange(user)}
+                              className={cn(
+                                "inline-flex rounded-full border px-3 py-1 text-xs font-bold transition-all",
+                                user.isActive
+                                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-500"
+                                  : "border-slate-500/20 bg-slate-500/10 text-slate-400"
+                              )}
                             >
-                              {user.isActive ? <ToggleRight className="w-4 h-4 text-emerald-500" /> : <ToggleLeft className="w-4 h-4 text-slate-500" />}
-                              {user.isActive ? 'Pasifleştir' : 'Aktifleştir'}
+                              {user.isActive ? 'Aktif' : 'Pasif'}
                             </button>
+                          </td>
+                          <td>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => startEdit(user)}
+                                className="p-2 rounded-xl border border-border-subtle text-slate-300 hover:bg-slate-800 hover:text-white transition-all"
+                                title="Düzenle"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(user.id, user.fullName)}
+                                className="p-2 rounded-xl border border-border-subtle text-slate-400 hover:bg-rose-500/10 hover:text-rose-500 transition-all"
+                                title="Sil"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}

@@ -42,8 +42,26 @@ export async function addAdminUser(data: any) {
 }
 
 export async function setAdminUserStatus(id: string, isActive: boolean) {
-  // Assuming there's an update endpoint, but for status we might need a specific one or use general update
-  // For now, let's assume we can update the user
   const response = await api.put(`/auth/users/${id}`, { isActive });
   return response.ok;
+}
+
+export async function deleteAdminUser(id: string) {
+  // Using POST as a fallback for DELETE verb which might be blocked in some environments
+  const response = await api.post(`/auth/users/${id}/delete`, {});
+  if (!response.ok) {
+    console.error(`Delete failed with status: ${response.status} ${response.statusText}`);
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || `Hata (${response.status}): Kullanıcı silinemedi`);
+  }
+  return true;
+}
+
+export async function updateAdminUser(id: string, data: any) {
+  const response = await api.put(`/auth/users/${id}`, data);
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Kullanıcı güncellenemedi');
+  }
+  return await response.json();
 }

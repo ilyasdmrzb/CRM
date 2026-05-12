@@ -61,5 +61,46 @@ namespace CRM.API.Controllers
             var user = await _authService.CreateUserAsync(dto, createdBy);
             return Ok(user);
         }
+
+        [HttpPut("users/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateUser([FromRoute] Guid id, [FromBody] UpdateUserDto dto)
+        {
+            var user = await _authService.UpdateUserAsync(id, dto);
+            if (user == null) return NotFound();
+            return Ok(user);
+        }
+
+        [HttpDelete("users/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
+        {
+            try
+            {
+                var success = await _authService.DeleteUserAsync(id);
+                if (!success) return NotFound();
+                return Ok(new { message = "Kullanıcı kalıcı olarak silindi." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("users/{id}/delete")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteUserPost([FromRoute] Guid id)
+        {
+            try
+            {
+                var success = await _authService.DeleteUserAsync(id);
+                if (!success) return NotFound();
+                return Ok(new { message = "Kullanıcı kalıcı olarak silindi." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

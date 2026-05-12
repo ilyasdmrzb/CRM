@@ -73,9 +73,20 @@ namespace CRM.Infrastructure.Services
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null) return null;
-            user.FullName = dto.FullName;
-            user.Role = dto.Role;
+            
+            if (!string.IsNullOrWhiteSpace(dto.FullName))
+                user.FullName = dto.FullName;
+            
+            if (!string.IsNullOrWhiteSpace(dto.Role))
+                user.Role = dto.Role;
+            
             user.IsActive = dto.IsActive;
+
+            if (!string.IsNullOrEmpty(dto.Password))
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            }
+
             await _context.SaveChangesAsync();
             return MapToDto(user);
         }
@@ -84,9 +95,19 @@ namespace CRM.Infrastructure.Services
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null) return false;
-            user.IsActive = false;
-            await _context.SaveChangesAsync();
-            return true;
+            
+            try 
+            {
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                // If deletion fails due to foreign key constraints, fallback to deactivation or throw
+                // The user was warned, but we can't break DB integrity.
+                throw new InvalidOperationException("Bu kullanıcıya bağlı veriler (Deal, Aktivite vb.) olduğu için tamamen silinemez. Lütfen kullanıcıyı pasifleştirin.");
+            }
         }
 
         private string GenerateToken(User user, DateTime expiry)

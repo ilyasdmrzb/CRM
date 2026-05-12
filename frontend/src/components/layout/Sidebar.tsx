@@ -35,8 +35,13 @@ const sidebarItems = [
 ];
 
 export default function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
   const pathname = usePathname();
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
@@ -76,8 +81,9 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
         {sidebarItems.map((item) => {
-          // Role check
-          if (item.roles && !hasRole(item.roles)) {
+          // Role check - only check roles after mounting to avoid hydration mismatch
+          const canShow = !item.roles || (mounted && hasRole(item.roles));
+          if (!canShow) {
             return null;
           }
 
