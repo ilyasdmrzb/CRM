@@ -310,7 +310,7 @@ export default function PipelinePage() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-8 custom-scrollbar">
+        <div className={cn("flex-1 p-8", view === 'table' ? "overflow-auto" : "overflow-hidden flex flex-col")}>
           {view === 'table' ? (
             <div className="glass rounded-[32px] overflow-hidden border border-border-subtle">
               <div className="overflow-x-auto">
@@ -386,7 +386,7 @@ export default function PipelinePage() {
               )}
             </div>
           ) : (
-            <div className="flex gap-6 overflow-x-auto pb-8">
+            <div className="flex-1 flex gap-6 overflow-x-auto pb-4 custom-scrollbar min-h-0">
               {dealStages.map((stage) => {
                 const stageDeals = filteredDeals.filter(d => d.stage === stage.name);
                 const isDropTarget = dragOverStage === stage.name;
@@ -406,7 +406,7 @@ export default function PipelinePage() {
                   }}
                   onDrop={(event) => handleDrop(event, stage.name)}
                   className={cn(
-                    "flex-1 min-w-[300px] flex flex-col gap-4 rounded-3xl border border-transparent p-2 transition-all",
+                    "flex-1 min-w-[300px] max-h-full flex flex-col gap-4 rounded-3xl border border-transparent p-2 transition-all overflow-hidden",
                     isDropTarget && "border-blue-500/50 bg-blue-500/5"
                   )}
                 >
@@ -422,7 +422,7 @@ export default function PipelinePage() {
                     </span>
                   </div>
                   
-                  <div className="flex min-h-24 flex-col gap-4">
+                  <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar min-h-0 pb-4">
                     {stageDeals.map((deal) => (
                       <div
                         key={deal.id}
