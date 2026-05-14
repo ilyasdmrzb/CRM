@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -309,7 +309,7 @@ export default function PipelinePage() {
                         className="cursor-pointer group"
                         onClick={() => setSelectedDeal(deal)}
                       >
-                        <td className="font-mono text-xs text-blue-400">{deal.id}</td>
+                        <td className="font-mono text-xs text-blue-400">{deal.code}</td>
                         <td>
                           <div className="flex flex-col">
                             <span className="font-semibold text-white group-hover:text-blue-400 transition-colors">{deal.project}</span>
@@ -416,7 +416,7 @@ export default function PipelinePage() {
                         style={{ borderLeftColor: stageBorderColor(stage.color) }}
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <span className="text-[10px] font-mono text-slate-500">{deal.id}</span>
+                          <span className="text-[10px] font-mono text-slate-500">{deal.code}</span>
                           <span className="text-[10px] font-medium text-slate-500 group-hover:text-blue-400 transition-colors">{deal.capacity}</span>
                         </div>
                         <h4 className="text-white font-semibold mb-1 group-hover:text-blue-400 transition-colors">{deal.project}</h4>
@@ -483,7 +483,7 @@ export default function PipelinePage() {
                 <div className="p-8 border-b border-border-subtle flex justify-between items-start">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="font-mono text-blue-500">{selectedDeal.id}</span>
+                      <span className="font-mono text-blue-500">{selectedDeal.code}</span>
                       <div className={cn("px-2 py-0.5 rounded text-[10px] font-bold uppercase", `bg-${selectedDeal.color}-500/10 text-${selectedDeal.color}-500 border border-${selectedDeal.color}-500/20`)}>
                         {selectedDeal.stage}
                       </div>

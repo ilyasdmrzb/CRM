@@ -1,4 +1,4 @@
-﻿import { api } from './api';
+import { api } from './api';
 
 export type DealStageName = 'Potansiyel' | 'Yeterlilik' | 'Teklif' | 'Müzakere' | 'Taahhüt' | 'Kazanıldı' | 'Kaybedildi';
 
@@ -10,6 +10,7 @@ export type DealNote = {
 
 export type DealItem = {
   id: string;
+  code: string;
   project: string;
   company: string;
   owner: string;
@@ -147,6 +148,7 @@ const mapApiDeal = (deal: ApiDeal): DealItem => {
 
   return {
     id: deal.id,
+    code: deal.dealCode,
     project: deal.projectName,
     company: deal.companyName,
     owner: deal.salesUserShortName || deal.salesUserName || 'Sistem Yöneticisi',

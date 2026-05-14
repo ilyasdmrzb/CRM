@@ -1,4 +1,4 @@
-﻿using CRM.Application.DTOs;
+using CRM.Application.DTOs;
 using CRM.Application.Interfaces;
 using CRM.Domain.Entities;
 using CRM.Infrastructure.Data;
@@ -185,17 +185,25 @@ namespace CRM.Infrastructure.Services
 
         private async Task<string> GenerateDealCodeAsync()
         {
-            var last = await _context.Deals
+            var now = DateTime.Now;
+            var prefix = $"{now:yyMM}";
+
+            var lastCode = await _context.Deals
+                .Where(d => d.DealCode.StartsWith(prefix))
                 .OrderByDescending(d => d.DealCode)
                 .Select(d => d.DealCode)
                 .FirstOrDefaultAsync();
 
-            int next = 1;
-            if (last != null && last.StartsWith("DEAL-"))
+            int nextNumber = 1;
+            if (lastCode != null && lastCode.Length > 4)
             {
-                if (int.TryParse(last[5..], out int num)) next = num + 1;
+                if (int.TryParse(lastCode[4..], out int lastNum))
+                {
+                    nextNumber = lastNum + 1;
+                }
             }
-            return $"DEAL-{next:D4}";
+
+            return $"{prefix}{nextNumber}";
         }
 
         private static DealDto MapToDto(Deal d) => new()
