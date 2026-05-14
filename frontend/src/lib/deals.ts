@@ -269,6 +269,12 @@ export async function closeDealInDb(
   return mapApiDeal(await response.json() as ApiDeal);
 }
 
+export async function deleteDealFromDb(id: string) {
+  const response = await api.delete(`/Deals/${id}`);
+  if (!response.ok) throw new Error('Deal silinemedi.');
+  return true;
+}
+
 export async function getLossReasonOptionsFromDb() {
   const deals = await getDealsFromDb();
   return Array.from(new Set(

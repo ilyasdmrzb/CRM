@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -112,8 +112,8 @@ export default function CustomerDetailPage() {
     ? new Date(Math.max(...contactDateValues)).toLocaleDateString('tr-TR')
     : null;
   const statusReason = isActive
-    ? `${openDeals.length} acik deal var`
-    : customerDeals.length > 0 ? 'Tum deal ler kapali' : 'Deal yok';
+    ? `${openDeals.length} Açık Deal var`
+    : customerDeals.length > 0 ? "Tüm Deal'ler Kapalı" : "Deal Yok";
 
   return (
     <div className="flex min-h-screen bg-main-bg">

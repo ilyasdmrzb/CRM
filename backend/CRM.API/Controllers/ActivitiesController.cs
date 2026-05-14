@@ -62,5 +62,14 @@ namespace CRM.API.Controllers
 
             return updated == null ? NotFound() : Ok(updated);
         }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var result = await _activityService.DeleteAsync(id);
+            if (!result) return NotFound();
+            return NoContent();
+        }
     }
 }

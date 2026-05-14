@@ -119,3 +119,9 @@ export async function markActivityCompletedInDb(id: string) {
   return mapApiActivity(await response.json() as ApiActivity);
 }
 
+export async function deleteActivityFromDb(id: string) {
+  const response = await api.delete(`/Activities/${id}`);
+  if (!response.ok) throw new Error('Aktivite silinemedi.');
+  return true;
+}
+

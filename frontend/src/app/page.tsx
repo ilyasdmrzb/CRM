@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -31,6 +31,7 @@ import {
 import Sidebar from '@/components/layout/Sidebar';
 import { getActivitiesFromDb, type ActivityItem } from '@/lib/activities';
 import { dealStages, getDealsFromDb, type DealItem } from '@/lib/deals';
+import { getCurrentUser } from '@/lib/auth';
 
 type PipelineData = { name: string; value: number };
 type StageData = { name: string; value: number; color: string };
@@ -102,6 +103,9 @@ export default function Dashboard() {
     getDealsFromDb().then(setDeals).catch(() => setDeals([]));
     getActivitiesFromDb().then(setActivities).catch(() => setActivities([]));
   }, []);
+
+  const user = getCurrentUser();
+  const initials = user?.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'SA';
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() => setChartsReady(true));
@@ -269,11 +273,11 @@ export default function Dashboard() {
               </button>
             </Link>
             <div className="hidden md:flex bg-slate-800 p-1 px-3 rounded-xl border border-border-subtle flex-col">
-              <span className="text-sm font-medium text-white leading-tight">Sistem Yöneticisi</span>
-              <span className="text-[10px] text-slate-400">admin@company.com</span>
+              <span className="text-sm font-medium text-white leading-tight">{user?.fullName || 'Sistem Yöneticisi'}</span>
+              <span className="text-[10px] text-slate-400">{user?.email || 'admin@company.com'}</span>
             </div>
             <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-500 font-bold text-sm">
-              SA
+              {initials}
             </div>
           </div>
         </header>

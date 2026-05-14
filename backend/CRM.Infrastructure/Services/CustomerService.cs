@@ -133,9 +133,17 @@ namespace CRM.Infrastructure.Services
         {
             var customer = await _context.Customers.FindAsync(id);
             if (customer == null) return false;
-            _context.Customers.Remove(customer);
-            await _context.SaveChangesAsync();
-            return true;
+
+            try
+            {
+                _context.Customers.Remove(customer);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (DbUpdateException)
+            {
+                throw new InvalidOperationException("Bu müşteriye bağlı anlaşmalar veya iletişim kişileri olduğu için silinemez. Lütfen önce bağlı kayıtları silin.");
+            }
         }
 
         private static string? NormalizeOptional(string? value)

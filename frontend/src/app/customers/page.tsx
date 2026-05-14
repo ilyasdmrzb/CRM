@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -10,12 +10,16 @@ import {
   Phone,
   Mail,
   ChevronRight,
-  Filter
+  Filter,
+  Trash2,
+  X
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import Link from 'next/link';
-import { getCustomersFromDb, type CustomerListItem } from '@/lib/customers';
+import { getCustomersFromDb, deleteCustomerFromDb, type CustomerListItem } from '@/lib/customers';
 import { getDealsFromDb, type DealItem } from '@/lib/deals';
+import { isCurrentUserAdmin } from '@/lib/auth';
+import toast from 'react-hot-toast';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -51,6 +55,17 @@ export default function CustomersPage() {
       .catch(() => setCustomers([]));
     getDealsFromDb().then(setDeals).catch(() => setDeals([]));
   }, []);
+
+  const handleDeleteCustomer = async (id: string) => {
+    if (!confirm('Bu müşteriyi silmek istediğinize emin misiniz? Bağlı anlaşmalar ve aktiviteler de etkilenebilir.')) return;
+    try {
+      await deleteCustomerFromDb(id);
+      setCustomers(await getCustomersFromDb());
+      toast.success('Müşteri silindi.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Müşteri silinemedi.');
+    }
+  };
 
   const filteredCustomers = useMemo(() => {
     const query = search.trim().toLocaleLowerCase('tr-TR');
@@ -177,7 +192,7 @@ export default function CustomersPage() {
                               : "bg-slate-500/10 text-slate-500 border-slate-500/20"
                           )}>
                             <div className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-emerald-500" : "bg-slate-500")} />
-                            <span className="hidden xs:inline">{isActive ? 'Aktif' : 'Pasif'}</span>
+                            <span className="hidden xs:inline">{isActive ? 'Açık' : 'Kapalı'}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3">
@@ -187,6 +202,15 @@ export default function CustomersPage() {
                                 <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                               </button>
                             </Link>
+                            {isCurrentUserAdmin() && (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleDeleteCustomer(customer.id); }}
+                                className="p-2 text-rose-500/50 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
+                                title="Sil"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            )}
                             <button className="p-2 text-slate-500 hover:text-white transition-colors hidden md:block">
                               <MoreVertical className="w-5 h-5" />
                             </button>

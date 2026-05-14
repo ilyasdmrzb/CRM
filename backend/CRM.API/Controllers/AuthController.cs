@@ -1,4 +1,4 @@
-﻿using CRM.Application.DTOs.Auth;
+using CRM.Application.DTOs.Auth;
 using CRM.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +44,7 @@ namespace CRM.API.Controllers
         }
 
         [HttpGet("users")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _authService.GetAllUsersAsync();

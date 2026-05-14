@@ -1,4 +1,6 @@
-﻿import Sidebar from "@/components/layout/Sidebar";
+"use client";
+
+import Sidebar from "@/components/layout/Sidebar";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { getCurrentUser } from "@/lib/auth";
 

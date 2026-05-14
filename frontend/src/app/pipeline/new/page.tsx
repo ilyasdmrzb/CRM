@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -19,6 +19,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import { getAdminUsers, type AdminUser } from '@/lib/admin-users';
 import { getCustomersFromDb, type CustomerListItem } from '@/lib/customers';
 import { addDealToDb, dealStages, getLossReasonOptionsFromDb, lossReasonList } from '@/lib/deals';
+import { getCurrentUser } from '@/lib/auth';
 
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
 const labelClass = "text-sm font-medium text-slate-300";
@@ -31,6 +32,12 @@ export default function NewDealPage() {
   const [customerQuery, setCustomerQuery] = useState('');
   const [isCustomerPickerOpen, setIsCustomerPickerOpen] = useState(false);
   const [selectedOwnerIds, setSelectedOwnerIds] = useState<string[]>([]);
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user && selectedOwnerIds.length === 0) {
+      setSelectedOwnerIds([user.id]);
+    }
+  }, []);
   const [isOwnerPickerOpen, setIsOwnerPickerOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState(dealStages[0].name);
   const [lossReasonOptions, setLossReasonOptions] = useState<string[]>([]);

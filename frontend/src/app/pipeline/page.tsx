@@ -20,7 +20,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Sidebar from '@/components/layout/Sidebar';
 import { cn } from '@/lib/utils';
-import { closeDealInDb, dealStages, getDealsFromDb, getLossReasonOptionsFromDb, updateDealStageInDb, type DealItem, type DealStageName, lossReasonList } from '@/lib/deals';
+import { closeDealInDb, dealStages, getDealsFromDb, getLossReasonOptionsFromDb, updateDealStageInDb, deleteDealFromDb, type DealItem, type DealStageName, lossReasonList } from '@/lib/deals';
+import { isCurrentUserAdmin } from '@/lib/auth';
+import { Trash2 } from 'lucide-react';
 
 
 const formatCurrency = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
@@ -210,6 +212,18 @@ export default function PipelinePage() {
     getDealsFromDb().then(setDeals).catch(() => setDeals([]));
     if (selectedDeal?.id === updatedDeal.id) setSelectedDeal(updatedDeal);
     toast.success(`${updatedDeal.id} ${stageName} asamasina tasindi.`);
+  };
+
+  const handleDeleteDeal = async (id: string) => {
+    if (!confirm('Bu anlaşmayı silmek istediğinize emin misiniz?')) return;
+    try {
+      await deleteDealFromDb(id);
+      setDeals(await getDealsFromDb());
+      setSelectedDeal(null);
+      toast.success('Anlaşma silindi.');
+    } catch {
+      toast.error('Anlaşma silinemedi. Yetkiniz olmayabilir.');
+    }
   };
 
   return (
@@ -779,6 +793,15 @@ export default function PipelinePage() {
                   >
                     {selectedDeal.stage === 'Kaybedildi' ? 'Zaten Kaybedildi' : 'Kaybedildi Olarak Isaretle'}
                   </button>
+                  {isCurrentUserAdmin() && (
+                    <button
+                      onClick={() => handleDeleteDeal(selectedDeal.id)}
+                      className="p-3 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all"
+                      title="Sil"
+                    >
+                      <Trash2 className="w-6 h-6" />
+                    </button>
+                  )}
                 </div>
               </motion.div>
             </>

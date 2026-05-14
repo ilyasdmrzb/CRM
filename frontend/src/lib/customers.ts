@@ -125,3 +125,12 @@ export async function updateCustomerInDb(id: string, formData: FormData) {
   return mapApiCustomer(await response.json() as ApiCustomer);
 }
 
+export async function deleteCustomerFromDb(id: string) {
+  const response = await api.delete(`/Customers/${id}`);
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message ?? 'Müşteri silinemedi.');
+  }
+  return true;
+}
+

@@ -178,9 +178,17 @@ namespace CRM.Infrastructure.Services
         {
             var deal = await _context.Deals.FindAsync(id);
             if (deal == null) return false;
-            _context.Deals.Remove(deal);
-            await _context.SaveChangesAsync();
-            return true;
+
+            try
+            {
+                _context.Deals.Remove(deal);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (DbUpdateException)
+            {
+                throw new InvalidOperationException("Bu anlaşmaya bağlı aktiviteler olduğu için silinemez. Lütfen önce bağlı aktiviteleri silin.");
+            }
         }
 
         private async Task<string> GenerateDealCodeAsync()

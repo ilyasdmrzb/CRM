@@ -15,13 +15,15 @@ import {
   CheckCircle2,
   AlertCircle,
   X,
-  Save
+  Save,
+  Trash2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Sidebar from '@/components/layout/Sidebar';
-import { addActivityToDb, getActivitiesFromDb, markActivityCompletedInDb, type ActivityItem } from '@/lib/activities';
+import { addActivityToDb, getActivitiesFromDb, markActivityCompletedInDb, deleteActivityFromDb, type ActivityItem } from '@/lib/activities';
 import { getCustomersFromDb, type CustomerListItem } from '@/lib/customers';
+import { isCurrentUserAdmin } from '@/lib/auth';
 
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
 const labelClass = "text-sm font-medium text-slate-300";
@@ -179,6 +181,17 @@ export default function ActivitiesPage() {
       toast.error('Aktivite veritabanında güncellenemedi.');
     }
   };
+
+  const handleDeleteActivity = async (id: string) => {
+    if (!confirm('Bu aktiviteyi silmek istediğinize emin misiniz?')) return;
+    try {
+      await deleteActivityFromDb(id);
+      setActivities(await getActivitiesFromDb());
+      toast.success('Aktivite silindi.');
+    } catch {
+      toast.error('Aktivite silinemedi. Yetkiniz olmayabilir.');
+    }
+  };
   return (
     <div className="flex min-h-screen bg-main-bg">
       <Sidebar />
@@ -277,6 +290,15 @@ export default function ActivitiesPage() {
                             Tamamlandı olarak işaretle
                           </button>
                         </div>
+                      )}
+                      {isCurrentUserAdmin() && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDeleteActivity(act.id); }}
+                          className="p-2 text-rose-500/50 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
+                          title="Sil"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
                       )}
                       <button className="p-2 text-slate-500 hover:text-white transition-colors">
                         <ChevronRight className="w-6 h-6" />
@@ -407,7 +429,7 @@ export default function ActivitiesPage() {
 
                 <div className="space-y-2">
                   <label className={labelClass}>Kaydeden</label>
-                  <input className={inputClass} name="user" defaultValue="Sistem Yöneticisi" required />
+                  <input className={inputClass} name="user" defaultValue={getCurrentUser()?.fullName || "Sistem Yöneticisi"} required />
                 </div>
 
                 <div className="space-y-2">
