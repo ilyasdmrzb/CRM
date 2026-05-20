@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -31,13 +31,14 @@ const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-x
 const labelClass = "text-sm font-medium text-slate-300";
 
 const pipelineStages = [
-  { name: 'Potansiyel', prob: 10 },
-  { name: 'Yeterlilik', prob: 25 },
-  { name: 'Teklif', prob: 40 },
-  { name: 'Müzakere', prob: 65 },
-  { name: 'Taahhüt', prob: 85 },
-  { name: 'Kazanıldı', prob: 100 },
-  { name: 'Kaybedildi', prob: 0 },
+  { name: '1 - ilk temas, ilgi belirleme', prob: 10 },
+  { name: '2 - Bütçe & karar yetki doğrulama', prob: 25 },
+  { name: '3 - Ticari teklif sunuldu', prob: 40 },
+  { name: '4 - Fiyat & koşul müzakeresi', prob: 65 },
+  { name: '5 - PO sözleşme bekleniyor', prob: 85 },
+  { name: '6 - Kazanıldı', prob: 100 },
+  { name: '6 - Kaybedildi', prob: 0 },
+  { name: '6 - Durduruldu', prob: 0 },
 ];
 
 export default function AdminPanelPage() {

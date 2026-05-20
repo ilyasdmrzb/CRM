@@ -1,6 +1,6 @@
 import { api } from './api';
 
-export type DealStageName = 'Potansiyel' | 'Yeterlilik' | 'Teklif' | 'Müzakere' | 'Taahhüt' | 'Kazanıldı' | 'Kaybedildi';
+export type DealStageName = '1 - ilk temas, ilgi belirleme' | '2 - Bütçe & karar yetki doğrulama' | '3 - Ticari teklif sunuldu' | '4 - Fiyat & koşul müzakeresi' | '5 - PO sözleşme bekleniyor' | '6 - Kazanıldı' | '6 - Kaybedildi' | '6 - Durduruldu';
 
 export type DealNote = {
   id: string;
@@ -65,11 +65,13 @@ type ApiDeal = {
   weightedValue: number | null;
   targetPrice: number | null;
   competitorName: string | null;
+  lossReason: string | null;
   epcPartner: string | null;
   deliveryDate: string | null;
   lastContactDate: string | null;
   currentUpdate: string | null;
   notes: string | null;
+  noteHistory?: DealNote[];
   status: string;
   lastActivityDate: string | null;
   nextActionDate: string | null;
@@ -78,13 +80,14 @@ type ApiDeal = {
 };
 
 export const dealStages: { name: DealStageName; color: string; probability: number }[] = [
-  { name: 'Potansiyel', color: 'slate', probability: 10 },
-  { name: 'Yeterlilik', color: 'indigo', probability: 25 },
-  { name: 'Teklif', color: 'blue', probability: 40 },
-  { name: 'Müzakere', color: 'orange', probability: 65 },
-  { name: 'Taahhüt', color: 'purple', probability: 85 },
-  { name: 'Kazanıldı', color: 'emerald', probability: 100 },
-  { name: 'Kaybedildi', color: 'rose', probability: 0 },
+  { name: '1 - ilk temas, ilgi belirleme', color: 'slate', probability: 10 },
+  { name: '2 - Bütçe & karar yetki doğrulama', color: 'indigo', probability: 25 },
+  { name: '3 - Ticari teklif sunuldu', color: 'blue', probability: 40 },
+  { name: '4 - Fiyat & koşul müzakeresi', color: 'orange', probability: 65 },
+  { name: '5 - PO sözleşme bekleniyor', color: 'purple', probability: 85 },
+  { name: '6 - Kazanıldı', color: 'emerald', probability: 100 },
+  { name: '6 - Kaybedildi', color: 'rose', probability: 0 },
+  { name: '6 - Durduruldu', color: 'zinc', probability: 0 },
 ];
 
 export const lossReasonList = [
@@ -100,23 +103,25 @@ export const lossReasonList = [
 ];
 
 const stageIdByName: Record<string, number> = {
-  Potansiyel: 1,
-  Yeterlilik: 2,
-  Teklif: 3,
-  'Müzakere': 4,
-  'Taahhüt': 5,
-  'Kazanıldı': 6,
-  Kaybedildi: 7,
+  '1 - ilk temas, ilgi belirleme': 1,
+  '2 - Bütçe & karar yetki doğrulama': 2,
+  '3 - Ticari teklif sunuldu': 3,
+  '4 - Fiyat & koşul müzakeresi': 4,
+  '5 - PO sözleşme bekleniyor': 5,
+  '6 - Kazanıldı': 6,
+  '6 - Kaybedildi': 7,
+  '6 - Durduruldu': 8,
 };
 
 const stageNameById: Record<number, DealStageName> = {
-  1: 'Potansiyel',
-  2: 'Yeterlilik',
-  3: 'Teklif',
-  4: 'Müzakere',
-  5: 'Taahhüt',
-  6: 'Kazanıldı',
-  7: 'Kaybedildi',
+  1: '1 - ilk temas, ilgi belirleme',
+  2: '2 - Bütçe & karar yetki doğrulama',
+  3: '3 - Ticari teklif sunuldu',
+  4: '4 - Fiyat & koşul müzakeresi',
+  5: '5 - PO sözleşme bekleniyor',
+  6: '6 - Kazanıldı',
+  7: '6 - Kaybedildi',
+  8: '6 - Durduruldu',
 };
 
 const formatCurrency = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
@@ -141,7 +146,7 @@ const nullableDate = (value: FormDataEntryValue | string | null | undefined) => 
 };
 
 const mapApiDeal = (deal: ApiDeal): DealItem => {
-  const stageName = stageNameById[deal.stageId] ?? 'Potansiyel';
+  const stageName = stageNameById[deal.stageId] ?? '1 - ilk temas, ilgi belirleme';
   const stage = getStageConfig(stageName);
   const valueAmount = deal.dealValue ?? 0;
   const weightedAmount = deal.weightedValue ?? valueAmount * deal.probability / 100;
@@ -166,7 +171,7 @@ const mapApiDeal = (deal: ApiDeal): DealItem => {
     hsaPrice: deal.hsaPrice?.toString() ?? null,
     targetPrice: deal.targetPrice?.toString() ?? null,
     competitorName: deal.competitorName,
-    lossReason: null,
+    lossReason: deal.lossReason,
     wonReason: null,
     finalPrice: null,
     closedDate: null,
@@ -179,13 +184,13 @@ const mapApiDeal = (deal: ApiDeal): DealItem => {
     nextActionDate: deal.nextActionDate,
     nextActionSubject: deal.nextActionSubject,
     notes: deal.notes,
-    noteHistory: deal.notes ? [{ id: `${deal.id}-note`, text: deal.notes, createdAt: deal.createdAt }] : [],
+    noteHistory: deal.noteHistory ?? (deal.notes ? [{ id: `${deal.id}-note`, text: deal.notes, createdAt: deal.createdAt }] : []),
     createdAt: deal.createdAt,
   };
 };
 
 const createDealPayload = (formData: FormData) => {
-  const stageName = String(formData.get('stage') ?? 'Potansiyel');
+  const stageName = String(formData.get('stage') ?? '1 - ilk temas, ilgi belirleme');
   const stage = getStageConfig(stageName);
 
   return {
@@ -255,7 +260,7 @@ export async function updateDealStageInDb(id: string, stageName: DealStageName) 
 
 export async function closeDealInDb(
   id: string,
-  result: 'won' | 'lost',
+  result: 'won' | 'lost' | 'stopped',
   data: { lossReason?: string; competitorName?: string; closedDate?: string },
 ) {
   const response = await api.post(`/Deals/${id}/close`, {
@@ -273,6 +278,12 @@ export async function deleteDealFromDb(id: string) {
   const response = await api.delete(`/Deals/${id}`);
   if (!response.ok) throw new Error('Deal silinemedi.');
   return true;
+}
+
+export async function addNoteToDealDb(id: string, text: string) {
+  const response = await api.post(`/Deals/${id}/notes`, { text });
+  if (!response.ok) throw new Error('Not eklenemedi.');
+  return mapApiDeal(await response.json() as ApiDeal);
 }
 
 export async function getLossReasonOptionsFromDb() {

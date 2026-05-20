@@ -35,7 +35,7 @@ const labelClass = "text-sm font-medium text-slate-300";
 
 const valueOrEmpty = (value: string | null) => value ?? '';
 
-const isClosedDeal = (deal: DealItem) => deal.stage.startsWith('Kazan') || deal.stage.includes('Kaybed');
+const isClosedDeal = (deal: DealItem) => deal.stage.includes('Kazanıldı') || deal.stage.includes('Kaybedildi') || deal.stage.includes('Durduruldu');
 
 const getCustomerDeals = (customer: CustomerListItem, deals: DealItem[]) => {
   const customerName = customer.name.trim().toLocaleLowerCase('tr-TR');

@@ -37,6 +37,20 @@ namespace CRM.Application.DTOs
         public string? NextActionSubject { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public List<DealNoteDto> NoteHistory { get; set; } = new List<DealNoteDto>();
+    }
+
+    public class DealNoteDto
+    {
+        public Guid Id { get; set; }
+        public string Text { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class AddDealNoteDto
+    {
+        [Required(ErrorMessage = "Not içeriği boş olamaz.")]
+        public string Text { get; set; } = string.Empty;
     }
 
     public class CreateDealDto

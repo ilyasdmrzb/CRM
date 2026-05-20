@@ -35,5 +35,6 @@ namespace CRM.Domain.Entities
         public DealStage? Stage { get; set; }
         public DealResult? DealResult { get; set; }
         public ICollection<Activity> Activities { get; set; } = new List<Activity>();
+        public ICollection<DealNote> NoteHistory { get; set; } = new List<DealNote>();
     }
 }

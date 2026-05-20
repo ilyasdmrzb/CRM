@@ -77,9 +77,9 @@ export default function EditDealPage() {
 
     const formData = new FormData(event.currentTarget);
     const lossReason = String(formData.get('lossReason') ?? '').trim().replace(/\s+/g, ' ');
-    if (selectedStage === 'Kaybedildi' && !lossReason) {
+    if ((selectedStage === '6 - Kaybedildi' || selectedStage === '6 - Durduruldu') && !lossReason) {
       setIsSaving(false);
-      toast.error('Kaybedilen deal icin kaybetme nedeni girin.');
+      toast.error('Kaybedilen veya durdurulan deal için neden girin.');
       return;
     }
     if (lossReason.split(' ').filter(Boolean).length > 3) {
@@ -98,12 +98,17 @@ export default function EditDealPage() {
     formData.set('salesUserId', selectedOwners[0].id);
     let updatedDeal = await updateDealInDb(params.id, formData);
     if (updatedDeal) {
-      if (selectedStage === 'Kaybedildi') {
+      if (selectedStage === '6 - Kaybedildi') {
         updatedDeal = await closeDealInDb(params.id, 'lost', {
           lossReason,
           competitorName: String(formData.get('competitorName') ?? '')
         });
-      } else if (selectedStage === 'Kazanıldı') {
+      } else if (selectedStage === '6 - Durduruldu') {
+        updatedDeal = await closeDealInDb(params.id, 'stopped', {
+          lossReason,
+          competitorName: String(formData.get('competitorName') ?? '')
+        });
+      } else if (selectedStage === '6 - Kazanıldı') {
         updatedDeal = await closeDealInDb(params.id, 'won', {
           competitorName: String(formData.get('competitorName') ?? '')
         });
@@ -318,9 +323,9 @@ export default function EditDealPage() {
                 />
               </div>
 
-              {selectedStage === 'Kaybedildi' && (
+              {(selectedStage === '6 - Kaybedildi' || selectedStage === '6 - Durduruldu') && (
                 <div className="space-y-2">
-                  <label className={labelClass}>Kaybetme Nedeni <span className="text-rose-500">*</span></label>
+                  <label className={labelClass}>Durum Nedeni <span className="text-rose-500">*</span></label>
                   <select
                     className={inputClass}
                     name="lossReason"

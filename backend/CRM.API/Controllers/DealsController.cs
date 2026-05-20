@@ -68,6 +68,14 @@ namespace CRM.API.Controllers
             return Ok(deal);
         }
 
+        [HttpPost("{id}/notes")]
+        public async Task<IActionResult> AddNote(Guid id, [FromBody] AddDealNoteDto dto)
+        {
+            var deal = await _dealService.AddNoteAsync(id, dto);
+            if (deal == null) return NotFound();
+            return Ok(deal);
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)

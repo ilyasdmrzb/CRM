@@ -12,6 +12,7 @@ namespace CRM.Infrastructure.Data
         public DbSet<Contact> Contacts => Set<Contact>();
         public DbSet<DealStage> DealStages => Set<DealStage>();
         public DbSet<Deal> Deals => Set<Deal>();
+        public DbSet<DealNote> DealNotes => Set<DealNote>();
         public DbSet<Activity> Activities => Set<Activity>();
         public DbSet<DealResult> DealResults => Set<DealResult>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
@@ -73,6 +74,14 @@ namespace CRM.Infrastructure.Data
                     .HasForeignKey(x => x.StageId).OnDelete(DeleteBehavior.Restrict);
             });
 
+            // DealNote
+            modelBuilder.Entity<DealNote>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasOne(x => x.Deal).WithMany(d => d.NoteHistory)
+                    .HasForeignKey(x => x.DealId).OnDelete(DeleteBehavior.Cascade);
+            });
+
             // Activity
             modelBuilder.Entity<Activity>(e =>
             {
@@ -111,7 +120,8 @@ namespace CRM.Infrastructure.Data
                 new DealStage { Id = 4, StageName = "Negotiation", Probability = 65, StageOrder = 4 },
                 new DealStage { Id = 5, StageName = "Commit", Probability = 85, StageOrder = 5 },
                 new DealStage { Id = 6, StageName = "Closed Won", Probability = 100, StageOrder = 6 },
-                new DealStage { Id = 7, StageName = "Closed Lost", Probability = 0, StageOrder = 7 }
+                new DealStage { Id = 7, StageName = "Closed Lost", Probability = 0, StageOrder = 7 },
+                new DealStage { Id = 8, StageName = "On Hold", Probability = 0, StageOrder = 8 }
             );
 
             // Seed Admin User

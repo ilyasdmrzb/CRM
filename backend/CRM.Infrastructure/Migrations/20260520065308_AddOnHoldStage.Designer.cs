@@ -4,6 +4,7 @@ using CRM.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CRM.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260520065308_AddOnHoldStage")]
+    partial class AddOnHoldStage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -285,29 +288,6 @@ namespace CRM.Infrastructure.Migrations
                     b.ToTable("Deals");
                 });
 
-            modelBuilder.Entity("CRM.Domain.Entities.DealNote", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("DealId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DealId");
-
-                    b.ToTable("DealNotes");
-                });
-
             modelBuilder.Entity("CRM.Domain.Entities.DealResult", b =>
                 {
                     b.Property<Guid>("Id")
@@ -467,7 +447,7 @@ namespace CRM.Infrastructure.Migrations
                             Email = "admin@company.com",
                             FullName = "System Admin",
                             IsActive = true,
-                            PasswordHash = "$2a$11$DY2dL9moEnStD6qXgfla4eFf71Mv4dnTOm9tU020ghNuhy1kbm5KO",
+                            PasswordHash = "$2a$11$Inwn9bTMFhqHMp6oKwDhHuSEauiJ2qX4J702RJrqQusV.sWLT1joK",
                             Role = "Admin"
                         });
                 });
@@ -565,17 +545,6 @@ namespace CRM.Infrastructure.Migrations
                     b.Navigation("Stage");
                 });
 
-            modelBuilder.Entity("CRM.Domain.Entities.DealNote", b =>
-                {
-                    b.HasOne("CRM.Domain.Entities.Deal", "Deal")
-                        .WithMany("NoteHistory")
-                        .HasForeignKey("DealId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Deal");
-                });
-
             modelBuilder.Entity("CRM.Domain.Entities.DealResult", b =>
                 {
                     b.HasOne("CRM.Domain.Entities.Deal", "Deal")
@@ -606,8 +575,6 @@ namespace CRM.Infrastructure.Migrations
                     b.Navigation("Activities");
 
                     b.Navigation("DealResult");
-
-                    b.Navigation("NoteHistory");
                 });
 
             modelBuilder.Entity("CRM.Domain.Entities.DealStage", b =>

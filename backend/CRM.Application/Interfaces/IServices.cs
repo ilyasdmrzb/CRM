@@ -30,6 +30,7 @@ namespace CRM.Application.Interfaces
         Task<DealDto?> UpdateStageAsync(Guid id, UpdateDealStageDto dto);
         Task<DealDto?> CloseDealAsync(Guid id, CloseDealDto dto);
         Task<List<DealDto>> GetByCustomerIdAsync(Guid customerId);
+        Task<DealDto?> AddNoteAsync(Guid id, AddDealNoteDto dto);
     }
 
     public interface IActivityService

@@ -20,6 +20,7 @@ namespace CRM.Infrastructure.Services
                 .Include(d => d.Stage)
                 .Include(d => d.Activities)
                 .Include(d => d.DealResult)
+                .Include(d => d.NoteHistory)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -46,6 +47,7 @@ namespace CRM.Infrastructure.Services
                 .Include(x => x.Stage)
                 .Include(x => x.Activities)
                 .Include(x => x.DealResult)
+                .Include(x => x.NoteHistory)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return d == null ? null : MapToDto(d);
         }
@@ -59,6 +61,7 @@ namespace CRM.Infrastructure.Services
                 .Include(d => d.Stage)
                 .Include(d => d.Activities)
                 .Include(d => d.DealResult)
+                .Include(d => d.NoteHistory)
                 .Where(d => d.CustomerId == customerId)
                 .OrderByDescending(d => d.CreatedAt)
                 .Select(d => MapToDto(d))
@@ -158,6 +161,11 @@ namespace CRM.Infrastructure.Services
                 deal.StageId = 6; // Closed Won
                 deal.Probability = 100;
             }
+            else if (dto.Result == "stopped")
+            {
+                deal.StageId = 8; // On Hold
+                deal.Probability = 0;
+            }
             else
             {
                 deal.StageId = 7; // Closed Lost
@@ -185,6 +193,24 @@ namespace CRM.Infrastructure.Services
             }
             
             await _context.SaveChangesAsync();
+            return await GetByIdAsync(id);
+        }
+
+        public async Task<DealDto?> AddNoteAsync(Guid id, AddDealNoteDto dto)
+        {
+            var deal = await _context.Deals.FindAsync(id);
+            if (deal == null) return null;
+
+            var note = new DealNote
+            {
+                DealId = id,
+                Text = dto.Text,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.DealNotes.Add(note);
+            await _context.SaveChangesAsync();
+
             return await GetByIdAsync(id);
         }
 
@@ -258,6 +284,12 @@ namespace CRM.Infrastructure.Services
             CurrentUpdate = d.CurrentUpdate,
             Notes = d.Notes,
             Status = d.Status,
+            NoteHistory = d.NoteHistory?.OrderByDescending(n => n.CreatedAt).Select(n => new DealNoteDto
+            {
+                Id = n.Id,
+                Text = n.Text,
+                CreatedAt = n.CreatedAt
+            }).ToList() ?? new List<DealNoteDto>(),
             LastActivityDate = d.Activities?.Where(a => a.IsCompleted).OrderByDescending(a => a.ActivityDate).FirstOrDefault()?.ActivityDate,
             NextActionDate = d.Activities?.Where(a => !a.IsCompleted).OrderBy(a => a.ActivityDate).FirstOrDefault()?.ActivityDate,
             NextActionSubject = d.Activities?.Where(a => !a.IsCompleted).OrderBy(a => a.ActivityDate).FirstOrDefault()?.Subject,

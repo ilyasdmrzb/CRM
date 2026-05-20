@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Sidebar from '@/components/layout/Sidebar';
 import { cn } from '@/lib/utils';
-import { closeDealInDb, dealStages, getDealsFromDb, getLossReasonOptionsFromDb, updateDealStageInDb, deleteDealFromDb, type DealItem, type DealStageName, lossReasonList } from '@/lib/deals';
+import { closeDealInDb, dealStages, getDealsFromDb, getLossReasonOptionsFromDb, updateDealStageInDb, deleteDealFromDb, addNoteToDealDb, type DealItem, type DealStageName, lossReasonList } from '@/lib/deals';
 import { isCurrentUserAdmin } from '@/lib/auth';
 import { Trash2 } from 'lucide-react';
 
@@ -107,9 +107,19 @@ export default function PipelinePage() {
     setWonClosedDate(new Date().toISOString().slice(0, 10));
   };
 
-  const handleAddNote = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleAddNote = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    toast.error('Notlar artık database üzerinden yönetilecek; bu işlem için backend not endpointi gerekiyor.');
+    if (!selectedDeal || !noteText.trim()) return;
+
+    try {
+      const updatedDeal = await addNoteToDealDb(selectedDeal.id, noteText.trim());
+      setSelectedDeal(updatedDeal);
+      setDeals(await getDealsFromDb());
+      setNoteText('');
+      toast.success('Not eklendi.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Not eklenemedi.');
+    }
   };
   const handleMarkAsWon = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
