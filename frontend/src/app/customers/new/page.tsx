@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -85,13 +85,13 @@ export default function NewCustomerPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelClass}>Cari Kodu</label>
-                  <input className={inputClass} name="customerCode" placeholder="Fatura kesilince girilebilir" />
+                  <label className={labelClass}>Şehir</label>
+                  <input className={inputClass} name="city" placeholder="İstanbul" />
                 </div>
 
                 <div className="space-y-2">
-                  <label className={labelClass}>Vergi No</label>
-                  <input className={inputClass} name="taxNumber" placeholder="Fatura kesilince girilebilir" inputMode="numeric" />
+                  <label className={labelClass}>Son Görüşme Tarihi</label>
+                  <input className={inputClass} value="Henüz görüşme yok" readOnly />
                 </div>
 
                 <div className="space-y-2">
@@ -123,7 +123,7 @@ export default function NewCustomerPage() {
             <section className="glass rounded-[32px] border border-border-subtle overflow-hidden">
               <div className="p-6 border-b border-border-subtle flex items-center gap-3 bg-slate-800/30">
                 <User className="w-5 h-5 text-blue-500" />
-                <h2 className="text-lg font-semibold text-white">Birincil Kişi</h2>
+                <h2 className="text-lg font-semibold text-white">Firma Yetkilisi</h2>
               </div>
 
               <div className="p-6 space-y-5">
@@ -156,45 +156,7 @@ export default function NewCustomerPage() {
             </section>
           </div>
 
-          <section className="glass rounded-[32px] border border-border-subtle overflow-hidden">
-            <div className="p-6 border-b border-border-subtle flex items-center gap-3 bg-slate-800/30">
-              <MapPin className="w-5 h-5 text-blue-500" />
-              <h2 className="text-lg font-semibold text-white">Adres ve Ek Bilgiler</h2>
-            </div>
 
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              <div className="space-y-2">
-                <label className={labelClass}>Şehir</label>
-                <input className={inputClass} name="city" placeholder="İstanbul" />
-              </div>
-
-              <div className="space-y-2">
-                <label className={labelClass}>İlçe</label>
-                <input className={inputClass} name="district" placeholder="Kadıköy" />
-              </div>
-
-              <div className="space-y-2 xl:col-span-2">
-                <label className={labelClass}>Web Sitesi</label>
-                <div className="relative">
-                  <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input className={`${inputClass} pl-11`} name="website" placeholder="www.company.com" />
-                </div>
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <label className={labelClass}>Adres</label>
-                <textarea className={`${inputClass} min-h-28 resize-none`} name="address" placeholder="Açık adres bilgisi" />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <label className={labelClass}>Notlar</label>
-                <div className="relative">
-                  <FileText className="absolute left-4 top-4 w-4 h-4 text-slate-500" />
-                  <textarea className={`${inputClass} min-h-28 resize-none pl-11`} name="notes" placeholder="Müşteriyle ilgili kısa notlar" />
-                </div>
-              </div>
-            </div>
-          </section>
 
           <div className="flex items-center justify-end gap-3">
             <Link href="/customers">

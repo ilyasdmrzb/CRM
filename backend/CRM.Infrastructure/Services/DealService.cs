@@ -19,6 +19,7 @@ namespace CRM.Infrastructure.Services
                 .Include(d => d.SalesUser)
                 .Include(d => d.Stage)
                 .Include(d => d.Activities)
+                .Include(d => d.DealResult)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -44,6 +45,7 @@ namespace CRM.Infrastructure.Services
                 .Include(x => x.SalesUser)
                 .Include(x => x.Stage)
                 .Include(x => x.Activities)
+                .Include(x => x.DealResult)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return d == null ? null : MapToDto(d);
         }
@@ -56,6 +58,7 @@ namespace CRM.Infrastructure.Services
                 .Include(d => d.SalesUser)
                 .Include(d => d.Stage)
                 .Include(d => d.Activities)
+                .Include(d => d.DealResult)
                 .Where(d => d.CustomerId == customerId)
                 .OrderByDescending(d => d.CreatedAt)
                 .Select(d => MapToDto(d))
@@ -144,7 +147,7 @@ namespace CRM.Infrastructure.Services
 
         public async Task<DealDto?> CloseDealAsync(Guid id, CloseDealDto dto)
         {
-            var deal = await _context.Deals.FindAsync(id);
+            var deal = await _context.Deals.Include(d => d.DealResult).FirstOrDefaultAsync(d => d.Id == id);
             if (deal == null) return null;
 
             deal.Status = dto.Result == "won" ? "won" : "lost";
@@ -161,15 +164,26 @@ namespace CRM.Infrastructure.Services
                 deal.Probability = 0;
             }
 
-            var result = new DealResult
+            if (deal.DealResult == null)
             {
-                DealId = id,
-                Result = dto.Result,
-                LossReason = dto.LossReason,
-                CompetitorName = dto.CompetitorName,
-                ClosedDate = dto.ClosedDate
-            };
-            _context.DealResults.Add(result);
+                var result = new DealResult
+                {
+                    DealId = id,
+                    Result = dto.Result,
+                    LossReason = dto.LossReason,
+                    CompetitorName = dto.CompetitorName,
+                    ClosedDate = dto.ClosedDate
+                };
+                _context.DealResults.Add(result);
+            }
+            else
+            {
+                deal.DealResult.Result = dto.Result;
+                deal.DealResult.LossReason = dto.LossReason;
+                deal.DealResult.CompetitorName = dto.CompetitorName;
+                deal.DealResult.ClosedDate = dto.ClosedDate;
+            }
+            
             await _context.SaveChangesAsync();
             return await GetByIdAsync(id);
         }
@@ -236,7 +250,8 @@ namespace CRM.Infrastructure.Services
             DealValue = d.DealValue,
             WeightedValue = d.WeightedValue,
             TargetPrice = d.TargetPrice,
-            CompetitorName = d.CompetitorName,
+            CompetitorName = d.DealResult?.CompetitorName ?? d.CompetitorName,
+            LossReason = d.DealResult?.LossReason,
             EpcPartner = d.EpcPartner,
             DeliveryDate = d.DeliveryDate,
             LastContactDate = d.LastContactDate,

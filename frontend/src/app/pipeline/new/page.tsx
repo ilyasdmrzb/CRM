@@ -18,7 +18,7 @@ import {
 import Sidebar from '@/components/layout/Sidebar';
 import { getAdminUsers, type AdminUser } from '@/lib/admin-users';
 import { getCustomersFromDb, type CustomerListItem } from '@/lib/customers';
-import { addDealToDb, dealStages, getLossReasonOptionsFromDb, lossReasonList } from '@/lib/deals';
+import { addDealToDb, closeDealInDb, dealStages, getLossReasonOptionsFromDb, lossReasonList } from '@/lib/deals';
 import { getCurrentUser } from '@/lib/auth';
 
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
@@ -134,7 +134,17 @@ export default function NewDealPage() {
     }
 
     try {
-      const deal = await addDealToDb(formData);
+      let deal = await addDealToDb(formData);
+      if (selectedStage === 'Kaybedildi') {
+        deal = await closeDealInDb(deal.id, 'lost', {
+          lossReason,
+          competitorName: String(formData.get('competitorName') ?? '')
+        });
+      } else if (selectedStage === 'Kazanıldı') {
+        deal = await closeDealInDb(deal.id, 'won', {
+          competitorName: String(formData.get('competitorName') ?? '')
+        });
+      }
       toast.success(`${deal.id} oluşturuldu.`);
       router.push('/pipeline');
     } catch (error) {
@@ -362,21 +372,18 @@ export default function NewDealPage() {
 
               {selectedStage === 'Kaybedildi' && (
                 <div className="space-y-2">
-                  <label className={labelClass}>Kaybetme Nedeni</label>
-                  <input
+                  <label className={labelClass}>Kaybetme Nedeni <span className="text-rose-500">*</span></label>
+                  <select
                     className={inputClass}
                     name="lossReason"
-                    list="loss-reason-options"
-                    placeholder="Fiyat farki"
-                    maxLength={40}
+                    defaultValue=""
                     required
-                  />
-                  <datalist id="loss-reason-options">
+                  >
+                    <option value="" disabled>Seçiniz...</option>
                     {lossReasonList.map((reason) => (
-                      <option key={reason} value={reason} />
+                      <option key={reason} value={reason}>{reason}</option>
                     ))}
-                  </datalist>
-                  <p className="text-xs text-slate-500">Grafik etiketi icin en fazla 3 kelime.</p>
+                  </select>
                 </div>
               )}
 

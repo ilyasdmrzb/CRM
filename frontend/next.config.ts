@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: 'C:/Users/gamze.kılınc/Desktop/CRM/frontend',
-  },
   async headers() {
     return [
       {

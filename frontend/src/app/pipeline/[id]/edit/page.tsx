@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -18,7 +18,7 @@ import {
 import Sidebar from '@/components/layout/Sidebar';
 import { getAdminUsers, type AdminUser } from '@/lib/admin-users';
 import { getCustomersFromDb, type CustomerListItem } from '@/lib/customers';
-import { dealStages, getDealByIdFromDb, getLossReasonOptionsFromDb, type DealItem, updateDealInDb, lossReasonList } from '@/lib/deals';
+import { dealStages, getDealByIdFromDb, getLossReasonOptionsFromDb, type DealItem, updateDealInDb, closeDealInDb, lossReasonList } from '@/lib/deals';
 
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
 const labelClass = "text-sm font-medium text-slate-300";
@@ -96,7 +96,19 @@ export default function EditDealPage() {
 
     formData.set('owner', selectedOwners.map((owner) => owner.initials).join(', '));
     formData.set('salesUserId', selectedOwners[0].id);
-    const updatedDeal = await updateDealInDb(params.id, formData);
+    let updatedDeal = await updateDealInDb(params.id, formData);
+    if (updatedDeal) {
+      if (selectedStage === 'Kaybedildi') {
+        updatedDeal = await closeDealInDb(params.id, 'lost', {
+          lossReason,
+          competitorName: String(formData.get('competitorName') ?? '')
+        });
+      } else if (selectedStage === 'Kazanıldı') {
+        updatedDeal = await closeDealInDb(params.id, 'won', {
+          competitorName: String(formData.get('competitorName') ?? '')
+        });
+      }
+    }
     setIsSaving(false);
 
     if (!updatedDeal) {
@@ -308,22 +320,18 @@ export default function EditDealPage() {
 
               {selectedStage === 'Kaybedildi' && (
                 <div className="space-y-2">
-                  <label className={labelClass}>Kaybetme Nedeni</label>
-                  <input
+                  <label className={labelClass}>Kaybetme Nedeni <span className="text-rose-500">*</span></label>
+                  <select
                     className={inputClass}
                     name="lossReason"
-                    list="loss-reason-options"
-                    defaultValue={valueOrEmpty(deal.lossReason)}
-                    placeholder="Fiyat farki"
-                    maxLength={40}
+                    defaultValue={deal.lossReason ?? ''}
                     required
-                  />
-                  <datalist id="loss-reason-options">
+                  >
+                    <option value="" disabled>Seçiniz...</option>
                     {lossReasonList.map((reason) => (
-                      <option key={reason} value={reason} />
+                      <option key={reason} value={reason}>{reason}</option>
                     ))}
-                  </datalist>
-                  <p className="text-xs text-slate-500">Grafik etiketi icin en fazla 3 kelime.</p>
+                  </select>
                 </div>
               )}
 

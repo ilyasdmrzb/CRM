@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace CRM.Application.DTOs
 {
@@ -25,6 +25,7 @@ namespace CRM.Application.DTOs
         public decimal? WeightedValue { get; set; }
         public decimal? TargetPrice { get; set; }
         public string? CompetitorName { get; set; }
+        public string? LossReason { get; set; }
         public string? EpcPartner { get; set; }
         public DateTime? DeliveryDate { get; set; }
         public DateTime? LastContactDate { get; set; }

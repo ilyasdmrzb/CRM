@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
@@ -21,7 +21,7 @@ export default function LoginPage() {
     const password = String(formData.get('password'));
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5295/api';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5296/api';
       const response = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

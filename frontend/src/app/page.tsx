@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Clock,
   AlertCircle,
+  XCircle,
   DollarSign,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -370,12 +371,12 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
             <StatCard title="Pipeline" value={formatCurrency(totalPipeline)} subValue={`${openDeals.length} açık`} icon={Layers} color="blue" />
             <StatCard title="Kazanılan" value={formatCurrency(wonValue)} subValue={`${wonDeals.length} deal`} icon={Award} color="emerald" />
+            <StatCard title="Kaybedilen" value={formatCurrency(lostValue)} subValue={`${lostDeals.length} deal`} icon={XCircle} color="rose" />
             <StatCard title="Kapasite" value={`${Number(totalCapacity.toFixed(1))} MW`} icon={Activity} color="orange" />
             <StatCard title="Açık Deal" value={String(openDeals.length)} icon={BarChartIcon} color="slate" />
-            
             <StatCard title="Kazanma Oranı" value={`%${winRate}`} icon={TrendingUp} color="indigo" />
             <StatCard title="Ort. Deal Değeri" value={formatCurrency(averageDealValue)} icon={DollarSign} color="purple" />
             <StatCard title="Kapanma Süresi" value={`${averageClosingTime} Gün`} icon={Clock} color="rose" />
