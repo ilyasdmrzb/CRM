@@ -211,9 +211,11 @@ export default function CustomersPage() {
                                 <Trash2 className="w-5 h-5" />
                               </button>
                             )}
-                            <button className="p-2 text-slate-500 hover:text-white transition-colors hidden md:block">
-                              <MoreVertical className="w-5 h-5" />
-                            </button>
+                            <Link href={`/customers/${customer.id}/activities`}>
+                              <button className="p-2 text-slate-500 hover:text-white transition-colors hidden md:block" title="Aktiviteler">
+                                <MoreVertical className="w-5 h-5" />
+                              </button>
+                            </Link>
                           </div>
                         </td>
                       </tr>
