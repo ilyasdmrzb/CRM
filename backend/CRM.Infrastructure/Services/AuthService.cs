@@ -24,8 +24,10 @@ namespace CRM.Infrastructure.Services
 
         public async Task<LoginResponseDto?> LoginAsync(LoginRequestDto request)
         {
+            var email = request.Email.Trim();
+
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower() && u.IsActive);
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower() && u.IsActive);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
                 return null;
@@ -58,10 +60,12 @@ namespace CRM.Infrastructure.Services
 
         public async Task<UserDto> CreateUserAsync(CreateUserDto dto, Guid createdBy)
         {
+            var email = dto.Email.Trim();
+
             var user = new User
             {
-                FullName = dto.FullName,
-                Email = dto.Email,
+                FullName = dto.FullName.Trim(),
+                Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 Role = dto.Role
             };

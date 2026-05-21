@@ -114,7 +114,7 @@ export default function NewDealPage() {
 
     const formData = new FormData(event.currentTarget);
     const lossReason = String(formData.get('lossReason') ?? '').trim().replace(/\s+/g, ' ');
-    if (selectedStage === 'Kaybedildi' && !lossReason) {
+    if (selectedStage.includes('Kaybedildi') && !lossReason) {
       setIsSaving(false);
       toast.error('Kaybedilen deal icin kaybetme nedeni girin.');
       return;
@@ -135,12 +135,12 @@ export default function NewDealPage() {
 
     try {
       let deal = await addDealToDb(formData);
-      if (selectedStage === 'Kaybedildi') {
+      if (selectedStage.includes('Kaybedildi')) {
         deal = await closeDealInDb(deal.id, 'lost', {
           lossReason,
           competitorName: String(formData.get('competitorName') ?? '')
         });
-      } else if (selectedStage === 'Kazanıldı') {
+      } else if (selectedStage.includes('Kazanıldı')) {
         deal = await closeDealInDb(deal.id, 'won', {
           competitorName: String(formData.get('competitorName') ?? '')
         });
@@ -370,7 +370,7 @@ export default function NewDealPage() {
                 />
               </div>
 
-              {selectedStage === 'Kaybedildi' && (
+              {selectedStage.includes('Kaybedildi') && (
                 <div className="space-y-2">
                   <label className={labelClass}>Kaybetme Nedeni <span className="text-rose-500">*</span></label>
                   <select

@@ -423,7 +423,7 @@ export default function Dashboard() {
             <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px] min-w-0">
               <h3 className="text-lg font-semibold text-white mb-8">Aşama Dağılımı</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 items-center h-auto md:h-[350px]">
-                <div className="h-full min-w-0">
+                <div className="h-[280px] min-w-0 md:h-full">
                   {chartsReady && stageData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>

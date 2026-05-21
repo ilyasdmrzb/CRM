@@ -136,8 +136,26 @@ const normalizeOptional = (value: FormDataEntryValue | null) => {
 };
 
 const nullableNumber = (value: FormDataEntryValue | null) => {
-  const numberValue = Number(value ?? '');
-  return Number.isFinite(numberValue) && numberValue > 0 ? numberValue : null;
+  const text = String(value ?? '').trim();
+  if (!text) return null;
+
+  const numberValue = Number(text);
+  return Number.isFinite(numberValue) ? numberValue : null;
+};
+
+const getResponseErrorMessage = async (response: Response, fallback: string) => {
+  const data = await response.json().catch(() => null);
+  if (data?.message) return data.message;
+
+  if (data?.errors) {
+    const messages = Object.values(data.errors)
+      .flat()
+      .filter((message): message is string => typeof message === 'string');
+
+    if (messages.length > 0) return messages.join(' ');
+  }
+
+  return fallback;
 };
 
 const nullableDate = (value: FormDataEntryValue | string | null | undefined) => {
@@ -233,7 +251,7 @@ export async function addDealToDb(formData: FormData) {
     ...createDealPayload(formData),
   });
 
-  if (!response.ok) throw new Error('Deal veritabanına kaydedilemedi.');
+  if (!response.ok) throw new Error(await getResponseErrorMessage(response, 'Deal veritabanına kaydedilemedi.'));
   return mapApiDeal(await response.json() as ApiDeal);
 }
 
@@ -249,12 +267,12 @@ export async function updateDealInDb(id: string, formData: FormData) {
 
 export async function updateDealStageInDb(id: string, stageName: DealStageName) {
   const stage = getStageConfig(stageName);
-  const response = await api.put(`/Deals/${id}/stage`, {
+  const response = await api.patch(`/Deals/${id}/stage`, {
     stageId: stageIdByName[stageName] ?? 1,
     probability: stage.probability,
   });
 
-  if (!response.ok) throw new Error('Deal aşaması güncellenemedi.');
+  if (!response.ok) throw new Error(await getResponseErrorMessage(response, 'Deal aşaması güncellenemedi.'));
   return mapApiDeal(await response.json() as ApiDeal);
 }
 

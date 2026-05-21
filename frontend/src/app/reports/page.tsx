@@ -103,7 +103,7 @@ export default function ReportsPage() {
   const salesPerformance = useMemo(() => {
     const userStats = users.map(user => {
       const userDeals = deals.filter(d => d.owner.includes(user.initials) || d.owner.includes(user.fullName));
-      const wonDeals = userDeals.filter(d => d.stage === 'Kazanıldı');
+      const wonDeals = userDeals.filter(d => d.stage.includes('Kazanıldı'));
       const totalValue = wonDeals.reduce((sum, d) => sum + d.valueAmount, 0);
       const winRate = userDeals.length > 0 ? Math.round((wonDeals.length / userDeals.length) * 100) : 0;
 

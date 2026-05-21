@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\yasin\\CRM\\backend\\CRM.Infrastructure\\CRM.Infrastructure.csproj": {}
+    "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Infrastructure\\CRM.Infrastructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\yasin\\CRM\\backend\\CRM.Application\\CRM.Application.csproj": {
+    "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Application\\CRM.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\yasin\\CRM\\backend\\CRM.Application\\CRM.Application.csproj",
+        "projectUniqueName": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Application\\CRM.Application.csproj",
         "projectName": "CRM.Application",
-        "projectPath": "C:\\Users\\yasin\\CRM\\backend\\CRM.Application\\CRM.Application.csproj",
-        "packagesPath": "C:\\Users\\yasin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\yasin\\CRM\\backend\\CRM.Application\\obj\\",
+        "projectPath": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Application\\CRM.Application.csproj",
+        "packagesPath": "C:\\Users\\gamze.kılınc\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\yasin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\gamze.kılınc\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -33,8 +33,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\yasin\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj": {
-                "projectPath": "C:\\Users\\yasin\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj"
+              "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj": {
+                "projectPath": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj"
               }
             }
           }
@@ -70,24 +70,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.313/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\yasin\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj": {
+    "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\yasin\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj",
         "projectName": "CRM.Domain",
-        "projectPath": "C:\\Users\\yasin\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj",
-        "packagesPath": "C:\\Users\\yasin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\yasin\\CRM\\backend\\CRM.Domain\\obj\\",
+        "projectPath": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj",
+        "packagesPath": "C:\\Users\\gamze.kılınc\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\yasin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\gamze.kılınc\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -136,24 +136,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.313/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\yasin\\CRM\\backend\\CRM.Infrastructure\\CRM.Infrastructure.csproj": {
+    "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Infrastructure\\CRM.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\yasin\\CRM\\backend\\CRM.Infrastructure\\CRM.Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Infrastructure\\CRM.Infrastructure.csproj",
         "projectName": "CRM.Infrastructure",
-        "projectPath": "C:\\Users\\yasin\\CRM\\backend\\CRM.Infrastructure\\CRM.Infrastructure.csproj",
-        "packagesPath": "C:\\Users\\yasin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\yasin\\CRM\\backend\\CRM.Infrastructure\\obj\\",
+        "projectPath": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Infrastructure\\CRM.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\gamze.kılınc\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\yasin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\gamze.kılınc\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -169,11 +169,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\yasin\\CRM\\backend\\CRM.Application\\CRM.Application.csproj": {
-                "projectPath": "C:\\Users\\yasin\\CRM\\backend\\CRM.Application\\CRM.Application.csproj"
+              "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Application\\CRM.Application.csproj": {
+                "projectPath": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Application\\CRM.Application.csproj"
               },
-              "C:\\Users\\yasin\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj": {
-                "projectPath": "C:\\Users\\yasin\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj"
+              "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj": {
+                "projectPath": "C:\\Users\\gamze.kılınc\\Desktop\\CRM\\backend\\CRM.Domain\\CRM.Domain.csproj"
               }
             }
           }
@@ -241,7 +241,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.313/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

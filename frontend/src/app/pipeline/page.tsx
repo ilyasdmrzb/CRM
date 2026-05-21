@@ -192,7 +192,7 @@ export default function PipelinePage() {
     setDragOverStage(null);
     if (currentDeal.stage === stageName) return;
 
-    if (stageName === 'Kazanıldı') {
+    if (stageName.includes('Kazanıldı')) {
       setSelectedDeal(currentDeal);
       setWonReason(currentDeal.wonReason ?? '');
       setWonFinalPrice(String(currentDeal.finalPrice ?? currentDeal.valueAmount));
@@ -203,7 +203,7 @@ export default function PipelinePage() {
       return;
     }
 
-    if (stageName === 'Kaybedildi') {
+    if (stageName.includes('Kaybedildi')) {
       setSelectedDeal(currentDeal);
       setLostCompetitorName(currentDeal.competitorName ?? '');
       setLossReason(currentDeal.lossReason ?? '');
@@ -785,10 +785,10 @@ export default function PipelinePage() {
                       setWonClosedDate(selectedDeal.closedDate ?? new Date().toISOString().slice(0, 10));
                       setIsWonFormOpen(true);
                     }}
-                    disabled={selectedDeal.stage === 'Kazanıldı'}
+                    disabled={selectedDeal.stage.includes('Kazanıldı')}
                     className="flex-1 border border-border-subtle text-white hover:bg-slate-800 py-3 rounded-xl font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {selectedDeal.stage === 'Kazanıldı' ? 'Zaten Kazanıldı' : 'Kazanıldı Olarak İşaretle'}
+                    {selectedDeal.stage.includes('Kazanıldı') ? 'Zaten Kazanıldı' : 'Kazanıldı Olarak İşaretle'}
                   </button>
                   <button
                     onClick={() => {
@@ -798,10 +798,10 @@ export default function PipelinePage() {
                       setLossClosedDate(selectedDeal.closedDate ?? new Date().toISOString().slice(0, 10));
                       setIsLossFormOpen(true);
                     }}
-                    disabled={selectedDeal.stage === 'Kaybedildi'}
+                    disabled={selectedDeal.stage.includes('Kaybedildi')}
                     className="flex-1 border border-rose-500/30 text-rose-300 hover:bg-rose-500/10 py-3 rounded-xl font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {selectedDeal.stage === 'Kaybedildi' ? 'Zaten Kaybedildi' : 'Kaybedildi Olarak Isaretle'}
+                    {selectedDeal.stage.includes('Kaybedildi') ? 'Zaten Kaybedildi' : 'Kaybedildi Olarak Isaretle'}
                   </button>
                   {isCurrentUserAdmin() && (
                     <button
