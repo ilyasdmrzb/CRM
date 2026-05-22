@@ -41,4 +41,18 @@ namespace CRM.Application.DTOs.Auth
         public bool IsActive { get; set; }
         public string? Password { get; set; }
     }
+
+    public class AuditLogDto
+    {
+        public Guid Id { get; set; }
+        public string TableName { get; set; } = string.Empty;
+        public string RecordId { get; set; } = string.Empty;
+        public string ActionType { get; set; } = string.Empty;
+        public string? OldValue { get; set; }
+        public string? NewValue { get; set; }
+        public Guid ChangedBy { get; set; }
+        public string ChangedByName { get; set; } = string.Empty;
+        public string ChangedByEmail { get; set; } = string.Empty;
+        public DateTime ChangedAt { get; set; }
+    }
 }

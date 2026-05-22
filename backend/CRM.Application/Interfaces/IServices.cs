@@ -1,4 +1,5 @@
 using CRM.Application.DTOs;
+using CRM.Application.DTOs.Auth;
 
 namespace CRM.Application.Interfaces
 {
@@ -60,5 +61,6 @@ namespace CRM.Application.Interfaces
     public interface IAuditLogService
     {
         Task LogAsync(string tableName, string recordId, string actionType, string? oldValue, string? newValue, Guid changedBy);
+        Task<List<AuditLogDto>> GetAllAsync(Guid? userId = null, string? actionType = null, string? tableName = null, int take = 200);
     }
 }

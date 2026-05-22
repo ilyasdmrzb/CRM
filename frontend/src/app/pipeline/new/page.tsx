@@ -145,7 +145,7 @@ export default function NewDealPage() {
           competitorName: String(formData.get('competitorName') ?? '')
         });
       }
-      toast.success(`${deal.id} oluşturuldu.`);
+      toast.success(`${deal.code} oluşturuldu.`);
       router.push('/pipeline');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Deal kaydedilemedi.');

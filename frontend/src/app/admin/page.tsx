@@ -14,6 +14,7 @@ import {
   Search,
   ShieldCheck,
   ListChecks,
+  History,
   Trash2,
   UserPlus,
   Users,
@@ -26,6 +27,7 @@ import { addAdminUser, getAdminUsers, deleteAdminUser, updateAdminUser, type Adm
 import { isCurrentUserAdmin } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import { addLossReasonOption, deleteLossReasonOption, getLossReasonOptionRecords, updateLossReasonOption, type LossReasonOption } from '@/lib/deals';
+import { getAuditLogs, type AuditLogItem } from '@/lib/audit-logs';
 
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
 const labelClass = "text-sm font-medium text-slate-300";
@@ -41,12 +43,47 @@ const pipelineStages = [
   { name: '6 - Durduruldu', prob: 0 },
 ];
 
+const actionLabel = (actionType: string) => {
+  const labels: Record<string, string> = {
+    CREATE: 'Oluşturma',
+    UPDATE: 'Güncelleme',
+    DELETE: 'Silme',
+  };
+
+  return labels[actionType] ?? actionType;
+};
+
+const tableLabel = (tableName: string) => {
+  const labels: Record<string, string> = {
+    Activities: 'Aktiviteler',
+    AuditLogs: 'Kullanıcı Geçmişi',
+    Auth: 'Kullanıcılar',
+    Customers: 'Müşteriler',
+    Deals: 'Deal',
+    LossReasonOptions: 'Kaybetme Nedenleri',
+  };
+
+  return labels[tableName] ?? tableName;
+};
+
+const parseAuditDetails = (value: string | null) => {
+  if (!value) return null;
+
+  try {
+    return JSON.parse(value) as { method?: string; path?: string; query?: string; statusCode?: number; requestBody?: unknown };
+  } catch {
+    return null;
+  }
+};
+
 export default function AdminPanelPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [lossReasons, setLossReasons] = useState<LossReasonOption[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
   const [search, setSearch] = useState('');
+  const [auditSearch, setAuditSearch] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'stages' | 'lossReasons'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'stages' | 'lossReasons' | 'history'>('users');
   const [hasAdminAccess, setHasAdminAccess] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
@@ -62,9 +99,15 @@ export default function AdminPanelPage() {
     setLossReasons(data);
   };
 
+  const fetchAuditLogs = async () => {
+    const data = await getAuditLogs({ take: 300 });
+    setAuditLogs(data);
+  };
+
   useEffect(() => {
     fetchUsers();
     fetchLossReasons();
+    fetchAuditLogs();
     setHasAdminAccess(isCurrentUserAdmin());
   }, []);
 
@@ -82,6 +125,21 @@ export default function AdminPanelPage() {
       ].some((value) => value?.toLocaleLowerCase('tr-TR').includes(query));
     });
   }, [search, users]);
+
+  const filteredAuditLogs = useMemo(() => {
+    const query = auditSearch.trim().toLocaleLowerCase('tr-TR');
+    if (!query) return auditLogs;
+
+    return auditLogs.filter((log) => [
+      log.changedByName,
+      log.changedByEmail,
+      log.tableName,
+      log.actionType,
+      log.recordId,
+      actionLabel(log.actionType),
+      tableLabel(log.tableName),
+    ].some((value) => value?.toLocaleLowerCase('tr-TR').includes(query)));
+  }, [auditLogs, auditSearch]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -253,6 +311,7 @@ export default function AdminPanelPage() {
               { id: 'roles', label: 'Roller ve Yetkiler', icon: ShieldCheck },
               { id: 'stages', label: 'Pipeline Aşamaları', icon: GitBranch },
               { id: 'lossReasons', label: 'Kaybetme Nedenleri', icon: ListChecks },
+              { id: 'history', label: 'Kullanıcı Geçmişi', icon: History },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -684,6 +743,106 @@ export default function AdminPanelPage() {
                 </div>
               </section>
             </div>
+          )}
+
+          {activeTab === 'history' && (
+            <section className="glass rounded-[32px] border border-border-subtle overflow-hidden">
+              <div className="p-6 border-b border-border-subtle flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-800/30">
+                <div className="flex items-center gap-3">
+                  <History className="w-5 h-5 text-blue-500" />
+                  <div>
+                    <h2 className="text-lg font-semibold text-white">Kullanıcı Geçmişi</h2>
+                    <p className="text-xs text-slate-500">Sistemde yapılan oluşturma, güncelleme ve silme işlemleri.</p>
+                  </div>
+                </div>
+                <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row">
+                  <div className="relative w-full md:w-80">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input
+                      className="w-full bg-slate-900/70 border border-border-subtle rounded-xl py-2.5 pl-10 pr-4 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500/30"
+                      value={auditSearch}
+                      onChange={(event) => setAuditSearch(event.target.value)}
+                      placeholder="Geçmişte ara..."
+                    />
+                  </div>
+                  <button
+                    onClick={fetchAuditLogs}
+                    className="rounded-xl border border-border-subtle px-4 py-2.5 text-sm font-bold text-slate-300 transition-all hover:bg-slate-800 hover:text-white"
+                  >
+                    Yenile
+                  </button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="crm-table">
+                  <thead>
+                    <tr>
+                      <th>Tarih</th>
+                      <th>Kullanıcı</th>
+                      <th>İşlem</th>
+                      <th>Alan</th>
+                      <th>Detay</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAuditLogs.map((log) => {
+                      const details = parseAuditDetails(log.newValue);
+                      const bodySummary = details?.requestBody
+                        ? JSON.stringify(details.requestBody).slice(0, 160)
+                        : log.recordId;
+
+                      return (
+                        <tr key={log.id}>
+                          <td>
+                            <div className="flex flex-col">
+                              <span className="text-sm text-white">
+                                {new Date(log.changedAt).toLocaleDateString('tr-TR')}
+                              </span>
+                              <span className="text-xs text-slate-500">
+                                {new Date(log.changedAt).toLocaleTimeString('tr-TR')}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-white">{log.changedByName}</span>
+                              <span className="text-xs text-slate-500">{log.changedByEmail || log.changedBy}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={cn(
+                              "inline-flex rounded-lg border px-2.5 py-1 text-[10px] font-bold",
+                              log.actionType === 'DELETE'
+                                ? "border-rose-500/20 bg-rose-500/10 text-rose-400"
+                                : log.actionType === 'CREATE'
+                                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                                  : "border-blue-500/20 bg-blue-500/10 text-blue-400"
+                            )}>
+                              {actionLabel(log.actionType)}
+                            </span>
+                          </td>
+                          <td className="text-sm text-slate-300">{tableLabel(log.tableName)}</td>
+                          <td>
+                            <div className="max-w-xl">
+                              <p className="truncate text-sm text-slate-300">{details?.path ?? log.recordId}</p>
+                              <p className="truncate text-xs text-slate-500">{bodySummary}</p>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {filteredAuditLogs.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="text-center py-8 text-slate-500">
+                          Kullanıcı geçmişi bulunamadı.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           )}
         </div>
       </main>
