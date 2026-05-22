@@ -63,9 +63,16 @@ namespace CRM.API.Controllers
         [HttpPost("{id}/close")]
         public async Task<IActionResult> CloseDeal(Guid id, [FromBody] CloseDealDto dto)
         {
-            var deal = await _dealService.CloseDealAsync(id, dto);
-            if (deal == null) return NotFound();
-            return Ok(deal);
+            try
+            {
+                var deal = await _dealService.CloseDealAsync(id, dto);
+                if (deal == null) return NotFound();
+                return Ok(deal);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("{id}/notes")]

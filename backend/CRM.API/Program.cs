@@ -65,6 +65,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IDealService, DealService>();
+builder.Services.AddScoped<ILossReasonOptionService, LossReasonOptionService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();

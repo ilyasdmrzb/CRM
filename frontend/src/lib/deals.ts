@@ -90,17 +90,12 @@ export const dealStages: { name: DealStageName; color: string; probability: numb
   { name: '6 - Durduruldu', color: 'zinc', probability: 0 },
 ];
 
-export const lossReasonList = [
-  'Fiyat (Yüksek)',
-  'Teknik Yetersizlik',
-  'Teslim Süresi',
-  'Müşteri Kararsızlığı',
-  'Finansal Nedenler',
-  'Rakip Üstünlüğü',
-  'İlişki Yönetimi',
-  'Proje İptal Edildi',
-  'Diğer',
-];
+export type LossReasonOption = {
+  id: number;
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+};
 
 const stageIdByName: Record<string, number> = {
   '1 - ilk temas, ilgi belirleme': 1,
@@ -288,7 +283,7 @@ export async function closeDealInDb(
     closedDate: nullableDate(data.closedDate) ?? new Date().toISOString(),
   });
 
-  if (!response.ok) throw new Error('Deal kapatılamadı.');
+  if (!response.ok) throw new Error(await getResponseErrorMessage(response, 'Deal kapatılamadı.'));
   return mapApiDeal(await response.json() as ApiDeal);
 }
 
@@ -305,12 +300,36 @@ export async function addNoteToDealDb(id: string, text: string) {
 }
 
 export async function getLossReasonOptionsFromDb() {
-  const deals = await getDealsFromDb();
-  return Array.from(new Set(
-    deals
-      .map((deal) => deal.lossReason?.trim())
-      .filter((reason): reason is string => Boolean(reason)),
-  )).sort((a, b) => a.localeCompare(b, 'tr'));
+  const response = await api.get('/LossReasonOptions');
+  if (!response.ok) return [];
+
+  const options = await response.json() as LossReasonOption[];
+  return options.map((option) => option.name);
+}
+
+export async function getLossReasonOptionRecords(includeInactive = false) {
+  const response = await api.get(`/LossReasonOptions${includeInactive ? '?includeInactive=true' : ''}`);
+  if (!response.ok) return [];
+
+  return await response.json() as LossReasonOption[];
+}
+
+export async function addLossReasonOption(data: { name: string; sortOrder: number; isActive: boolean }) {
+  const response = await api.post('/LossReasonOptions', data);
+  if (!response.ok) throw new Error(await getResponseErrorMessage(response, 'Kaybetme nedeni eklenemedi.'));
+  return await response.json() as LossReasonOption;
+}
+
+export async function updateLossReasonOption(id: number, data: { name: string; sortOrder: number; isActive: boolean }) {
+  const response = await api.put(`/LossReasonOptions/${id}`, data);
+  if (!response.ok) throw new Error(await getResponseErrorMessage(response, 'Kaybetme nedeni güncellenemedi.'));
+  return await response.json() as LossReasonOption;
+}
+
+export async function deleteLossReasonOption(id: number) {
+  const response = await api.delete(`/LossReasonOptions/${id}`);
+  if (!response.ok) throw new Error(await getResponseErrorMessage(response, 'Kaybetme nedeni silinemedi.'));
+  return true;
 }
 
 

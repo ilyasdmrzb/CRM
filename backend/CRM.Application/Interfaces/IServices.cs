@@ -33,6 +33,14 @@ namespace CRM.Application.Interfaces
         Task<DealDto?> AddNoteAsync(Guid id, AddDealNoteDto dto);
     }
 
+    public interface ILossReasonOptionService
+    {
+        Task<List<LossReasonOptionDto>> GetAllAsync(bool includeInactive = false);
+        Task<LossReasonOptionDto> CreateAsync(CreateLossReasonOptionDto dto);
+        Task<LossReasonOptionDto?> UpdateAsync(int id, UpdateLossReasonOptionDto dto);
+        Task<bool> DeleteAsync(int id);
+    }
+
     public interface IActivityService
     {
         Task<List<ActivityDto>> GetAllAsync(Guid? customerId = null, Guid? dealId = null, string? type = null);

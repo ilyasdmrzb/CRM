@@ -13,6 +13,7 @@ namespace CRM.Infrastructure.Data
         public DbSet<DealStage> DealStages => Set<DealStage>();
         public DbSet<Deal> Deals => Set<Deal>();
         public DbSet<DealNote> DealNotes => Set<DealNote>();
+        public DbSet<LossReasonOption> LossReasonOptions => Set<LossReasonOption>();
         public DbSet<Activity> Activities => Set<Activity>();
         public DbSet<DealResult> DealResults => Set<DealResult>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
@@ -102,6 +103,14 @@ namespace CRM.Infrastructure.Data
                     .HasForeignKey<DealResult>(x => x.DealId).OnDelete(DeleteBehavior.Cascade);
             });
 
+            // LossReasonOption
+            modelBuilder.Entity<LossReasonOption>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => x.Name).IsUnique();
+                e.Property(x => x.Name).HasMaxLength(80);
+            });
+
             // AuditLog
             modelBuilder.Entity<AuditLog>(e =>
             {
@@ -122,6 +131,18 @@ namespace CRM.Infrastructure.Data
                 new DealStage { Id = 6, StageName = "Closed Won", Probability = 100, StageOrder = 6 },
                 new DealStage { Id = 7, StageName = "Closed Lost", Probability = 0, StageOrder = 7 },
                 new DealStage { Id = 8, StageName = "On Hold", Probability = 0, StageOrder = 8 }
+            );
+
+            modelBuilder.Entity<LossReasonOption>().HasData(
+                new LossReasonOption { Id = 1, Name = "Fiyat (Yüksek)", SortOrder = 1, IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new LossReasonOption { Id = 2, Name = "Teknik Yetersizlik", SortOrder = 2, IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new LossReasonOption { Id = 3, Name = "Teslim Süresi", SortOrder = 3, IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new LossReasonOption { Id = 4, Name = "Müşteri Kararsızlığı", SortOrder = 4, IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new LossReasonOption { Id = 5, Name = "Finansal Nedenler", SortOrder = 5, IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new LossReasonOption { Id = 6, Name = "Rakip Üstünlüğü", SortOrder = 6, IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new LossReasonOption { Id = 7, Name = "İlişki Yönetimi", SortOrder = 7, IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new LossReasonOption { Id = 8, Name = "Proje İptal Edildi", SortOrder = 8, IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new LossReasonOption { Id = 9, Name = "Diğer", SortOrder = 9, IsActive = true, CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
             );
 
             // Seed Admin User

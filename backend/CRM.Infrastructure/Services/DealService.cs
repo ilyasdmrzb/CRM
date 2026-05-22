@@ -153,6 +153,17 @@ namespace CRM.Infrastructure.Services
             var deal = await _context.Deals.Include(d => d.DealResult).FirstOrDefaultAsync(d => d.Id == id);
             if (deal == null) return null;
 
+            if ((dto.Result == "lost" || dto.Result == "stopped") && string.IsNullOrWhiteSpace(dto.LossReason))
+                throw new InvalidOperationException("Kaybetme nedeni zorunludur.");
+
+            if ((dto.Result == "lost" || dto.Result == "stopped") && !string.IsNullOrWhiteSpace(dto.LossReason))
+            {
+                dto.LossReason = string.Join(" ", dto.LossReason.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+                var reasonExists = await _context.LossReasonOptions.AnyAsync(x => x.IsActive && x.Name == dto.LossReason);
+                if (!reasonExists)
+                    throw new InvalidOperationException("Kaybetme nedeni admin panelindeki aktif seçeneklerden biri olmalıdır.");
+            }
+
             deal.Status = dto.Result == "won" ? "won" : "lost";
             deal.UpdatedAt = DateTime.UtcNow;
 

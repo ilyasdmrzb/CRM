@@ -13,8 +13,7 @@ import {
   Save,
   Search,
   ShieldCheck,
-  ToggleLeft,
-  ToggleRight,
+  ListChecks,
   Trash2,
   UserPlus,
   Users,
@@ -23,9 +22,10 @@ import {
   X,
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
-import { addAdminUser, getAdminUsers, setAdminUserStatus, deleteAdminUser, updateAdminUser, type AdminUser } from '@/lib/admin-users';
+import { addAdminUser, getAdminUsers, deleteAdminUser, updateAdminUser, type AdminUser } from '@/lib/admin-users';
 import { isCurrentUserAdmin } from '@/lib/auth';
 import { cn } from '@/lib/utils';
+import { addLossReasonOption, deleteLossReasonOption, getLossReasonOptionRecords, updateLossReasonOption, type LossReasonOption } from '@/lib/deals';
 
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
 const labelClass = "text-sm font-medium text-slate-300";
@@ -43,20 +43,28 @@ const pipelineStages = [
 
 export default function AdminPanelPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [lossReasons, setLossReasons] = useState<LossReasonOption[]>([]);
   const [search, setSearch] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'stages'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'stages' | 'lossReasons'>('users');
   const [hasAdminAccess, setHasAdminAccess] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
+  const [editingLossReason, setEditingLossReason] = useState<LossReasonOption | null>(null);
 
   const fetchUsers = async () => {
     const data = await getAdminUsers();
     setUsers(data);
   };
 
+  const fetchLossReasons = async () => {
+    const data = await getLossReasonOptionRecords(true);
+    setLossReasons(data);
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchLossReasons();
     setHasAdminAccess(isCurrentUserAdmin());
   }, []);
 
@@ -161,6 +169,49 @@ export default function AdminPanelPage() {
     // For simplicity with uncontrolled components, we'll use a key to reset the form.
   };
 
+  const handleLossReasonSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSaving(true);
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const payload = {
+      name: String(formData.get('name') ?? '').trim().replace(/\s+/g, ' '),
+      sortOrder: Number(formData.get('sortOrder') ?? lossReasons.length + 1),
+      isActive: formData.get('isActive') === 'on',
+    };
+
+    try {
+      if (editingLossReason) {
+        await updateLossReasonOption(editingLossReason.id, payload);
+        toast.success('Kaybetme nedeni güncellendi.');
+        setEditingLossReason(null);
+      } else {
+        await addLossReasonOption(payload);
+        toast.success('Kaybetme nedeni eklendi.');
+      }
+      form.reset();
+      await fetchLossReasons();
+    } catch (error: any) {
+      toast.error(error.message || 'Kaybetme nedeni kaydedilemedi.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleLossReasonDelete = async (option: LossReasonOption) => {
+    if (!window.confirm(`${option.name} kaybetme nedenini silmek istediğinize emin misiniz?`)) return;
+
+    try {
+      await deleteLossReasonOption(option.id);
+      toast.success('Kaybetme nedeni silindi.');
+      if (editingLossReason?.id === option.id) setEditingLossReason(null);
+      await fetchLossReasons();
+    } catch (error: any) {
+      toast.error(error.message || 'Kaybetme nedeni silinemedi.');
+    }
+  };
+
   if (!hasAdminAccess) {
     return (
       <div className="flex min-h-screen bg-main-bg">
@@ -201,6 +252,7 @@ export default function AdminPanelPage() {
               { id: 'users', label: 'Kullanıcı Yönetimi', icon: Users },
               { id: 'roles', label: 'Roller ve Yetkiler', icon: ShieldCheck },
               { id: 'stages', label: 'Pipeline Aşamaları', icon: GitBranch },
+              { id: 'lossReasons', label: 'Kaybetme Nedenleri', icon: ListChecks },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -493,6 +545,145 @@ export default function AdminPanelPage() {
                 </button>
               </div>
             </section>
+          )}
+
+          {activeTab === 'lossReasons' && (
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+              <section className="glass rounded-[32px] border border-border-subtle overflow-hidden">
+                <div className="p-6 border-b border-border-subtle flex items-center justify-between bg-slate-800/30">
+                  <div className="flex items-center gap-3">
+                    {editingLossReason ? <Edit2 className="w-5 h-5 text-blue-500" /> : <Plus className="w-5 h-5 text-blue-500" />}
+                    <h2 className="text-lg font-semibold text-white">
+                      {editingLossReason ? 'Neden Düzenle' : 'Neden Ekle'}
+                    </h2>
+                  </div>
+                  {editingLossReason && (
+                    <button
+                      onClick={() => setEditingLossReason(null)}
+                      className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 transition-all"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                <form key={editingLossReason?.id || 'new-loss-reason'} onSubmit={handleLossReasonSubmit} className="p-6 space-y-5">
+                  <div className="space-y-2">
+                    <label className={labelClass}>Kaybetme Nedeni</label>
+                    <input
+                      className={inputClass}
+                      name="name"
+                      placeholder="Fiyat yüksek"
+                      defaultValue={editingLossReason?.name || ''}
+                      maxLength={80}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className={labelClass}>Sıra</label>
+                    <input
+                      className={inputClass}
+                      name="sortOrder"
+                      type="number"
+                      min="0"
+                      step="1"
+                      defaultValue={editingLossReason?.sortOrder ?? lossReasons.length + 1}
+                      required
+                    />
+                  </div>
+
+                  <label className="flex items-center justify-between rounded-xl border border-border-subtle bg-slate-900/40 px-4 py-3 text-sm text-slate-300">
+                    Aktif
+                    <input
+                      name="isActive"
+                      type="checkbox"
+                      defaultChecked={editingLossReason?.isActive ?? true}
+                      className="h-4 w-4 accent-blue-600"
+                    />
+                  </label>
+
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-70"
+                  >
+                    <Save className="w-4 h-4" />
+                    {isSaving ? 'Kaydediliyor...' : editingLossReason ? 'Değişiklikleri Kaydet' : 'Neden Ekle'}
+                  </button>
+                </form>
+              </section>
+
+              <section className="xl:col-span-2 glass rounded-[32px] border border-border-subtle overflow-hidden">
+                <div className="p-6 border-b border-border-subtle flex items-center gap-3 bg-slate-800/30">
+                  <ListChecks className="w-5 h-5 text-blue-500" />
+                  <h2 className="text-lg font-semibold text-white">Kaybetme Nedeni Listesi</h2>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="crm-table">
+                    <thead>
+                      <tr>
+                        <th>Sıra</th>
+                        <th>Neden</th>
+                        <th>Durum</th>
+                        <th>İşlem</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lossReasons.map((option) => (
+                        <tr key={option.id} className={cn(editingLossReason?.id === option.id && "bg-blue-600/5")}>
+                          <td className="text-sm text-slate-400">{option.sortOrder}</td>
+                          <td className="cursor-pointer text-white font-medium" onClick={() => setEditingLossReason(option)}>
+                            {option.name}
+                          </td>
+                          <td>
+                            <button
+                              onClick={async () => {
+                                await updateLossReasonOption(option.id, { name: option.name, sortOrder: option.sortOrder, isActive: !option.isActive });
+                                await fetchLossReasons();
+                              }}
+                              className={cn(
+                                "inline-flex rounded-full border px-3 py-1 text-xs font-bold transition-all",
+                                option.isActive
+                                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-500"
+                                  : "border-slate-500/20 bg-slate-500/10 text-slate-400"
+                              )}
+                            >
+                              {option.isActive ? 'Aktif' : 'Pasif'}
+                            </button>
+                          </td>
+                          <td>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setEditingLossReason(option)}
+                                className="p-2 rounded-xl border border-border-subtle text-slate-300 hover:bg-slate-800 hover:text-white transition-all"
+                                title="Düzenle"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleLossReasonDelete(option)}
+                                className="p-2 rounded-xl border border-border-subtle text-slate-400 hover:bg-rose-500/10 hover:text-rose-500 transition-all"
+                                title="Sil"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {lossReasons.length === 0 && (
+                        <tr>
+                          <td colSpan={4} className="text-center py-8 text-slate-500">
+                            Kaybetme nedeni bulunamadı.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
           )}
         </div>
       </main>

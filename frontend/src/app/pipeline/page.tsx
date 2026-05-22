@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Sidebar from '@/components/layout/Sidebar';
 import { cn } from '@/lib/utils';
-import { closeDealInDb, dealStages, getDealsFromDb, getLossReasonOptionsFromDb, updateDealStageInDb, deleteDealFromDb, addNoteToDealDb, type DealItem, type DealStageName, lossReasonList } from '@/lib/deals';
+import { closeDealInDb, dealStages, getDealsFromDb, getLossReasonOptionsFromDb, updateDealStageInDb, deleteDealFromDb, addNoteToDealDb, type DealItem, type DealStageName } from '@/lib/deals';
 import { isCurrentUserAdmin } from '@/lib/auth';
 import { Trash2 } from 'lucide-react';
 
@@ -149,8 +149,8 @@ export default function PipelinePage() {
       toast.error('Kaybetme nedeni girin.');
       return;
     }
-    if (normalizedReason.split(' ').filter(Boolean).length > 3) {
-      toast.error('Kaybetme nedeni en fazla 3 kelime olmali.');
+    if (!lossReasonOptions.includes(normalizedReason)) {
+      toast.error('Kaybetme nedeni listeden seçilmeli.');
       return;
     }
 
@@ -707,20 +707,17 @@ export default function PipelinePage() {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-300">Kaybetme Nedeni</label>
-                        <input
+                        <select
                           value={lossReason}
                           onChange={(event) => setLossReason(event.target.value)}
-                          list="pipeline-loss-reason-options"
                           className="w-full rounded-xl border border-border-subtle bg-slate-900/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
-                          placeholder="Fiyat farki"
-                          maxLength={40}
                           required
-                        />
-                        <datalist id="pipeline-loss-reason-options">
-                          {lossReasonList.map((reason) => (
-                            <option key={reason} value={reason} />
+                        >
+                          <option value="" disabled>Seçiniz...</option>
+                          {lossReasonOptions.map((reason) => (
+                            <option key={reason} value={reason}>{reason}</option>
                           ))}
-                        </datalist>
+                        </select>
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-300">Rakip</label>
@@ -751,7 +748,7 @@ export default function PipelinePage() {
                         />
                       </div>
                     </div>
-                    <p className="text-xs text-slate-500">Kaybetme nedeni grafik etiketi icin en fazla 3 kelime olmali.</p>
+                    <p className="text-xs text-slate-500">Kaybetme nedenleri admin panelinden yönetilir.</p>
                     <div className="flex justify-end gap-3">
                       <button
                         type="button"

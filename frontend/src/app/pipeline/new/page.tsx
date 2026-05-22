@@ -18,7 +18,7 @@ import {
 import Sidebar from '@/components/layout/Sidebar';
 import { getAdminUsers, type AdminUser } from '@/lib/admin-users';
 import { getCustomersFromDb, type CustomerListItem } from '@/lib/customers';
-import { addDealToDb, closeDealInDb, dealStages, getLossReasonOptionsFromDb, lossReasonList } from '@/lib/deals';
+import { addDealToDb, closeDealInDb, dealStages, getLossReasonOptionsFromDb } from '@/lib/deals';
 import { getCurrentUser } from '@/lib/auth';
 
 const inputClass = "w-full bg-slate-900/60 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20";
@@ -119,9 +119,9 @@ export default function NewDealPage() {
       toast.error('Kaybedilen deal icin kaybetme nedeni girin.');
       return;
     }
-    if (lossReason.split(' ').filter(Boolean).length > 3) {
+    if (lossReason && !lossReasonOptions.includes(lossReason)) {
       setIsSaving(false);
-      toast.error('Kaybetme nedeni en fazla 3 kelime olmali.');
+      toast.error('Kaybetme nedeni listeden seçilmeli.');
       return;
     }
     formData.set('lossReason', lossReason);
@@ -380,7 +380,7 @@ export default function NewDealPage() {
                     required
                   >
                     <option value="" disabled>Seçiniz...</option>
-                    {lossReasonList.map((reason) => (
+                    {lossReasonOptions.map((reason) => (
                       <option key={reason} value={reason}>{reason}</option>
                     ))}
                   </select>

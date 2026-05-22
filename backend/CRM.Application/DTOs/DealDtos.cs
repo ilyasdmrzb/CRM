@@ -115,5 +115,31 @@ namespace CRM.Application.DTOs
         public string? CompetitorName { get; set; }
         public DateTime ClosedDate { get; set; }
     }
+
+    public class LossReasonOptionDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int SortOrder { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    public class CreateLossReasonOptionDto
+    {
+        [Required(ErrorMessage = "Kaybetme nedeni zorunludur.")]
+        [StringLength(80, ErrorMessage = "Kaybetme nedeni en fazla 80 karakter olabilir.")]
+        public string Name { get; set; } = string.Empty;
+        public int SortOrder { get; set; }
+        public bool IsActive { get; set; } = true;
+    }
+
+    public class UpdateLossReasonOptionDto
+    {
+        [Required(ErrorMessage = "Kaybetme nedeni zorunludur.")]
+        [StringLength(80, ErrorMessage = "Kaybetme nedeni en fazla 80 karakter olabilir.")]
+        public string Name { get; set; } = string.Empty;
+        public int SortOrder { get; set; }
+        public bool IsActive { get; set; } = true;
+    }
 }
 
