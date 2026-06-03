@@ -100,13 +100,43 @@ namespace CRM.Infrastructure.Services
             };
             _context.Deals.Add(deal);
             await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrWhiteSpace(dto.Notes))
+            {
+                var note = new DealNote
+                {
+                    DealId = deal.Id,
+                    Text = dto.Notes,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.DealNotes.Add(note);
+                await _context.SaveChangesAsync();
+            }
+
             return await GetByIdAsync(deal.Id) ?? MapToDto(deal);
         }
 
-        public async Task<DealDto?> UpdateAsync(Guid id, UpdateDealDto dto)
+        public async Task<DealDto?> UpdateAsync(Guid id, UpdateDealDto dto, Guid userId)
         {
             var deal = await _context.Deals.FindAsync(id);
             if (deal == null) return null;
+
+            bool priceChanged = deal.JinkoPrice != dto.JinkoPrice ||
+                                deal.HsaPrice != dto.HsaPrice ||
+                                deal.DealValue != dto.DealValue ||
+                                deal.TargetPrice != dto.TargetPrice;
+
+            bool detailsChanged = deal.ContactId != dto.ContactId ||
+                                  deal.SalesUserId != dto.SalesUserId ||
+                                  deal.ProjectName != dto.ProjectName ||
+                                  deal.StageId != dto.StageId ||
+                                  deal.Probability != dto.Probability ||
+                                  deal.CapacityMw != dto.CapacityMw ||
+                                  deal.CompetitorName != dto.CompetitorName ||
+                                  deal.EpcPartner != dto.EpcPartner ||
+                                  deal.DeliveryDate != dto.DeliveryDate ||
+                                  deal.Notes != dto.Notes ||
+                                  deal.Status != dto.Status;
 
             var stage = await _context.DealStages.FindAsync(dto.StageId);
             deal.ContactId = dto.ContactId;
@@ -129,30 +159,84 @@ namespace CRM.Infrastructure.Services
             deal.Status = dto.Status;
             deal.UpdatedAt = DateTime.UtcNow;
 
+            if (priceChanged)
+            {
+                var activity = new Activity
+                {
+                    CustomerId = deal.CustomerId,
+                    DealId = deal.Id,
+                    UserId = userId,
+                    ActivityType = "Fiyat Güncellemesi",
+                    Subject = "Fiyat Güncellemesi",
+                    Description = $"Proje: {deal.ProjectName}. Fiyatlar güncellendi. Yeni Değerler -> Jinko: {dto.JinkoPrice}, HSA: {dto.HsaPrice}, Toplam Değer: {dto.DealValue}, Hedef Fiyat: {dto.TargetPrice}",
+                    ActivityDate = DateTime.Now,
+                    IsCompleted = true,
+                    Status = "completed",
+                    CompletedAt = DateTime.Now
+                };
+                _context.Activities.Add(activity);
+            }
+            else if (detailsChanged)
+            {
+                var activity = new Activity
+                {
+                    CustomerId = deal.CustomerId,
+                    DealId = deal.Id,
+                    UserId = userId,
+                    ActivityType = "Fırsat Güncellemesi",
+                    Subject = "Fırsat Detayları Güncellendi",
+                    Description = $"Proje: {deal.ProjectName}. Fırsat detayları güncellendi.",
+                    ActivityDate = DateTime.Now,
+                    IsCompleted = true,
+                    Status = "completed",
+                    CompletedAt = DateTime.Now
+                };
+                _context.Activities.Add(activity);
+            }
+
             await _context.SaveChangesAsync();
             return await GetByIdAsync(id);
         }
 
-        public async Task<DealDto?> UpdateStageAsync(Guid id, UpdateDealStageDto dto)
+        public async Task<DealDto?> UpdateStageAsync(Guid id, UpdateDealStageDto dto, Guid userId)
         {
-            var deal = await _context.Deals.FindAsync(id);
+            var deal = await _context.Deals.Include(d => d.Stage).FirstOrDefaultAsync(d => d.Id == id);
             if (deal == null) return null;
 
+            var oldStageName = deal.Stage?.StageName ?? "Bilinmiyor";
             var stage = await _context.DealStages.FindAsync(dto.StageId);
+            var newStageName = stage?.StageName ?? "Bilinmiyor";
+
             deal.StageId = dto.StageId;
             deal.Probability = dto.Probability ?? stage?.Probability ?? deal.Probability;
             deal.WeightedValue = deal.DealValue.HasValue ? deal.DealValue * deal.Probability / 100 : null;
             deal.UpdatedAt = DateTime.UtcNow;
 
+            var activity = new Activity
+            {
+                CustomerId = deal.CustomerId,
+                DealId = deal.Id,
+                UserId = userId,
+                ActivityType = "Fırsat Güncellemesi",
+                Subject = "Aşama Güncellemesi",
+                Description = $"Proje: {deal.ProjectName}. Aşama değiştirildi: '{oldStageName}' -> '{newStageName}'",
+                ActivityDate = DateTime.Now,
+                IsCompleted = true,
+                Status = "completed",
+                CompletedAt = DateTime.Now
+            };
+            _context.Activities.Add(activity);
+
             await _context.SaveChangesAsync();
             return await GetByIdAsync(id);
         }
 
-        public async Task<DealDto?> CloseDealAsync(Guid id, CloseDealDto dto)
+        public async Task<DealDto?> CloseDealAsync(Guid id, CloseDealDto dto, Guid userId)
         {
             var deal = await _context.Deals.Include(d => d.DealResult).FirstOrDefaultAsync(d => d.Id == id);
             if (deal == null) return null;
 
+            var oldStatus = deal.Status;
             deal.Status = dto.Result == "won" ? "won" : "lost";
             deal.UpdatedAt = DateTime.UtcNow;
 
@@ -191,12 +275,27 @@ namespace CRM.Infrastructure.Services
                 deal.DealResult.CompetitorName = dto.CompetitorName;
                 deal.DealResult.ClosedDate = dto.ClosedDate;
             }
+
+            var activity = new Activity
+            {
+                CustomerId = deal.CustomerId,
+                DealId = deal.Id,
+                UserId = userId,
+                ActivityType = "Fırsat Güncellemesi",
+                Subject = "Fırsat Kapatıldı",
+                Description = $"Proje: {deal.ProjectName}. Durum güncellendi: '{oldStatus}' -> '{deal.Status}' ({dto.Result})",
+                ActivityDate = DateTime.Now,
+                IsCompleted = true,
+                Status = "completed",
+                CompletedAt = DateTime.Now
+            };
+            _context.Activities.Add(activity);
             
             await _context.SaveChangesAsync();
             return await GetByIdAsync(id);
         }
 
-        public async Task<DealDto?> AddNoteAsync(Guid id, AddDealNoteDto dto)
+        public async Task<DealDto?> AddNoteAsync(Guid id, AddDealNoteDto dto, Guid userId)
         {
             var deal = await _context.Deals.FindAsync(id);
             if (deal == null) return null;
@@ -209,6 +308,22 @@ namespace CRM.Infrastructure.Services
             };
 
             _context.DealNotes.Add(note);
+
+            var activity = new Activity
+            {
+                CustomerId = deal.CustomerId,
+                DealId = deal.Id,
+                UserId = userId,
+                ActivityType = "Not Ekleme",
+                Subject = "Yeni Not Ekleme",
+                Description = $"Proje: {deal.ProjectName}. Deal'a yeni not eklendi: \"{(dto.Text.Length > 60 ? dto.Text[..60] + "..." : dto.Text)}\"",
+                ActivityDate = DateTime.Now,
+                IsCompleted = true,
+                Status = "completed",
+                CompletedAt = DateTime.Now
+            };
+            _context.Activities.Add(activity);
+
             await _context.SaveChangesAsync();
 
             return await GetByIdAsync(id);
@@ -284,18 +399,34 @@ namespace CRM.Infrastructure.Services
             CurrentUpdate = d.CurrentUpdate,
             Notes = d.Notes,
             Status = d.Status,
-            NoteHistory = d.NoteHistory?.OrderByDescending(n => n.CreatedAt).Select(n => new DealNoteDto
-            {
-                Id = n.Id,
-                Text = n.Text,
-                CreatedAt = n.CreatedAt
-            }).ToList() ?? new List<DealNoteDto>(),
+            NoteHistory = GetNoteHistoryList(d),
             LastActivityDate = d.Activities?.Where(a => a.IsCompleted).OrderByDescending(a => a.ActivityDate).FirstOrDefault()?.ActivityDate,
             NextActionDate = d.Activities?.Where(a => !a.IsCompleted).OrderBy(a => a.ActivityDate).FirstOrDefault()?.ActivityDate,
             NextActionSubject = d.Activities?.Where(a => !a.IsCompleted).OrderBy(a => a.ActivityDate).FirstOrDefault()?.Subject,
             CreatedAt = d.CreatedAt,
             UpdatedAt = d.UpdatedAt
         };
+
+        private static List<DealNoteDto> GetNoteHistoryList(Deal d)
+        {
+            var list = d.NoteHistory?.OrderByDescending(n => n.CreatedAt).Select(n => new DealNoteDto
+            {
+                Id = n.Id,
+                Text = n.Text,
+                CreatedAt = n.CreatedAt
+            }).ToList() ?? new List<DealNoteDto>();
+
+            if (!string.IsNullOrWhiteSpace(d.Notes) && !list.Any(n => n.Text == d.Notes))
+            {
+                list.Add(new DealNoteDto
+                {
+                    Id = Guid.Empty,
+                    Text = d.Notes,
+                    CreatedAt = d.CreatedAt
+                });
+            }
+            return list;
+        }
     }
 }
 

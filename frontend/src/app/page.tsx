@@ -33,6 +33,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import { getActivitiesFromDb, type ActivityItem } from '@/lib/activities';
 import { dealStages, getDealsFromDb, type DealItem } from '@/lib/deals';
 import { getCurrentUser, refreshCurrentUser, type AuthUser } from '@/lib/auth';
+import { getAdminUsers, type AdminUser } from '@/lib/admin-users';
 
 type PipelineData = { name: string; value: number };
 type StageData = { name: string; value: number; color: string };
@@ -91,6 +92,7 @@ export default function Dashboard() {
   const [deals, setDeals] = useState<DealItem[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [trendRange, setTrendRange] = useState<TrendRange>(6);
   const [filters, setFilters] = useState({
     startDate: '',
@@ -104,6 +106,7 @@ export default function Dashboard() {
   useEffect(() => {
     getDealsFromDb().then(setDeals).catch(() => setDeals([]));
     getActivitiesFromDb().then(setActivities).catch(() => setActivities([]));
+    getAdminUsers().then(setUsers).catch(() => setUsers([]));
     setUser(getCurrentUser());
     refreshCurrentUser().then(setUser).catch(() => setUser(getCurrentUser()));
   }, []);
@@ -258,6 +261,51 @@ export default function Dashboard() {
         time: getActivityTimeLabel(activity),
       }));
   }, [filteredActivities]);
+
+  const isWithinCurrentWeek = (dateStr: string | null | undefined) => {
+    if (!dateStr) return false;
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return false;
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // Calculate start of current week (Monday)
+    const day = today.getDay();
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+    const startOfWeek = new Date(today.setDate(diff));
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+    
+    return date >= startOfWeek && date < endOfWeek;
+  };
+
+  const weeklyActivities = useMemo(() => {
+    const thisWeekActs = activities.filter(act => {
+      if (filters.customer !== 'all' && act.company !== filters.customer) return false;
+      return isWithinCurrentWeek(act.completedAt || act.createdAt || act.date);
+    });
+
+    return users.map(u => {
+      const uActs = thisWeekActs.filter(act => act.user.toLowerCase() === u.fullName.toLowerCase());
+      
+      const breakdown = uActs.reduce<Record<string, number>>((acc, act) => {
+        const type = act.type || 'Diğer';
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {});
+
+      return {
+        userId: u.id,
+        userName: u.fullName,
+        initials: u.initials,
+        total: uActs.length,
+        breakdown,
+      };
+    }).sort((a, b) => b.total - a.total);
+  }, [activities, users, filters.customer]);
 
   const hasPipelineData = pipelineData.some((item) => item.value > 0);
 
@@ -520,7 +568,92 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
             <div className="xl:col-span-2 glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
-              <h3 className="text-lg font-semibold text-white mb-6">En Aktif Satış Kullanıcıları</h3>
+              <h3 className="text-lg font-semibold text-white mb-6">Haftalık Satış Sorumlusu Aktifliği</h3>
+              <table className="crm-table">
+                <thead>
+                  <tr>
+                    <th>Satış Sorumlusu</th>
+                    <th>Toplam Güncelleme</th>
+                    <th>Haftalık Aktivite Detayı</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {weeklyActivities.map((wUser) => (
+                    <tr key={wUser.userId}>
+                      <td className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-xs font-bold text-blue-500">
+                          {wUser.initials}
+                        </div>
+                        <span className="text-sm font-medium text-white">{wUser.userName}</span>
+                      </td>
+                      <td>
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                          {wUser.total} güncelleme
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap gap-1.5">
+                          {Object.entries(wUser.breakdown).map(([type, count]) => (
+                            <span 
+                              key={type}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                type === 'Toplantı' ? 'bg-purple-500/10 border border-purple-500/20 text-purple-400' :
+                                type === 'Ziyaret' ? 'bg-orange-500/10 border border-orange-500/20 text-orange-400' :
+                                type === 'Fiyat Güncellemesi' ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400' :
+                                type === 'Yeni Müşteri Ekleme' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' :
+                                type === 'Arama' ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400' :
+                                type === 'Not Ekleme' ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-400' :
+                                'bg-slate-500/10 border border-slate-500/20 text-slate-400'
+                              }`}
+                            >
+                              {count} {type}
+                            </span>
+                          ))}
+                          {wUser.total === 0 && (
+                            <span className="text-xs text-slate-500 italic">Bu hafta güncelleme yok</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {weeklyActivities.length === 0 && (
+                <div className="border-t border-border-subtle p-8 text-center text-sm text-slate-500">
+                  Satış kullanıcısı tablosu için aktivite verisi bekleniyor.
+                </div>
+              )}
+            </div>
+
+            <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
+              <h3 className="text-lg font-semibold text-white mb-6">Son Aktiviteler</h3>
+              <div className="space-y-6">
+                {recentActivities.map((act, i) => (
+                  <div key={`${act.user}-${act.time}-${i}`} className="flex gap-4">
+                    <div className="mt-1 w-2 h-2 rounded-full bg-blue-500 ring-4 ring-blue-500/10" />
+                    <div>
+                      <p className="text-sm text-slate-200">
+                        <span className="font-semibold text-blue-400">{act.user}</span>, <span className="text-white font-medium">{act.company}</span> ile <span className="text-white font-medium">{act.type}</span> aktivitesini tamamladi
+                      </p>
+                      <span className="text-xs text-slate-500">{act.time}</span>
+                    </div>
+                  </div>
+                ))}
+                {recentActivities.length === 0 && (
+                  <p className="rounded-2xl border border-dashed border-border-subtle bg-slate-900/30 p-4 text-sm text-slate-500">
+                    Henüz tamamlanan aktivite yok.
+                  </p>
+                )}
+              </div>
+              <button className="w-full mt-8 py-3 text-sm font-medium text-slate-400 hover:text-white transition-colors border border-border-subtle rounded-xl hover:bg-slate-800">
+                Tüm Aktiviteleri Gör
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <div className="xl:col-span-2 glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
+              <h3 className="text-lg font-semibold text-white mb-6">Satış Performansı (Kazanılan/Ciro)</h3>
               <table className="crm-table">
                 <thead>
                   <tr>
@@ -558,31 +691,6 @@ export default function Dashboard() {
                   Satış kullanıcısı tablosu için deal verisi bekleniyor.
                 </div>
               )}
-            </div>
-
-            <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
-              <h3 className="text-lg font-semibold text-white mb-6">Son Aktiviteler</h3>
-              <div className="space-y-6">
-                {recentActivities.map((act, i) => (
-                  <div key={`${act.user}-${act.time}-${i}`} className="flex gap-4">
-                    <div className="mt-1 w-2 h-2 rounded-full bg-blue-500 ring-4 ring-blue-500/10" />
-                    <div>
-                      <p className="text-sm text-slate-200">
-                        <span className="font-semibold text-blue-400">{act.user}</span>, <span className="text-white font-medium">{act.company}</span> ile <span className="text-white font-medium">{act.type}</span> aktivitesini tamamladi
-                      </p>
-                      <span className="text-xs text-slate-500">{act.time}</span>
-                    </div>
-                  </div>
-                ))}
-                {recentActivities.length === 0 && (
-                  <p className="rounded-2xl border border-dashed border-border-subtle bg-slate-900/30 p-4 text-sm text-slate-500">
-                    Henüz tamamlanan aktivite yok.
-                  </p>
-                )}
-              </div>
-              <button className="w-full mt-8 py-3 text-sm font-medium text-slate-400 hover:text-white transition-colors border border-border-subtle rounded-xl hover:bg-slate-800">
-                Tüm Aktiviteleri Gör
-              </button>
             </div>
           </div>
         </div>

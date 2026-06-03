@@ -16,7 +16,10 @@ import {
   AlertCircle,
   X,
   Save,
-  Trash2
+  Trash2,
+  TrendingUp,
+  FileText,
+  UserPlus
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -38,6 +41,10 @@ const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   'E-posta': Mail,
   Ziyaret: MapPin,
   WhatsApp: MessageSquare,
+  'Fiyat Güncellemesi': TrendingUp,
+  'Not Ekleme': FileText,
+  'Yeni Müşteri Ekleme': UserPlus,
+  'Fırsat Güncellemesi': Calendar,
 };
 
 const typeColors: Record<string, string> = {
@@ -46,6 +53,10 @@ const typeColors: Record<string, string> = {
   'E-posta': 'indigo',
   Ziyaret: 'orange',
   WhatsApp: 'emerald',
+  'Fiyat Güncellemesi': 'orange',
+  'Not Ekleme': 'indigo',
+  'Yeni Müşteri Ekleme': 'emerald',
+  'Fırsat Güncellemesi': 'purple',
 };
 
 const colorClasses: Record<string, string> = {

@@ -25,12 +25,12 @@ namespace CRM.Application.Interfaces
         Task<List<DealDto>> GetAllAsync(string? search = null, string? status = null, int? stageId = null);
         Task<DealDto?> GetByIdAsync(Guid id);
         Task<DealDto> CreateAsync(CreateDealDto dto, Guid userId);
-        Task<DealDto?> UpdateAsync(Guid id, UpdateDealDto dto);
+        Task<DealDto?> UpdateAsync(Guid id, UpdateDealDto dto, Guid userId);
         Task<bool> DeleteAsync(Guid id);
-        Task<DealDto?> UpdateStageAsync(Guid id, UpdateDealStageDto dto);
-        Task<DealDto?> CloseDealAsync(Guid id, CloseDealDto dto);
+        Task<DealDto?> UpdateStageAsync(Guid id, UpdateDealStageDto dto, Guid userId);
+        Task<DealDto?> CloseDealAsync(Guid id, CloseDealDto dto, Guid userId);
         Task<List<DealDto>> GetByCustomerIdAsync(Guid customerId);
-        Task<DealDto?> AddNoteAsync(Guid id, AddDealNoteDto dto);
+        Task<DealDto?> AddNoteAsync(Guid id, AddDealNoteDto dto, Guid userId);
     }
 
     public interface IActivityService

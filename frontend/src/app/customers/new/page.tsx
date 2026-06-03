@@ -29,7 +29,7 @@ export default function NewCustomerPage() {
 
   useEffect(() => {
     getAdminUsers()
-      .then((data) => setUsers(data.filter((user) => user.isActive)))
+      .then((data) => setUsers(data.filter((user) => user.isActive && user.role === 'Sales')))
       .catch(() => {
         setUsers([]);
         toast.error('Hesap sorumluları alınamadı.');
@@ -109,7 +109,7 @@ export default function NewCustomerPage() {
                 <div className="space-y-2">
                   <label className={labelClass}>Hesap Sorumlusu</label>
                   <select className={inputClass} name="responsibleUserId" defaultValue="" required disabled={users.length === 0}>
-                    <option value="" disabled>{users.length === 0 ? 'Kayıtlı aktif kullanıcı yok' : 'Hesap sorumlusu seçin'}</option>
+                    <option value="" disabled>{users.length === 0 ? 'Kayıtlı aktif satıcı yok' : 'Hesap sorumlusu seçin'}</option>
                     {users.map((user) => (
                       <option key={user.id} value={user.id}>
                         {user.fullName} ({user.initials})
