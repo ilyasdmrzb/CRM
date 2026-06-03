@@ -1,4 +1,5 @@
 using CRM.Application.DTOs;
+using CRM.Application.DTOs.Auth;
 
 namespace CRM.Application.Interfaces
 {
@@ -33,6 +34,14 @@ namespace CRM.Application.Interfaces
         Task<DealDto?> AddNoteAsync(Guid id, AddDealNoteDto dto, Guid userId);
     }
 
+    public interface ILossReasonOptionService
+    {
+        Task<List<LossReasonOptionDto>> GetAllAsync(bool includeInactive = false);
+        Task<LossReasonOptionDto> CreateAsync(CreateLossReasonOptionDto dto);
+        Task<LossReasonOptionDto?> UpdateAsync(int id, UpdateLossReasonOptionDto dto);
+        Task<bool> DeleteAsync(int id);
+    }
+
     public interface IActivityService
     {
         Task<List<ActivityDto>> GetAllAsync(Guid? customerId = null, Guid? dealId = null, string? type = null);
@@ -52,5 +61,6 @@ namespace CRM.Application.Interfaces
     public interface IAuditLogService
     {
         Task LogAsync(string tableName, string recordId, string actionType, string? oldValue, string? newValue, Guid changedBy);
+        Task<List<AuditLogDto>> GetAllAsync(Guid? userId = null, string? actionType = null, string? tableName = null, int take = 200);
     }
 }

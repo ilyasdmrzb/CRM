@@ -75,9 +75,16 @@ namespace CRM.API.Controllers
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
                 return Unauthorized();
 
-            var deal = await _dealService.CloseDealAsync(id, dto, userId);
-            if (deal == null) return NotFound();
-            return Ok(deal);
+            try
+            {
+                var deal = await _dealService.CloseDealAsync(id, dto, userId);
+                if (deal == null) return NotFound();
+                return Ok(deal);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("{id}/notes")]
