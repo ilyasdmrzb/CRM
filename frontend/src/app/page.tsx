@@ -128,6 +128,7 @@ export default function Dashboard() {
   const [trendRange, setTrendRange] = useState<TrendRange>(6);
   const [selectedRepForChart, setSelectedRepForChart] = useState<string>('all');
   const [activityChartPeriod, setActivityChartPeriod] = useState<ActivityChartPeriod>('weekly');
+  const [lostDealPeriod, setLostDealPeriod] = useState<ActivityChartPeriod>('weekly');
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -331,6 +332,39 @@ export default function Dashboard() {
     const now = new Date();
     return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
   };
+
+  const getLostDealMarkedAt = (deal: DealItem) => deal.updatedAt || deal.closedDate || deal.createdAt;
+
+  const formatDateTime = (dateStr: string | null | undefined) => {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return '-';
+
+    return date.toLocaleString('tr-TR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const periodLabel = lostDealPeriod === 'weekly' ? 'Bu hafta' : 'Bu ay';
+
+  const periodLostDeals = useMemo(() => {
+    return lostDeals
+      .filter((deal) => {
+        const markedAt = getLostDealMarkedAt(deal);
+        return lostDealPeriod === 'weekly'
+          ? isWithinCurrentWeek(markedAt)
+          : isWithinCurrentMonth(markedAt);
+      })
+      .sort((a, b) => new Date(getLostDealMarkedAt(b)).getTime() - new Date(getLostDealMarkedAt(a)).getTime());
+  }, [lostDeals, lostDealPeriod]);
+
+  const periodLostValue = useMemo(() => {
+    return periodLostDeals.reduce((total, deal) => total + deal.valueAmount, 0);
+  }, [periodLostDeals]);
 
   const weeklyActivities = useMemo(() => {
     const thisWeekActs = activities.filter(act => {
@@ -537,6 +571,105 @@ export default function Dashboard() {
             <StatCard title="Kaybedilen" value={formatCurrency(lostValue)} subValue={`${lostDeals.length} deal`} icon={XCircle} color="rose" />
             <StatCard title="Kazanma Oranı" value={`%${winRate}`} icon={TrendingUp} color="indigo" />
             <StatCard title="Kapanma Süresi" value={`${averageClosingTime} Gün`} icon={Clock} color="rose" />
+          </div>
+
+          <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                  <XCircle className="w-5 h-5 text-rose-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Kaybedilen Deal Aktiviteleri</h3>
+                  <p className="text-xs text-slate-500">
+                    {periodLabel} kaybedilen {periodLostDeals.length} deal, toplam {formatCurrency(periodLostValue)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex rounded-xl border border-border-subtle bg-slate-900 p-1">
+                {([
+                  ['weekly', 'Haftalık'],
+                  ['monthly', 'Aylık'],
+                ] as const).map(([period, label]) => (
+                  <button
+                    key={period}
+                    type="button"
+                    onClick={() => setLostDealPeriod(period)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      lostDealPeriod === period
+                        ? 'bg-rose-500 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {periodLostDeals.length > 0 ? (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {periodLostDeals.slice(0, 6).map((deal) => (
+                  <Link
+                    key={deal.id}
+                    href={`/pipeline/${deal.id}/edit`}
+                    className="group p-4 rounded-2xl bg-rose-500/5 border border-rose-500/20 hover:border-rose-500/50 transition-all"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">
+                          {deal.company} - {deal.project || deal.code}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {formatDateTime(getLostDealMarkedAt(deal))} tarihinde kaybedildi olarak işaretlendi.
+                        </p>
+                      </div>
+                      <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 border border-rose-500/20 text-rose-300">
+                        {formatCurrency(deal.valueAmount)}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
+                      <div className="rounded-xl bg-slate-900/60 border border-border-subtle px-3 py-2">
+                        <span className="block text-slate-500">Sorumlu</span>
+                        <span className="block text-slate-200 truncate">{deal.owner || '-'}</span>
+                      </div>
+                      <div className="rounded-xl bg-slate-900/60 border border-border-subtle px-3 py-2">
+                        <span className="block text-slate-500">Kapasite</span>
+                        <span className="block text-slate-200 truncate">{deal.capacity}</span>
+                      </div>
+                      <div className="rounded-xl bg-slate-900/60 border border-border-subtle px-3 py-2">
+                        <span className="block text-slate-500">Şehir</span>
+                        <span className="block text-slate-200 truncate">{deal.city || '-'}</span>
+                      </div>
+                      <div className="rounded-xl bg-slate-900/60 border border-border-subtle px-3 py-2">
+                        <span className="block text-slate-500">Kod</span>
+                        <span className="block text-slate-200 truncate">{deal.code}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mt-3 text-[11px] text-slate-300">
+                      <span className="px-2.5 py-1 rounded-full bg-slate-900/70 border border-border-subtle">
+                        Neden: {deal.lossReason || 'Belirtilmedi'}
+                      </span>
+                      <span className="px-2.5 py-1 rounded-full bg-slate-900/70 border border-border-subtle">
+                        Rakip: {deal.competitorName || 'Belirtilmedi'}
+                      </span>
+                      {deal.closedDate && (
+                        <span className="px-2.5 py-1 rounded-full bg-slate-900/70 border border-border-subtle">
+                          Kapanış: {formatDateTime(deal.closedDate)}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="py-10 text-center border border-dashed border-border-subtle rounded-2xl bg-slate-900/30">
+                <p className="text-sm text-slate-500">{periodLabel} kaybedildi olarak işaretlenen deal bulunmuyor.</p>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

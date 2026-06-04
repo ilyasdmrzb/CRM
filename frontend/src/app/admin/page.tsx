@@ -240,6 +240,21 @@ export default function AdminPanelPage() {
     };
 
     try {
+      if (!payload.name) {
+        toast.error('Kaybetme nedeni boş olamaz.');
+        return;
+      }
+
+      const duplicate = lossReasons.find((option) =>
+        option.name.toLocaleLowerCase('tr-TR') === payload.name.toLocaleLowerCase('tr-TR') &&
+        option.id !== editingLossReason?.id
+      );
+
+      if (duplicate) {
+        toast.error('Bu kaybetme nedeni zaten listede var.');
+        return;
+      }
+
       if (editingLossReason) {
         await updateLossReasonOption(editingLossReason.id, payload);
         toast.success('Kaybetme nedeni güncellendi.');
