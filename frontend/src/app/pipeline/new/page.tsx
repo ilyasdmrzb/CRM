@@ -173,7 +173,7 @@ export default function NewDealPage() {
         </header>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 relative z-20">
             <section className="xl:col-span-2 glass rounded-[32px] border border-border-subtle overflow-visible">
               <div className="p-6 border-b border-border-subtle flex items-center gap-3 bg-slate-800/30">
                 <Target className="w-5 h-5 text-blue-500" />
@@ -404,10 +404,10 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-2 md:col-span-2 xl:col-span-4">
-                <label className={labelClass}>Notlar</label>
+                <label className={labelClass}>Notlar <span className="text-rose-500">*</span></label>
                 <div className="relative">
                   <FileText className="absolute left-4 top-4 w-4 h-4 text-slate-500" />
-                  <textarea className={`${inputClass} min-h-28 resize-none pl-11`} name="notes" placeholder="Fırsatla ilgili kısa notlar" />
+                  <textarea className={`${inputClass} min-h-28 resize-none pl-11`} name="notes" placeholder="Fırsatla ilgili kısa notlar" required />
                 </div>
               </div>
             </div>

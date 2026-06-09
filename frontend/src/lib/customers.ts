@@ -18,6 +18,7 @@ export type CustomerListItem = {
   contacts: number;
   deals: number;
   owner: string;
+  responsibleUserId?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -31,6 +32,7 @@ type ApiCustomer = {
   sector: string | null;
   address: string | null;
   createdByName: string;
+  responsibleUserId: string | null;
   createdAt: string;
   updatedAt: string;
   contactCount: number;
@@ -64,6 +66,7 @@ const mapApiCustomer = (customer: ApiCustomer): CustomerListItem => ({
   contacts: customer.contactCount,
   deals: customer.dealCount,
   owner: customer.createdByName || 'Sistem Yöneticisi',
+  responsibleUserId: customer.responsibleUserId || undefined,
   createdAt: customer.createdAt,
   updatedAt: customer.updatedAt,
 });

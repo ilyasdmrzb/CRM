@@ -19,6 +19,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import { getActivitiesFromDb, type ActivityItem } from '@/lib/activities';
 import { getCustomerByIdFromDb, type CustomerListItem, updateCustomerInDb } from '@/lib/customers';
 import { getDealsFromDb, type DealItem } from '@/lib/deals';
+import { getAdminUsers, type AdminUser } from '@/lib/admin-users';
 
 const ownerInitials = (owner: string) => {
   return owner
@@ -55,12 +56,19 @@ export default function CustomerDetailPage() {
   const [customer, setCustomer] = useState<CustomerListItem | null>(null);
   const [deals, setDeals] = useState<DealItem[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     getCustomerByIdFromDb(params.id).then(setCustomer);
     getDealsFromDb().then(setDeals).catch(() => setDeals([]));
     getActivitiesFromDb().then(setActivities).catch(() => setActivities([]));
+    getAdminUsers()
+      .then((data) => setUsers(data.filter((user) => user.isActive && user.role === 'Sales')))
+      .catch(() => {
+        setUsers([]);
+        toast.error('Hesap sorumluları alınamadı.');
+      });
   }, [params.id]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -207,11 +215,18 @@ export default function CustomerDetailPage() {
 
                 <div className="space-y-2">
                   <label className={labelClass}>Hesap Sorumlusu</label>
-                  <select className={inputClass} name="owner" defaultValue={customer.owner}>
-                    <option>Gamze K.</option>
-                    <option>John Doe</option>
-                    <option>Sarah C.</option>
-                    <option>Michael S.</option>
+                  <select className={inputClass} name="responsibleUserId" defaultValue={customer.responsibleUserId || ""} required disabled={users.length === 0}>
+                    <option value="" disabled>{users.length === 0 ? 'Kayıtlı aktif satıcı yok' : 'Hesap sorumlusu seçin'}</option>
+                    {users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.fullName} ({user.initials})
+                      </option>
+                    ))}
+                    {customer.responsibleUserId && !users.some(u => u.id === customer.responsibleUserId) && (
+                      <option value={customer.responsibleUserId}>
+                        {customer.owner} (Mevcut)
+                      </option>
+                    )}
                   </select>
                 </div>
 

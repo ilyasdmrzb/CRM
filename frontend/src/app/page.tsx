@@ -33,11 +33,13 @@ import Sidebar from '@/components/layout/Sidebar';
 import { getActivitiesFromDb, type ActivityItem } from '@/lib/activities';
 import { dealStages, getDealsFromDb, type DealItem } from '@/lib/deals';
 import { getCurrentUser, refreshCurrentUser, type AuthUser } from '@/lib/auth';
+import { getAdminUsers, type AdminUser } from '@/lib/admin-users';
 
 type PipelineData = { name: string; value: number };
 type StageData = { name: string; value: number; color: string };
 type TopSalesUser = { name: string; won: number; value: string; rate: string };
 type TrendRange = 1 | 3 | 6 | 12 | 'all';
+type ActivityChartPeriod = 'weekly' | 'monthly';
 
 const stageColors: Record<string, string> = {
   slate: '#94A3B8',
@@ -49,9 +51,22 @@ const stageColors: Record<string, string> = {
   rose: '#F43F5E',
 };
 
+const activityColors: Record<string, string> = {
+  'Toplantı': '#8B5CF6',
+  'Ziyaret': '#F59E0B',
+  'Fiyat Güncellemesi': '#3B82F6',
+  'Yeni Müşteri Ekleme': '#10B981',
+  'Arama': '#06B6D4',
+  'Not Ekleme': '#6366F1',
+  'Fırsat Güncellemesi': '#EC4899',
+  'E-posta': '#A855F7',
+  'WhatsApp': '#22C55E',
+  'Diğer': '#64748B',
+};
+
 const formatCurrency = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
 const monthLabel = (date: Date) => date.toLocaleDateString('tr-TR', { month: 'short' });
-const isWonDeal = (deal: DealItem) => deal.stage.startsWith('Kazan');
+const isWonDeal = (deal: DealItem) => deal.stage.includes('Kazan');
 const isLostDeal = (deal: DealItem) => deal.stage.includes('Kaybed');
 const isOpenDeal = (deal: DealItem) => !isWonDeal(deal) && !isLostDeal(deal);
 
@@ -86,12 +101,34 @@ const StatCard = ({ title, value, subValue, icon: Icon, color, trend }: any) => 
   </motion.div>
 );
 
+const CustomXAxisTick = (props: any) => {
+  const { x, y, payload } = props;
+  const val = payload.value;
+  const words = val.split(' ');
+  
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text x={0} y={0} dy={10} textAnchor="middle" fill="#64748B" style={{ fontSize: '9px', fontWeight: 500 }}>
+        {words.map((word: string, index: number) => (
+          <tspan x={0} dy={index > 0 ? 10 : 0} key={index}>
+            {word}
+          </tspan>
+        ))}
+      </text>
+    </g>
+  );
+};
+
 export default function Dashboard() {
   const [chartsReady, setChartsReady] = useState(false);
   const [deals, setDeals] = useState<DealItem[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [trendRange, setTrendRange] = useState<TrendRange>(6);
+  const [selectedRepForChart, setSelectedRepForChart] = useState<string>('all');
+  const [activityChartPeriod, setActivityChartPeriod] = useState<ActivityChartPeriod>('weekly');
+  const [lostDealPeriod, setLostDealPeriod] = useState<ActivityChartPeriod>('weekly');
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -104,6 +141,7 @@ export default function Dashboard() {
   useEffect(() => {
     getDealsFromDb().then(setDeals).catch(() => setDeals([]));
     getActivitiesFromDb().then(setActivities).catch(() => setActivities([]));
+    getAdminUsers().then(setUsers).catch(() => setUsers([]));
     setUser(getCurrentUser());
     refreshCurrentUser().then(setUser).catch(() => setUser(getCurrentUser()));
   }, []);
@@ -162,7 +200,8 @@ export default function Dashboard() {
     const totalDays = closedDeals.reduce((acc, deal) => {
       const created = new Date(deal.createdAt).getTime();
       const closed = deal.closedDate ? new Date(deal.closedDate).getTime() : new Date().getTime();
-      return acc + (closed - created) / (1000 * 60 * 60 * 24);
+      const diff = (closed - created) / (1000 * 60 * 60 * 24);
+      return acc + Math.max(0, diff);
     }, 0);
     
     return Math.round(totalDays / closedDeals.length);
@@ -227,10 +266,16 @@ export default function Dashboard() {
       const names = owners.length > 0 ? owners : ['Belirtilmedi'];
 
       names.forEach((name) => {
-        acc[name] ??= { name, won: 0, total: 0, value: 0 };
-        acc[name].total += 1;
-        acc[name].value += deal.valueAmount;
-        if (isWonDeal(deal)) acc[name].won += 1;
+        const user = users.find(u => u.fullName.toLowerCase() === name.toLowerCase() || u.initials.toLowerCase() === name.toLowerCase());
+        if (!user && name !== 'Belirtilmedi') return;
+        if (user && user.role !== 'Sales') return;
+
+        const displayName = user ? user.fullName : 'Belirtilmedi';
+
+        acc[displayName] ??= { name: displayName, won: 0, total: 0, value: 0 };
+        acc[displayName].total += 1;
+        acc[displayName].value += deal.valueAmount;
+        if (isWonDeal(deal)) acc[displayName].won += 1;
       });
 
       return acc;
@@ -245,7 +290,7 @@ export default function Dashboard() {
         value: formatCurrency(user.value),
         rate: `${user.total > 0 ? Math.round((user.won / user.total) * 100) : 0}%`,
       }));
-  }, [filteredDeals]);
+  }, [filteredDeals, users]);
 
   const recentActivities = useMemo(() => {
     return filteredActivities
@@ -258,6 +303,151 @@ export default function Dashboard() {
         time: getActivityTimeLabel(activity),
       }));
   }, [filteredActivities]);
+
+  const isWithinCurrentWeek = (dateStr: string | null | undefined) => {
+    if (!dateStr) return false;
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return false;
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // Calculate start of current week (Monday)
+    const day = today.getDay();
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+    const startOfWeek = new Date(today.setDate(diff));
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+    
+    return date >= startOfWeek && date < endOfWeek;
+  };
+
+  const isWithinCurrentMonth = (dateStr: string | null | undefined) => {
+    if (!dateStr) return false;
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return false;
+
+    const now = new Date();
+    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+  };
+
+  const getLostDealMarkedAt = (deal: DealItem) => deal.updatedAt || deal.closedDate || deal.createdAt;
+
+  const formatDateTime = (dateStr: string | null | undefined) => {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return '-';
+
+    return date.toLocaleString('tr-TR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const periodLabel = lostDealPeriod === 'weekly' ? 'Bu hafta' : 'Bu ay';
+
+  const periodLostDeals = useMemo(() => {
+    return lostDeals
+      .filter((deal) => {
+        const markedAt = getLostDealMarkedAt(deal);
+        return lostDealPeriod === 'weekly'
+          ? isWithinCurrentWeek(markedAt)
+          : isWithinCurrentMonth(markedAt);
+      })
+      .sort((a, b) => new Date(getLostDealMarkedAt(b)).getTime() - new Date(getLostDealMarkedAt(a)).getTime());
+  }, [lostDeals, lostDealPeriod]);
+
+  const periodLostValue = useMemo(() => {
+    return periodLostDeals.reduce((total, deal) => total + deal.valueAmount, 0);
+  }, [periodLostDeals]);
+
+  const weeklyActivities = useMemo(() => {
+    const thisWeekActs = activities.filter(act => {
+      if (filters.customer !== 'all' && act.company !== filters.customer) return false;
+      return isWithinCurrentWeek(act.completedAt || act.createdAt || act.date);
+    });
+
+    const salesUsers = users.filter(u => u.role === 'Sales');
+
+    return salesUsers.map(u => {
+      const uActs = thisWeekActs.filter(act => act.user.toLowerCase() === u.fullName.toLowerCase());
+      
+      const breakdown = uActs.reduce<Record<string, number>>((acc, act) => {
+        const type = act.type || 'Diğer';
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {});
+
+      return {
+        userId: u.id,
+        userName: u.fullName,
+        initials: u.initials,
+        total: uActs.length,
+        breakdown,
+      };
+    }).sort((a, b) => b.total - a.total);
+  }, [activities, users, filters.customer]);
+
+  const chartPeriodActivities = useMemo(() => {
+    const periodActs = activities.filter(act => {
+      if (filters.customer !== 'all' && act.company !== filters.customer) return false;
+      const activityDate = act.completedAt || act.createdAt || act.date;
+      return activityChartPeriod === 'weekly'
+        ? isWithinCurrentWeek(activityDate)
+        : isWithinCurrentMonth(activityDate);
+    });
+
+    const salesUsers = users.filter(u => u.role === 'Sales');
+
+    return salesUsers.map(u => {
+      const uActs = periodActs.filter(act => act.user.toLowerCase() === u.fullName.toLowerCase());
+
+      const breakdown = uActs.reduce<Record<string, number>>((acc, act) => {
+        const type = act.type || 'DiÄŸer';
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {});
+
+      return {
+        userId: u.id,
+        userName: u.fullName,
+        initials: u.initials,
+        total: uActs.length,
+        breakdown,
+      };
+    }).sort((a, b) => b.total - a.total);
+  }, [activities, users, filters.customer, activityChartPeriod]);
+
+  const activityChartData = useMemo(() => {
+    if (selectedRepForChart === 'all') {
+      return chartPeriodActivities.filter(wa => wa.total > 0).map(wa => ({
+        name: wa.userName.split(' ')[0],
+        fullName: wa.userName,
+        ...wa.breakdown
+      }));
+    } else {
+      const rep = chartPeriodActivities.find(wa => wa.userId === selectedRepForChart);
+      if (!rep) return [];
+
+      return Object.entries(rep.breakdown).map(([type, count]) => ({
+        name: type,
+        value: count,
+      }));
+    }
+  }, [chartPeriodActivities, selectedRepForChart]);
+
+  const activeTypes = useMemo(() => {
+    const types = new Set<string>();
+    chartPeriodActivities.forEach(wa => {
+      Object.keys(wa.breakdown).forEach(t => types.add(t));
+    });
+    return Array.from(types);
+  }, [chartPeriodActivities]);
 
   const hasPipelineData = pipelineData.some((item) => item.value > 0);
 
@@ -317,8 +507,8 @@ export default function Dashboard() {
                 className="bg-slate-900 border border-border-subtle rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 min-w-[150px]"
               >
                 <option value="all">Tüm Ekip</option>
-                {Array.from(new Set(deals.map(d => d.owner))).map(user => (
-                  <option key={user} value={user}>{user}</option>
+                {users.filter(u => u.role === 'Sales').map(u => (
+                  <option key={u.fullName} value={u.fullName}>{u.fullName}</option>
                 ))}
               </select>
             </div>
@@ -372,14 +562,114 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-            <StatCard title="Pipeline" value={formatCurrency(totalPipeline)} subValue={`${openDeals.length} açık`} icon={Layers} color="blue" />
-            <StatCard title="Kazanılan" value={formatCurrency(wonValue)} subValue={`${wonDeals.length} deal`} icon={Award} color="emerald" />
-            <StatCard title="Kaybedilen" value={formatCurrency(lostValue)} subValue={`${lostDeals.length} deal`} icon={XCircle} color="rose" />
             <StatCard title="Kapasite" value={`${Number(totalCapacity.toFixed(1))} MW`} icon={Activity} color="orange" />
             <StatCard title="Açık Deal" value={String(openDeals.length)} icon={BarChartIcon} color="slate" />
-            <StatCard title="Kazanma Oranı" value={`%${winRate}`} icon={TrendingUp} color="indigo" />
+            <StatCard title="Pipeline" value={formatCurrency(totalPipeline)} subValue={`${openDeals.length} açık`} icon={Layers} color="blue" />
             <StatCard title="Ort. Deal Değeri" value={formatCurrency(averageDealValue)} icon={DollarSign} color="purple" />
+            
+            <StatCard title="Kazanılan" value={formatCurrency(wonValue)} subValue={`${wonDeals.length} deal`} icon={Award} color="emerald" />
+            <StatCard title="Kaybedilen" value={formatCurrency(lostValue)} subValue={`${lostDeals.length} deal`} icon={XCircle} color="rose" />
+            <StatCard title="Kazanma Oranı" value={`%${winRate}`} icon={TrendingUp} color="indigo" />
             <StatCard title="Kapanma Süresi" value={`${averageClosingTime} Gün`} icon={Clock} color="rose" />
+          </div>
+
+          <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                  <XCircle className="w-5 h-5 text-rose-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Kaybedilen Deal Aktiviteleri</h3>
+                  <p className="text-xs text-slate-500">
+                    {periodLabel} kaybedilen {periodLostDeals.length} deal, toplam {formatCurrency(periodLostValue)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex rounded-xl border border-border-subtle bg-slate-900 p-1">
+                {([
+                  ['weekly', 'Haftalık'],
+                  ['monthly', 'Aylık'],
+                ] as const).map(([period, label]) => (
+                  <button
+                    key={period}
+                    type="button"
+                    onClick={() => setLostDealPeriod(period)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      lostDealPeriod === period
+                        ? 'bg-rose-500 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {periodLostDeals.length > 0 ? (
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {periodLostDeals.slice(0, 6).map((deal) => (
+                  <Link
+                    key={deal.id}
+                    href={`/pipeline/${deal.id}/edit`}
+                    className="group p-4 rounded-2xl bg-rose-500/5 border border-rose-500/20 hover:border-rose-500/50 transition-all"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">
+                          {deal.company} - {deal.project || deal.code}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {formatDateTime(getLostDealMarkedAt(deal))} tarihinde kaybedildi olarak işaretlendi.
+                        </p>
+                      </div>
+                      <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 border border-rose-500/20 text-rose-300">
+                        {formatCurrency(deal.valueAmount)}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
+                      <div className="rounded-xl bg-slate-900/60 border border-border-subtle px-3 py-2">
+                        <span className="block text-slate-500">Sorumlu</span>
+                        <span className="block text-slate-200 truncate">{deal.owner || '-'}</span>
+                      </div>
+                      <div className="rounded-xl bg-slate-900/60 border border-border-subtle px-3 py-2">
+                        <span className="block text-slate-500">Kapasite</span>
+                        <span className="block text-slate-200 truncate">{deal.capacity}</span>
+                      </div>
+                      <div className="rounded-xl bg-slate-900/60 border border-border-subtle px-3 py-2">
+                        <span className="block text-slate-500">Şehir</span>
+                        <span className="block text-slate-200 truncate">{deal.city || '-'}</span>
+                      </div>
+                      <div className="rounded-xl bg-slate-900/60 border border-border-subtle px-3 py-2">
+                        <span className="block text-slate-500">Kod</span>
+                        <span className="block text-slate-200 truncate">{deal.code}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mt-3 text-[11px] text-slate-300">
+                      <span className="px-2.5 py-1 rounded-full bg-slate-900/70 border border-border-subtle">
+                        Neden: {deal.lossReason || 'Belirtilmedi'}
+                      </span>
+                      <span className="px-2.5 py-1 rounded-full bg-slate-900/70 border border-border-subtle">
+                        Rakip: {deal.competitorName || 'Belirtilmedi'}
+                      </span>
+                      {deal.closedDate && (
+                        <span className="px-2.5 py-1 rounded-full bg-slate-900/70 border border-border-subtle">
+                          Kapanış: {formatDateTime(deal.closedDate)}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="py-10 text-center border border-dashed border-border-subtle rounded-2xl bg-slate-900/30">
+                <p className="text-sm text-slate-500">{periodLabel} kaybedildi olarak işaretlenen deal bulunmuyor.</p>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -518,9 +808,155 @@ export default function Dashboard() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
+              <h3 className="text-lg font-semibold text-white mb-6">Haftalık Satış Sorumlusu Aktifliği</h3>
+              <table className="crm-table">
+                <thead>
+                  <tr>
+                    <th>Satış Sorumlusu</th>
+                    <th>Toplam Güncelleme</th>
+                    <th>Haftalık Aktivite Detayı</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {weeklyActivities.map((wUser) => (
+                    <tr key={wUser.userId}>
+                      <td className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-xs font-bold text-blue-500">
+                          {wUser.initials}
+                        </div>
+                        <span className="text-sm font-medium text-white">{wUser.userName}</span>
+                      </td>
+                      <td>
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                          {wUser.total} güncelleme
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap gap-1.5">
+                          {Object.entries(wUser.breakdown).map(([type, count]) => (
+                            <span 
+                              key={type}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                type === 'Toplantı' ? 'bg-purple-500/10 border border-purple-500/20 text-purple-400' :
+                                type === 'Ziyaret' ? 'bg-orange-500/10 border border-orange-500/20 text-orange-400' :
+                                type === 'Fiyat Güncellemesi' ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400' :
+                                type === 'Yeni Müşteri Ekleme' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' :
+                                type === 'Arama' ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400' :
+                                type === 'Not Ekleme' ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-400' :
+                                'bg-slate-500/10 border border-slate-500/20 text-slate-400'
+                              }`}
+                            >
+                              {count} {type}
+                            </span>
+                          ))}
+                          {wUser.total === 0 && (
+                            <span className="text-xs text-slate-500 italic">Bu hafta güncelleme yok</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {weeklyActivities.length === 0 && (
+                <div className="border-t border-border-subtle p-8 text-center text-sm text-slate-500">
+                  Satış kullanıcısı tablosu için aktivite verisi bekleniyor.
+                </div>
+              )}
+            </div>
+
+            <div className="glass p-4 md:p-8 rounded-[24px] md:rounded-[32px] min-w-0">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                <h3 className="text-lg font-semibold text-white">Aktivite Grafiği</h3>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex rounded-xl border border-border-subtle bg-slate-900 p-1">
+                    {([
+                      ['weekly', 'Haftalık'],
+                      ['monthly', 'Aylık'],
+                    ] as const).map(([period, label]) => (
+                      <button
+                        key={period}
+                        type="button"
+                        onClick={() => setActivityChartPeriod(period)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          activityChartPeriod === period
+                            ? 'bg-blue-500 text-white shadow-sm'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <select
+                    value={selectedRepForChart}
+                    onChange={(e) => setSelectedRepForChart(e.target.value)}
+                    className="bg-slate-900 border border-border-subtle rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 max-w-[150px]"
+                  >
+                    <option value="all">Tüm Satışçılar</option>
+                    {chartPeriodActivities.map(wa => (
+                      <option key={wa.userId} value={wa.userId}>{wa.userName}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="h-[280px] md:h-[350px] min-w-0">
+                {chartsReady && activityChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    {selectedRepForChart === 'all' ? (
+                      <BarChart data={activityChartData as any[]}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                        <XAxis dataKey="name" stroke="#64748B" fontSize={11} axisLine={false} tickLine={false} />
+                        <YAxis stroke="#64748B" fontSize={11} axisLine={false} tickLine={false} allowDecimals={false} />
+                        <Tooltip
+                          contentStyle={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '12px' }}
+                          itemStyle={{ color: '#F8FAFC' }}
+                        />
+                        {activeTypes.map(type => (
+                          <Bar 
+                            key={type} 
+                            dataKey={type} 
+                            stackId="a" 
+                            fill={activityColors[type] || '#64748B'} 
+                            radius={[2, 2, 0, 0]} 
+                            barSize={18} 
+                          />
+                        ))}
+                      </BarChart>
+                    ) : (
+                      <BarChart data={activityChartData as any[]} margin={{ bottom: 20 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                        <XAxis dataKey="name" interval={0} tick={<CustomXAxisTick />} axisLine={false} tickLine={false} />
+                        <YAxis stroke="#64748B" fontSize={11} axisLine={false} tickLine={false} allowDecimals={false} />
+                        <Tooltip
+                          contentStyle={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '12px' }}
+                          itemStyle={{ color: '#F8FAFC' }}
+                        />
+                        <Bar dataKey="value" name="Aktivite Sayısı" radius={[4, 4, 0, 0]} barSize={20}>
+                          {activityChartData.map((entry: any, index: number) => (
+                            <Cell key={`cell-${index}`} fill={activityColors[entry.name] || '#64748B'} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    )}
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full rounded-2xl border border-dashed border-border-subtle bg-slate-900/30 flex items-center justify-center text-sm text-slate-500 p-4 text-center">
+                    {chartsReady
+                      ? `${activityChartPeriod === 'weekly' ? 'Bu hafta' : 'Bu ay'} için aktivite grafiği verisi yok.`
+                      : 'Grafik yükleniyor...'}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
             <div className="xl:col-span-2 glass p-4 md:p-8 rounded-[24px] md:rounded-[32px]">
-              <h3 className="text-lg font-semibold text-white mb-6">En Aktif Satış Kullanıcıları</h3>
+              <h3 className="text-lg font-semibold text-white mb-6">Satış Performansı (Kazanılan/Ciro)</h3>
               <table className="crm-table">
                 <thead>
                   <tr>

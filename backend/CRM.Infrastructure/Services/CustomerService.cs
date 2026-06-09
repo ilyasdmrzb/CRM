@@ -75,6 +75,20 @@ namespace CRM.Infrastructure.Services
                 _context.Contacts.Add(contact);
             }
 
+            var activity = new Activity
+            {
+                CustomerId = customer.Id,
+                UserId = responsibleUserId,
+                ActivityType = "Yeni Müşteri Ekleme",
+                Subject = "Yeni Müşteri Ekleme",
+                Description = $"Yeni müşteri eklendi: '{customer.CompanyName}'",
+                ActivityDate = DateTime.Now,
+                IsCompleted = true,
+                Status = "completed",
+                CompletedAt = DateTime.Now
+            };
+            _context.Activities.Add(activity);
+
             await _context.SaveChangesAsync();
 
             return await GetByIdAsync(customer.Id) ?? MapToDto(customer);
@@ -168,6 +182,7 @@ namespace CRM.Infrastructure.Services
             City = c.City,
             Sector = c.Sector,
             Address = c.Address,
+            ResponsibleUserId = c.CreatedBy,
             CreatedByName = c.Creator?.FullName ?? "",
             CreatedByShortName = c.Creator?.GetInitials() ?? "??",
             CreatedAt = c.CreatedAt,

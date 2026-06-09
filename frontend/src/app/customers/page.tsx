@@ -37,7 +37,7 @@ const ownerInitials = (owner: string) => {
     .join('+');
 };
 
-const isClosedDeal = (deal: DealItem) => deal.stage.startsWith('Kazan') || deal.stage.includes('Kaybed');
+const isClosedDeal = (deal: DealItem) => deal.stage.includes('Kazan') || deal.stage.includes('Kaybed');
 
 const getCustomerDeals = (customer: CustomerListItem, deals: DealItem[]) => {
   const customerName = customer.name.trim().toLocaleLowerCase('tr-TR');

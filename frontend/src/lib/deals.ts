@@ -43,6 +43,7 @@ export type DealItem = {
   notes: string | null;
   noteHistory: DealNote[];
   createdAt: string;
+  updatedAt: string;
 };
 
 type ApiDeal = {
@@ -73,10 +74,12 @@ type ApiDeal = {
   notes: string | null;
   noteHistory?: DealNote[];
   status: string;
+  closedDate: string | null;
   lastActivityDate: string | null;
   nextActionDate: string | null;
   nextActionSubject: string | null;
   createdAt: string;
+  updatedAt: string;
 };
 
 export const dealStages: { name: DealStageName; color: string; probability: number }[] = [
@@ -150,6 +153,10 @@ const getResponseErrorMessage = async (response: Response, fallback: string) => 
     if (messages.length > 0) return messages.join(' ');
   }
 
+  if (response.status === 400) return 'Girilen bilgileri kontrol edin.';
+  if (response.status === 403) return 'Bu işlemi yapmak için Admin yetkisi gerekiyor. Lütfen çıkış yapıp tekrar giriş yapın.';
+  if (response.status === 409) return 'Bu kayıt zaten mevcut.';
+
   return fallback;
 };
 
@@ -187,7 +194,7 @@ const mapApiDeal = (deal: ApiDeal): DealItem => {
     lossReason: deal.lossReason,
     wonReason: null,
     finalPrice: null,
-    closedDate: null,
+    closedDate: deal.closedDate,
     lossLesson: null,
     epcPartner: deal.epcPartner,
     deliveryDate: deal.deliveryDate,
@@ -199,6 +206,7 @@ const mapApiDeal = (deal: ApiDeal): DealItem => {
     notes: deal.notes,
     noteHistory: deal.noteHistory ?? (deal.notes ? [{ id: `${deal.id}-note`, text: deal.notes, createdAt: deal.createdAt }] : []),
     createdAt: deal.createdAt,
+    updatedAt: deal.updatedAt,
   };
 };
 

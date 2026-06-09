@@ -32,6 +32,7 @@ namespace CRM.Application.DTOs
         public string? CurrentUpdate { get; set; }
         public string? Notes { get; set; }
         public string Status { get; set; } = "open";
+        public DateTime? ClosedDate { get; set; }
         public DateTime? LastActivityDate { get; set; }
         public DateTime? NextActionDate { get; set; }
         public string? NextActionSubject { get; set; }

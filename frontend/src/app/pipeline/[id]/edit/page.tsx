@@ -163,7 +163,7 @@ export default function EditDealPage() {
         </header>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 relative z-20">
             <section className="xl:col-span-2 glass rounded-[32px] border border-border-subtle overflow-visible">
               <div className="p-6 border-b border-border-subtle flex items-center gap-3 bg-slate-800/30">
                 <Target className="w-5 h-5 text-blue-500" />

@@ -9,6 +9,7 @@ namespace CRM.Domain.Entities
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
         public string Role { get; set; } = "Sales"; // Admin, Manager, Sales
+        public string? Phone { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
 

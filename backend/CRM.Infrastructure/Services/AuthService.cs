@@ -1,4 +1,4 @@
-﻿using CRM.Application.DTOs.Auth;
+using CRM.Application.DTOs.Auth;
 using CRM.Application.Interfaces;
 using CRM.Domain.Entities;
 using CRM.Infrastructure.Data;
@@ -67,7 +67,8 @@ namespace CRM.Infrastructure.Services
                 FullName = dto.FullName.Trim(),
                 Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Role = dto.Role
+                Role = dto.Role,
+                Phone = dto.Phone
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -85,6 +86,7 @@ namespace CRM.Infrastructure.Services
             if (!string.IsNullOrWhiteSpace(dto.Role))
                 user.Role = dto.Role;
             
+            user.Phone = dto.Phone;
             user.IsActive = dto.IsActive;
 
             if (!string.IsNullOrEmpty(dto.Password))
@@ -146,6 +148,7 @@ namespace CRM.Infrastructure.Services
             FullName = u.FullName,
             Email = u.Email,
             Role = u.Role,
+            Phone = u.Phone,
             IsActive = u.IsActive,
             CreatedAt = u.CreatedAt
         };

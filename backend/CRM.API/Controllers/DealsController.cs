@@ -47,7 +47,11 @@ namespace CRM.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDealDto dto)
         {
-            var deal = await _dealService.UpdateAsync(id, dto);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                return Unauthorized();
+
+            var deal = await _dealService.UpdateAsync(id, dto, userId);
             if (deal == null) return NotFound();
             return Ok(deal);
         }
@@ -55,7 +59,11 @@ namespace CRM.API.Controllers
         [HttpPatch("{id}/stage")]
         public async Task<IActionResult> UpdateStage(Guid id, [FromBody] UpdateDealStageDto dto)
         {
-            var deal = await _dealService.UpdateStageAsync(id, dto);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                return Unauthorized();
+
+            var deal = await _dealService.UpdateStageAsync(id, dto, userId);
             if (deal == null) return NotFound();
             return Ok(deal);
         }
@@ -63,9 +71,13 @@ namespace CRM.API.Controllers
         [HttpPost("{id}/close")]
         public async Task<IActionResult> CloseDeal(Guid id, [FromBody] CloseDealDto dto)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                return Unauthorized();
+
             try
             {
-                var deal = await _dealService.CloseDealAsync(id, dto);
+                var deal = await _dealService.CloseDealAsync(id, dto, userId);
                 if (deal == null) return NotFound();
                 return Ok(deal);
             }
@@ -78,7 +90,11 @@ namespace CRM.API.Controllers
         [HttpPost("{id}/notes")]
         public async Task<IActionResult> AddNote(Guid id, [FromBody] AddDealNoteDto dto)
         {
-            var deal = await _dealService.AddNoteAsync(id, dto);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                return Unauthorized();
+
+            var deal = await _dealService.AddNoteAsync(id, dto, userId);
             if (deal == null) return NotFound();
             return Ok(deal);
         }

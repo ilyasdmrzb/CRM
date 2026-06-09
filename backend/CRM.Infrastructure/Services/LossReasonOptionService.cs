@@ -44,7 +44,15 @@ namespace CRM.Infrastructure.Services
             };
 
             _context.LossReasonOptions.Add(option);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                throw new InvalidOperationException("Bu kaybetme nedeni zaten mevcut.");
+            }
+
             return MapToDto(option);
         }
 
@@ -61,7 +69,15 @@ namespace CRM.Infrastructure.Services
             option.IsActive = dto.IsActive;
             option.UpdatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                throw new InvalidOperationException("Bu kaybetme nedeni zaten mevcut.");
+            }
+
             return MapToDto(option);
         }
 
@@ -77,8 +93,9 @@ namespace CRM.Infrastructure.Services
 
         private async Task EnsureUniqueNameAsync(string name, int? exceptId = null)
         {
+            var normalizedName = name.ToLower();
             var exists = await _context.LossReasonOptions
-                .AnyAsync(x => x.Name == name && (!exceptId.HasValue || x.Id != exceptId.Value));
+                .AnyAsync(x => x.Name.ToLower() == normalizedName && (!exceptId.HasValue || x.Id != exceptId.Value));
 
             if (exists)
                 throw new InvalidOperationException("Bu kaybetme nedeni zaten mevcut.");
@@ -86,7 +103,11 @@ namespace CRM.Infrastructure.Services
 
         private static string NormalizeName(string name)
         {
-            return string.Join(" ", name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+            var normalized = string.Join(" ", name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+            if (string.IsNullOrWhiteSpace(normalized))
+                throw new InvalidOperationException("Kaybetme nedeni boş olamaz.");
+
+            return normalized;
         }
 
         private static LossReasonOptionDto MapToDto(LossReasonOption option) => new()

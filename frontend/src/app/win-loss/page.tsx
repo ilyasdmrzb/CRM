@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -36,7 +36,7 @@ const formatCurrency = (value: number) => `$${Math.round(value).toLocaleString('
 
 const getClosedDate = (deal: DealItem) => deal.closedDate ?? deal.deliveryDate ?? deal.lastContactDate ?? deal.createdAt;
 
-const isWonDeal = (deal: DealItem) => deal.stage.startsWith('Kazan');
+const isWonDeal = (deal: DealItem) => deal.stage.includes('Kazan');
 
 const isLostDeal = (deal: DealItem) => deal.stage.includes('Kaybed');
 

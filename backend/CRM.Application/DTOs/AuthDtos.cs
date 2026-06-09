@@ -22,6 +22,7 @@ namespace CRM.Application.DTOs.Auth
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public string? Phone { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
     }
@@ -32,12 +33,14 @@ namespace CRM.Application.DTOs.Auth
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string Role { get; set; } = "Sales";
+        public string? Phone { get; set; }
     }
 
     public class UpdateUserDto
     {
         public string FullName { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public string? Phone { get; set; }
         public bool IsActive { get; set; }
         public string? Password { get; set; }
     }
